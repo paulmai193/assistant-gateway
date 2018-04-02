@@ -1,7 +1,6 @@
 package logia.assistant.gateway.config;
 
-import logia.assistant.gateway.security.*;
-import logia.assistant.gateway.security.jwt.*;
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +21,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 
-import javax.annotation.PostConstruct;
+import logia.assistant.gateway.security.AuthoritiesConstants;
+import logia.assistant.gateway.security.jwt.JWTConfigurer;
+import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
 
 @Configuration
 @Import(SecurityProblemSupport.class)
