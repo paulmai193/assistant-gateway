@@ -83,7 +83,6 @@
         <sonar.tests>${project.basedir}/src/test/</sonar.tests>
 
         <!-- jhipster-needle-maven-property -->
-        <assistant-share.version>0.0.1-SNAPSHOT</assistant-share.version>
     </properties>
 
     <dependencyManagement>
@@ -405,17 +404,28 @@
             <artifactId>cucumber-spring</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Social -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.social</groupId>
+            <artifactId>spring-social-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.social</groupId>
+            <artifactId>spring-social-google</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.social</groupId>
+            <artifactId>spring-social-facebook</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.social</groupId>
+            <artifactId>spring-social-twitter</artifactId>
+        </dependency>
         <!-- jhipster-needle-maven-add-dependency -->
-        <dependency>
-        	<groupId>logia.assistant.share</groupId>
-        	<artifactId>gateway-share</artifactId>
-        	<version>${assistant-share.version}</version>
-        </dependency>
-        <dependency>
-        	<groupId>logia.assistant.share</groupId>
-        	<artifactId>common-share</artifactId>
-        	<version>${assistant-share.version}</version>
-        </dependency>
     </dependencies>
 
     <build>

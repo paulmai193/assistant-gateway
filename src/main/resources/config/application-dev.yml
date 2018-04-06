@@ -48,9 +48,9 @@ spring:
                     destination: topic-jhipster
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:postgresql://localhost:5432/AssistantGateway
-        username: AssistantGateway
-        password:
+        url: jdbc:postgresql://localhost:5432/postgres?currentSchema=gateway
+        username: postgres
+        password: postgres
     jpa:
         database-platform: io.github.jhipster.domain.util.FixedPostgreSQL82Dialect
         database: POSTGRESQL

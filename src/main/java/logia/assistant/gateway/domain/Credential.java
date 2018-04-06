@@ -8,6 +8,7 @@ import javax.validation.constraints.*;
 
 import org.springframework.data.elasticsearch.annotations.Document;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 /**
@@ -35,6 +36,9 @@ public class Credential implements Serializable {
     @Size(min = 60, max = 60)
     @Column(name = "password_hash", length = 60, nullable = false)
     private String passwordHash;
+
+    @Column(name = "last_login_date")
+    private ZonedDateTime lastLoginDate;
 
     @ManyToOne(optional = false)
     @NotNull
@@ -73,6 +77,19 @@ public class Credential implements Serializable {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public ZonedDateTime getLastLoginDate() {
+        return lastLoginDate;
+    }
+
+    public Credential lastLoginDate(ZonedDateTime lastLoginDate) {
+        this.lastLoginDate = lastLoginDate;
+        return this;
+    }
+
+    public void setLastLoginDate(ZonedDateTime lastLoginDate) {
+        this.lastLoginDate = lastLoginDate;
     }
 
     public User getUser() {
@@ -115,6 +132,7 @@ public class Credential implements Serializable {
             "id=" + getId() +
             ", login='" + getLogin() + "'" +
             ", passwordHash='" + getPasswordHash() + "'" +
+            ", lastLoginDate='" + getLastLoginDate() + "'" +
             "}";
     }
 }

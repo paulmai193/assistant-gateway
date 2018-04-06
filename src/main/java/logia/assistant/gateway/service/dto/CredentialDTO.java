@@ -1,6 +1,7 @@
 package logia.assistant.gateway.service.dto;
 
 
+import java.time.ZonedDateTime;
 import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -21,6 +22,8 @@ public class CredentialDTO implements Serializable {
     @NotNull
     @Size(min = 60, max = 60)
     private String passwordHash;
+
+    private ZonedDateTime lastLoginDate;
 
     private Long userId;
 
@@ -48,6 +51,14 @@ public class CredentialDTO implements Serializable {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public ZonedDateTime getLastLoginDate() {
+        return lastLoginDate;
+    }
+
+    public void setLastLoginDate(ZonedDateTime lastLoginDate) {
+        this.lastLoginDate = lastLoginDate;
     }
 
     public Long getUserId() {
@@ -93,6 +104,7 @@ public class CredentialDTO implements Serializable {
             "id=" + getId() +
             ", login='" + getLogin() + "'" +
             ", passwordHash='" + getPasswordHash() + "'" +
+            ", lastLoginDate='" + getLastLoginDate() + "'" +
             "}";
     }
 }

@@ -3,6 +3,8 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { SERVER_API_URL } from '../../app.constants';
 
+import { JhiDateUtils } from 'ng-jhipster';
+
 import { Credential } from './credential.model';
 import { createRequestOption } from '../../shared';
 
@@ -14,7 +16,7 @@ export class CredentialService {
     private resourceUrl =  SERVER_API_URL + 'api/credentials';
     private resourceSearchUrl = SERVER_API_URL + 'api/_search/credentials';
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private dateUtils: JhiDateUtils) { }
 
     create(credential: Credential): Observable<EntityResponseType> {
         const copy = this.convert(credential);
@@ -68,6 +70,8 @@ export class CredentialService {
      */
     private convertItemFromServer(credential: Credential): Credential {
         const copy: Credential = Object.assign({}, credential);
+        copy.lastLoginDate = this.dateUtils
+            .convertDateTimeFromServer(credential.lastLoginDate);
         return copy;
     }
 
@@ -76,6 +80,8 @@ export class CredentialService {
      */
     private convert(credential: Credential): Credential {
         const copy: Credential = Object.assign({}, credential);
+
+        copy.lastLoginDate = this.dateUtils.toDate(credential.lastLoginDate);
         return copy;
     }
 }

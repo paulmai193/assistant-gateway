@@ -1,11 +1,9 @@
 package logia.assistant.gateway.security.jwt;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-
+import logia.assistant.gateway.security.AuthoritiesConstants;
+import io.github.jhipster.config.JHipsterProperties;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -15,23 +13,23 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import logia.assistant.gateway.security.AuthoritiesConstants;
-import logia.assistant.share.gateway.config.GatewayProperties;
-import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TokenProviderTest {
 
     private final String secretKey = "e5c9ee274ae87bc031adda32e27fa98b9290da83";
     private final long ONE_MINUTE = 60000;
-    private GatewayProperties gatewayProperties;
+    private JHipsterProperties jHipsterProperties;
     private TokenProvider tokenProvider;
 
     @Before
     public void setup() {
-        gatewayProperties = Mockito.mock(GatewayProperties.class);
-        tokenProvider = new TokenProvider(gatewayProperties);
+        jHipsterProperties = Mockito.mock(JHipsterProperties.class);
+        tokenProvider = new TokenProvider(jHipsterProperties);
         ReflectionTestUtils.setField(tokenProvider, "secretKey", secretKey);
         ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", ONE_MINUTE);
     }

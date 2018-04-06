@@ -1,13 +1,11 @@
 package logia.assistant.gateway.web.rest;
 
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import logia.assistant.gateway.AssistantGatewayApp;
+import logia.assistant.gateway.domain.User;
+import logia.assistant.gateway.repository.UserRepository;
+import logia.assistant.gateway.security.jwt.TokenProvider;
+import logia.assistant.gateway.web.rest.vm.LoginVM;
+import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,12 +18,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
-import logia.assistant.gateway.AssistantGatewayApp;
-import logia.assistant.gateway.domain.User;
-import logia.assistant.gateway.repository.UserRepository;
-import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
-import logia.assistant.gateway.web.rest.vm.LoginVM;
-import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.not;
 
 /**
  * Test class for the UserJWTController REST controller.

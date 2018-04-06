@@ -68,7 +68,7 @@ class CredentialGatlingTest extends Simulation {
             .exec(http("Create new credential")
             .post("/api/credentials")
             .headers(headers_http_authenticated)
-            .body(StringBody("""{"id":null, "login":"SAMPLE_TEXT", "passwordHash":"SAMPLE_TEXT"}""")).asJSON
+            .body(StringBody("""{"id":null, "login":"SAMPLE_TEXT", "passwordHash":"SAMPLE_TEXT", "lastLoginDate":"2020-01-01T00:00:00.000Z"}""")).asJSON
             .check(status.is(201))
             .check(headerRegex("Location", "(.*)").saveAs("new_credential_url"))).exitHereIfFailed
             .pause(10)

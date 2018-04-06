@@ -22,14 +22,15 @@
     "buildTool": "maven",
     "enableSocialSignIn": false,
     "enableSwaggerCodegen": false,
-    "jwtSecretKey": "c032b931b8a225e6d82c3cbe2bad135f9592cb31",
+    "jwtSecretKey": "117e6cc3432a3589d90c539d4f0d92ca0645dcdc",
     "clientFramework": "angularX",
     "useSass": false,
     "clientPackageManager": "yarn",
     "applicationType": "gateway",
     "testFrameworks": [
       "gatling",
-      "cucumber"
+      "cucumber",
+      "protractor"
     ],
     "jhiPrefix": "jhi",
     "otherModules": [
@@ -40,6 +41,22 @@
       {
         "name": "generator-jhipster-swagger2markup",
         "version": "1.2.0"
+      },
+      {
+        "name": "generator-jhipster-elasticsearch-rest-client",
+        "version": "1.0.0"
+      },
+      {
+        "name": "generator-jhipster-spring-social-connectors",
+        "version": "0.0.1"
+      },
+      {
+        "name": "generator-jhipster-entity-audit-and-delete",
+        "version": "2.2.2"
+      },
+      {
+        "name": "generator-jhipster-material",
+        "version": "0.0.0"
       }
     ],
     "enableTranslation": true,

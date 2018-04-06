@@ -1,9 +1,7 @@
 package logia.assistant.gateway.security.jwt;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Collections;
-
+import logia.assistant.gateway.security.AuthoritiesConstants;
+import io.github.jhipster.config.JHipsterProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -15,9 +13,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import logia.assistant.gateway.security.AuthoritiesConstants;
-import logia.assistant.share.gateway.config.GatewayProperties;
-import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JWTFilterTest {
 
@@ -27,8 +25,8 @@ public class JWTFilterTest {
 
     @Before
     public void setup() {
-        GatewayProperties gatewayProperties = new GatewayProperties();
-        tokenProvider = new TokenProvider(gatewayProperties);
+        JHipsterProperties jHipsterProperties = new JHipsterProperties();
+        tokenProvider = new TokenProvider(jHipsterProperties);
         ReflectionTestUtils.setField(tokenProvider, "secretKey", "test secret");
         ReflectionTestUtils.setField(tokenProvider, "tokenValidityInMilliseconds", 60000);
         jwtFilter = new JWTFilter(tokenProvider);

@@ -26,8 +26,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 
+import static logia.assistant.gateway.web.rest.TestUtil.sameInstant;
 import static logia.assistant.gateway.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -48,6 +53,9 @@ public class CredentialResourceIntTest {
 
     private static final String DEFAULT_PASSWORD_HASH = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     private static final String UPDATED_PASSWORD_HASH = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
+
+    private static final ZonedDateTime DEFAULT_LAST_LOGIN_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
+    private static final ZonedDateTime UPDATED_LAST_LOGIN_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
 
     @Autowired
     private CredentialRepository credentialRepository;
@@ -97,7 +105,8 @@ public class CredentialResourceIntTest {
     public static Credential createEntity(EntityManager em) {
         Credential credential = new Credential()
             .login(DEFAULT_LOGIN)
-            .passwordHash(DEFAULT_PASSWORD_HASH);
+            .passwordHash(DEFAULT_PASSWORD_HASH)
+            .lastLoginDate(DEFAULT_LAST_LOGIN_DATE);
         // Add required entity
         User user = UserResourceIntTest.createEntity(em);
         em.persist(user);
@@ -130,10 +139,12 @@ public class CredentialResourceIntTest {
         Credential testCredential = credentialList.get(credentialList.size() - 1);
         assertThat(testCredential.getLogin()).isEqualTo(DEFAULT_LOGIN);
         assertThat(testCredential.getPasswordHash()).isEqualTo(DEFAULT_PASSWORD_HASH);
+        assertThat(testCredential.getLastLoginDate()).isEqualTo(DEFAULT_LAST_LOGIN_DATE);
 
         // Validate the Credential in Elasticsearch
         Credential credentialEs = credentialSearchRepository.findOne(testCredential.getId());
-        assertThat(credentialEs).isEqualToIgnoringGivenFields(testCredential);
+        assertThat(testCredential.getLastLoginDate()).isEqualTo(testCredential.getLastLoginDate());
+        assertThat(credentialEs).isEqualToIgnoringGivenFields(testCredential, "lastLoginDate");
     }
 
     @Test
@@ -206,7 +217,8 @@ public class CredentialResourceIntTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(credential.getId().intValue())))
             .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN.toString())))
-            .andExpect(jsonPath("$.[*].passwordHash").value(hasItem(DEFAULT_PASSWORD_HASH.toString())));
+            .andExpect(jsonPath("$.[*].passwordHash").value(hasItem(DEFAULT_PASSWORD_HASH.toString())))
+            .andExpect(jsonPath("$.[*].lastLoginDate").value(hasItem(sameInstant(DEFAULT_LAST_LOGIN_DATE))));
     }
 
     @Test
@@ -221,7 +233,8 @@ public class CredentialResourceIntTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.id").value(credential.getId().intValue()))
             .andExpect(jsonPath("$.login").value(DEFAULT_LOGIN.toString()))
-            .andExpect(jsonPath("$.passwordHash").value(DEFAULT_PASSWORD_HASH.toString()));
+            .andExpect(jsonPath("$.passwordHash").value(DEFAULT_PASSWORD_HASH.toString()))
+            .andExpect(jsonPath("$.lastLoginDate").value(sameInstant(DEFAULT_LAST_LOGIN_DATE)));
     }
 
     @Test
@@ -246,7 +259,8 @@ public class CredentialResourceIntTest {
         em.detach(updatedCredential);
         updatedCredential
             .login(UPDATED_LOGIN)
-            .passwordHash(UPDATED_PASSWORD_HASH);
+            .passwordHash(UPDATED_PASSWORD_HASH)
+            .lastLoginDate(UPDATED_LAST_LOGIN_DATE);
         CredentialDTO credentialDTO = credentialMapper.toDto(updatedCredential);
 
         restCredentialMockMvc.perform(put("/api/credentials")
@@ -260,10 +274,12 @@ public class CredentialResourceIntTest {
         Credential testCredential = credentialList.get(credentialList.size() - 1);
         assertThat(testCredential.getLogin()).isEqualTo(UPDATED_LOGIN);
         assertThat(testCredential.getPasswordHash()).isEqualTo(UPDATED_PASSWORD_HASH);
+        assertThat(testCredential.getLastLoginDate()).isEqualTo(UPDATED_LAST_LOGIN_DATE);
 
         // Validate the Credential in Elasticsearch
         Credential credentialEs = credentialSearchRepository.findOne(testCredential.getId());
-        assertThat(credentialEs).isEqualToIgnoringGivenFields(testCredential);
+        assertThat(testCredential.getLastLoginDate()).isEqualTo(testCredential.getLastLoginDate());
+        assertThat(credentialEs).isEqualToIgnoringGivenFields(testCredential, "lastLoginDate");
     }
 
     @Test
@@ -320,7 +336,8 @@ public class CredentialResourceIntTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(credential.getId().intValue())))
             .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN.toString())))
-            .andExpect(jsonPath("$.[*].passwordHash").value(hasItem(DEFAULT_PASSWORD_HASH.toString())));
+            .andExpect(jsonPath("$.[*].passwordHash").value(hasItem(DEFAULT_PASSWORD_HASH.toString())))
+            .andExpect(jsonPath("$.[*].lastLoginDate").value(hasItem(sameInstant(DEFAULT_LAST_LOGIN_DATE))));
     }
 
     @Test

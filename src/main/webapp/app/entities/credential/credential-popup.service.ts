@@ -2,6 +2,7 @@ import { Injectable, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { HttpResponse } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
 import { Credential } from './credential.model';
 import { CredentialService } from './credential.service';
 
@@ -10,6 +11,7 @@ export class CredentialPopupService {
     private ngbModalRef: NgbModalRef;
 
     constructor(
+        private datePipe: DatePipe,
         private modalService: NgbModal,
         private router: Router,
         private credentialService: CredentialService
@@ -29,6 +31,8 @@ export class CredentialPopupService {
                 this.credentialService.find(id)
                     .subscribe((credentialResponse: HttpResponse<Credential>) => {
                         const credential: Credential = credentialResponse.body;
+                        credential.lastLoginDate = this.datePipe
+                            .transform(credential.lastLoginDate, 'yyyy-MM-ddTHH:mm:ss');
                         this.ngbModalRef = this.credentialModalRef(component, credential);
                         resolve(this.ngbModalRef);
                     });
