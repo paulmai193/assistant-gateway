@@ -26,8 +26,8 @@ import org.springframework.social.twitter.connect.TwitterConnectionFactory;
 import io.github.jhipster.config.JHipsterProperties;
 import logia.assistant.gateway.repository.CustomSocialUsersConnectionRepository;
 import logia.assistant.gateway.repository.SocialUserConnectionRepository;
-import logia.assistant.gateway.security.jwt.TokenProvider;
 import logia.assistant.gateway.security.social.CustomSignInAdapter;
+import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
 
 /**
  * Basic Spring Social configuration.

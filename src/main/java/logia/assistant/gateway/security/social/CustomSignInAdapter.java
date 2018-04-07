@@ -15,7 +15,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 
 import io.github.jhipster.config.JHipsterProperties;
-import logia.assistant.gateway.security.jwt.TokenProvider;
+import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
 
 public class CustomSignInAdapter implements SignInAdapter {
 
