@@ -427,6 +427,16 @@
             <artifactId>spring-social-twitter</artifactId>
         </dependency>
         <!-- jhipster-needle-maven-add-dependency -->
+        <dependency>
+        	<groupId>logia.assistant.share</groupId>
+        	<artifactId>common-share</artifactId>
+        	<version>${assistant-share.version}</version>
+        </dependency>
+        <dependency>
+        	<groupId>logia.assistant.share</groupId>
+        	<artifactId>gateway-share</artifactId>
+        	<version>${assistant-share.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
