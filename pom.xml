@@ -83,6 +83,7 @@
         <sonar.tests>${project.basedir}/src/test/</sonar.tests>
 
         <!-- jhipster-needle-maven-property -->
+        <assistant-share.version>0.0.1-SNAPSHOT</assistant-share.version>
     </properties>
 
     <dependencyManagement>
