@@ -24,39 +24,70 @@ import org.springframework.core.env.Environment;
 
 import javax.annotation.PreDestroy;
 
+/**
+ * The Class CacheConfiguration.
+ *
+ * @author Dai Mai
+ */
 @Configuration
 @EnableCaching
 @AutoConfigureAfter(value = { MetricsConfiguration.class })
 @AutoConfigureBefore(value = { WebConfigurer.class, DatabaseConfiguration.class })
 public class CacheConfiguration {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(CacheConfiguration.class);
 
+    /** The env. */
     private final Environment env;
 
+    /** The server properties. */
     private final ServerProperties serverProperties;
 
+    /** The discovery client. */
     private final DiscoveryClient discoveryClient;
 
+    /** The registration. */
     private Registration registration;
 
+    /**
+     * Instantiates a new cache configuration.
+     *
+     * @param env the env
+     * @param serverProperties the server properties
+     * @param discoveryClient the discovery client
+     */
     public CacheConfiguration(Environment env, ServerProperties serverProperties, DiscoveryClient discoveryClient) {
         this.env = env;
         this.serverProperties = serverProperties;
         this.discoveryClient = discoveryClient;
     }
 
+    /**
+     * Sets the registration.
+     *
+     * @param registration the new registration
+     */
     @Autowired(required = false)
     public void setRegistration(Registration registration) {
         this.registration = registration;
     }
 
+    /**
+     * Destroy.
+     */
     @PreDestroy
     public void destroy() {
         log.info("Closing Cache Manager");
         Hazelcast.shutdownAll();
     }
 
+    /**
+     * Cache manager.
+     *
+     * @param hazelcastInstance the hazelcast instance
+     * @return the cache manager
+     */
     @Bean
     public CacheManager cacheManager(HazelcastInstance hazelcastInstance) {
         log.debug("Starting HazelcastCacheManager");
@@ -64,6 +95,12 @@ public class CacheConfiguration {
         return cacheManager;
     }
 
+    /**
+     * Hazelcast instance.
+     *
+     * @param jHipsterProperties the j hipster properties
+     * @return the hazelcast instance
+     */
     @Bean
     public HazelcastInstance hazelcastInstance(JHipsterProperties jHipsterProperties) {
         log.debug("Configuring Hazelcast");
@@ -112,6 +149,12 @@ public class CacheConfiguration {
         return Hazelcast.newHazelcastInstance(config);
     }
 
+    /**
+     * Initialize default management center config.
+     *
+     * @param jHipsterProperties the j hipster properties
+     * @return the management center config
+     */
     private ManagementCenterConfig initializeDefaultManagementCenterConfig(JHipsterProperties jHipsterProperties) {
         ManagementCenterConfig managementCenterConfig = new ManagementCenterConfig();
         managementCenterConfig.setEnabled(jHipsterProperties.getCache().getHazelcast().getManagementCenter().isEnabled());
@@ -120,6 +163,11 @@ public class CacheConfiguration {
         return managementCenterConfig;
     }
 
+    /**
+     * Initialize default map config.
+     *
+     * @return the map config
+     */
     private MapConfig initializeDefaultMapConfig() {
         MapConfig mapConfig = new MapConfig();
 
@@ -150,6 +198,12 @@ public class CacheConfiguration {
         return mapConfig;
     }
 
+    /**
+     * Initialize domain map config.
+     *
+     * @param jHipsterProperties the j hipster properties
+     * @return the map config
+     */
     private MapConfig initializeDomainMapConfig(JHipsterProperties jHipsterProperties) {
         MapConfig mapConfig = new MapConfig();
         mapConfig.setTimeToLiveSeconds(jHipsterProperties.getCache().getHazelcast().getTimeToLiveSeconds());

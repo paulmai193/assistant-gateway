@@ -57,63 +57,100 @@ import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 @SpringBootTest(classes = AssistantGatewayApp.class)
 public class UserResourceIntTest {
 
+    /** The Constant DEFAULT_LOGIN. */
     private static final String DEFAULT_LOGIN = "johndoe";
+    
+    /** The Constant UPDATED_LOGIN. */
     private static final String UPDATED_LOGIN = "jhipster";
 
+    /** The Constant DEFAULT_ID. */
     private static final Long DEFAULT_ID = 1L;
 
+    /** The Constant DEFAULT_PASSWORD. */
     private static final String DEFAULT_PASSWORD = "passjohndoe";
+    
+    /** The Constant UPDATED_PASSWORD. */
     private static final String UPDATED_PASSWORD = "passjhipster";
 
+    /** The Constant DEFAULT_EMAIL. */
     private static final String DEFAULT_EMAIL = "johndoe@localhost";
+    
+    /** The Constant UPDATED_EMAIL. */
     private static final String UPDATED_EMAIL = "jhipster@localhost";
 
+    /** The Constant DEFAULT_FIRSTNAME. */
     private static final String DEFAULT_FIRSTNAME = "john";
+    
+    /** The Constant UPDATED_FIRSTNAME. */
     private static final String UPDATED_FIRSTNAME = "jhipsterFirstName";
 
+    /** The Constant DEFAULT_LASTNAME. */
     private static final String DEFAULT_LASTNAME = "doe";
+    
+    /** The Constant UPDATED_LASTNAME. */
     private static final String UPDATED_LASTNAME = "jhipsterLastName";
 
+    /** The Constant DEFAULT_IMAGEURL. */
     private static final String DEFAULT_IMAGEURL = "http://placehold.it/50x50";
+    
+    /** The Constant UPDATED_IMAGEURL. */
     private static final String UPDATED_IMAGEURL = "http://placehold.it/40x40";
 
+    /** The Constant DEFAULT_LANGKEY. */
     private static final String DEFAULT_LANGKEY = "en";
+    
+    /** The Constant UPDATED_LANGKEY. */
     private static final String UPDATED_LANGKEY = "fr";
 
+    /** The user repository. */
     @Autowired
     private UserRepository userRepository;
 
+    /** The user search repository. */
     @Autowired
     private UserSearchRepository userSearchRepository;
 
+    /** The mail service. */
     @Autowired
     private MailService mailService;
 
+    /** The user service. */
     @Autowired
     private UserService userService;
 
+    /** The user mapper. */
     @Autowired
     private UserMapper userMapper;
 
+    /** The jackson message converter. */
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
+    /** The pageable argument resolver. */
     @Autowired
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
+    /** The exception translator. */
     @Autowired
     private ExceptionTranslator exceptionTranslator;
 
+    /** The em. */
     @Autowired
     private EntityManager em;
 
+    /** The cache manager. */
     @Autowired
     private CacheManager cacheManager;
 
+    /** The rest user mock mvc. */
     private MockMvc restUserMockMvc;
 
+    /** The user. */
     private User user;
 
+    /**
+     * Setup.
+     */
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -129,9 +166,12 @@ public class UserResourceIntTest {
 
     /**
      * Create a User.
-     *
+     * 
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which has a required relationship to the User entity.
+     *
+     * @param em the em
+     * @return the user
      */
     public static User createEntity(EntityManager em) {
         User user = new User();
@@ -146,6 +186,9 @@ public class UserResourceIntTest {
         return user;
     }
 
+    /**
+     * Inits the test.
+     */
     @Before
     public void initTest() {
         user = createEntity(em);
@@ -153,6 +196,11 @@ public class UserResourceIntTest {
         user.setEmail(DEFAULT_EMAIL);
     }
 
+    /**
+     * Creates the user.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void createUser() throws Exception {
@@ -187,6 +235,11 @@ public class UserResourceIntTest {
         assertThat(testUser.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
     }
 
+    /**
+     * Creates the user with existing id.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void createUserWithExistingId() throws Exception {
@@ -215,6 +268,11 @@ public class UserResourceIntTest {
         assertThat(userList).hasSize(databaseSizeBeforeCreate);
     }
 
+    /**
+     * Creates the user with existing login.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void createUserWithExistingLogin() throws Exception {
@@ -245,6 +303,11 @@ public class UserResourceIntTest {
         assertThat(userList).hasSize(databaseSizeBeforeCreate);
     }
 
+    /**
+     * Creates the user with existing email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void createUserWithExistingEmail() throws Exception {
@@ -275,6 +338,12 @@ public class UserResourceIntTest {
         assertThat(userList).hasSize(databaseSizeBeforeCreate);
     }
 
+    /**
+     * Gets the all users.
+     *
+     * @return the all users
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void getAllUsers() throws Exception {
@@ -295,6 +364,12 @@ public class UserResourceIntTest {
             .andExpect(jsonPath("$.[*].langKey").value(hasItem(DEFAULT_LANGKEY)));
     }
 
+    /**
+     * Gets the user.
+     *
+     * @return the user
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void getUser() throws Exception {
@@ -318,6 +393,12 @@ public class UserResourceIntTest {
         assertThat(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).get(user.getLogin())).isNotNull();
     }
 
+    /**
+     * Gets the non existing user.
+     *
+     * @return the non existing user
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void getNonExistingUser() throws Exception {
@@ -325,6 +406,11 @@ public class UserResourceIntTest {
             .andExpect(status().isNotFound());
     }
 
+    /**
+     * Update user.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void updateUser() throws Exception {
@@ -368,6 +454,11 @@ public class UserResourceIntTest {
         assertThat(testUser.getLangKey()).isEqualTo(UPDATED_LANGKEY);
     }
 
+    /**
+     * Update user login.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void updateUserLogin() throws Exception {
@@ -412,6 +503,11 @@ public class UserResourceIntTest {
         assertThat(testUser.getLangKey()).isEqualTo(UPDATED_LANGKEY);
     }
 
+    /**
+     * Update user existing email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void updateUserExistingEmail() throws Exception {
@@ -456,6 +552,11 @@ public class UserResourceIntTest {
             .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Update user existing login.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void updateUserExistingLogin() throws Exception {
@@ -500,6 +601,11 @@ public class UserResourceIntTest {
             .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Delete user.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void deleteUser() throws Exception {
@@ -520,6 +626,12 @@ public class UserResourceIntTest {
         assertThat(userList).hasSize(databaseSizeBeforeDelete - 1);
     }
 
+    /**
+     * Gets the all authorities.
+     *
+     * @return the all authorities
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void getAllAuthorities() throws Exception {
@@ -532,6 +644,11 @@ public class UserResourceIntTest {
             .andExpect(jsonPath("$").value(containsInAnyOrder(AuthoritiesConstants.USER, AuthoritiesConstants.SYSTEM, AuthoritiesConstants.ADMIN)));
     }
 
+    /**
+     * Test user equals.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testUserEquals() throws Exception {
@@ -547,12 +664,18 @@ public class UserResourceIntTest {
         assertThat(user1).isNotEqualTo(user2);
     }
 
+    /**
+     * Test user from id.
+     */
     @Test
     public void testUserFromId() {
         assertThat(userMapper.userFromId(DEFAULT_ID).getId()).isEqualTo(DEFAULT_ID);
         assertThat(userMapper.userFromId(null)).isNull();
     }
 
+    /**
+     * Test user DT oto user.
+     */
     @Test
     public void testUserDTOtoUser() {
         UserDTO userDTO = new UserDTO();
@@ -584,6 +707,9 @@ public class UserResourceIntTest {
         assertThat(user.getAuthorities()).extracting("name").containsExactly(AuthoritiesConstants.USER);
     }
 
+    /**
+     * Test user to user DTO.
+     */
     @Test
     public void testUserToUserDTO() {
         user.setId(DEFAULT_ID);
@@ -615,6 +741,11 @@ public class UserResourceIntTest {
         assertThat(userDTO.toString()).isNotNull();
     }
 
+    /**
+     * Test authority equals.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testAuthorityEquals() throws Exception {
         Authority authorityA = new Authority();

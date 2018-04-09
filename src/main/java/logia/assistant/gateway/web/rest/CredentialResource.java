@@ -23,17 +23,27 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing Credential.
+ *
+ * @author Dai Mai
  */
 @RestController
 @RequestMapping("/api")
 public class CredentialResource {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(CredentialResource.class);
 
+    /** The Constant ENTITY_NAME. */
     private static final String ENTITY_NAME = "credential";
 
+    /** The credential service. */
     private final CredentialService credentialService;
 
+    /**
+     * Instantiates a new credential resource.
+     *
+     * @param credentialService the credential service
+     */
     public CredentialResource(CredentialService credentialService) {
         this.credentialService = credentialService;
     }

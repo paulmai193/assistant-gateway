@@ -22,20 +22,38 @@ import org.springframework.util.MultiValueMap;
 
 import logia.assistant.gateway.domain.SocialUserConnection;
 
+/**
+ * The Class CustomSocialConnectionRepository.
+ *
+ * @author Dai Mai
+ */
 public class CustomSocialConnectionRepository implements ConnectionRepository {
 
+    /** The user id. */
     private String userId;
 
+    /** The social user connection repository. */
     private SocialUserConnectionRepository socialUserConnectionRepository;
 
+    /** The connection factory locator. */
     private ConnectionFactoryLocator connectionFactoryLocator;
 
+    /**
+     * Instantiates a new custom social connection repository.
+     *
+     * @param userId the user id
+     * @param socialUserConnectionRepository the social user connection repository
+     * @param connectionFactoryLocator the connection factory locator
+     */
     public CustomSocialConnectionRepository(String userId, SocialUserConnectionRepository socialUserConnectionRepository, ConnectionFactoryLocator connectionFactoryLocator) {
         this.userId = userId;
         this.socialUserConnectionRepository = socialUserConnectionRepository;
         this.connectionFactoryLocator = connectionFactoryLocator;
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#findAllConnections()
+     */
     @Override
     public MultiValueMap<String, Connection<?>> findAllConnections() {
         List<SocialUserConnection> socialUserConnections = socialUserConnectionRepository.findAllByUserIdOrderByProviderIdAscRankAsc(userId);
@@ -55,12 +73,18 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         return connectionsByProviderId;
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#findConnections(java.lang.String)
+     */
     @Override
     public List<Connection<?>> findConnections(String providerId) {
         List<SocialUserConnection> socialUserConnections = socialUserConnectionRepository.findAllByUserIdAndProviderIdOrderByRankAsc(userId, providerId);
         return socialUserConnectionsToConnections(socialUserConnections);
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#findConnections(java.lang.Class)
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <A> List<Connection<A>> findConnections(Class<A> apiType) {
@@ -68,6 +92,9 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         return (List<Connection<A>>) connections;
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#findConnectionsToUsers(org.springframework.util.MultiValueMap)
+     */
     @Override
     public MultiValueMap<String, Connection<?>> findConnectionsToUsers(MultiValueMap<String, String> providerUserIdsByProviderId) {
         if (providerUserIdsByProviderId == null || providerUserIdsByProviderId.isEmpty()) {
@@ -84,6 +111,9 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         return connectionsForUsers;
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#getConnection(org.springframework.social.connect.ConnectionKey)
+     */
     @Override
     public Connection<?> getConnection(ConnectionKey connectionKey) {
         SocialUserConnection socialUserConnection = socialUserConnectionRepository.findOneByUserIdAndProviderIdAndProviderUserId(userId, connectionKey.getProviderId(), connectionKey.getProviderUserId());
@@ -92,6 +122,9 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
             .orElseThrow(() -> new NoSuchConnectionException(connectionKey));
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#getConnection(java.lang.Class, java.lang.String)
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <A> Connection<A> getConnection(Class<A> apiType, String providerUserId) {
@@ -99,6 +132,9 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         return (Connection<A>) getConnection(new ConnectionKey(providerId, providerUserId));
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#getPrimaryConnection(java.lang.Class)
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <A> Connection<A> getPrimaryConnection(Class<A> apiType) {
@@ -110,6 +146,9 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         return connection;
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#findPrimaryConnection(java.lang.Class)
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <A> Connection<A> findPrimaryConnection(Class<A> apiType) {
@@ -117,6 +156,9 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         return (Connection<A>) findPrimaryConnection(providerId);
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#addConnection(org.springframework.social.connect.Connection)
+     */
     @Override
     @Transactional
     public void addConnection(Connection<?> connection) {
@@ -125,6 +167,9 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         socialUserConnectionRepository.save(socialUserConnectionToSave);
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#updateConnection(org.springframework.social.connect.Connection)
+     */
     @Override
     @Transactional
     public void updateConnection(Connection<?> connection) {
@@ -136,18 +181,30 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#removeConnections(java.lang.String)
+     */
     @Override
     @Transactional
     public void removeConnections(String providerId) {
         socialUserConnectionRepository.deleteByUserIdAndProviderId(userId, providerId);
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.social.connect.ConnectionRepository#removeConnection(org.springframework.social.connect.ConnectionKey)
+     */
     @Override
     @Transactional
     public void removeConnection(ConnectionKey connectionKey) {
         socialUserConnectionRepository.deleteByUserIdAndProviderIdAndProviderUserId(userId, connectionKey.getProviderId(), connectionKey.getProviderUserId());
     }
 
+    /**
+     * Gets the new max rank.
+     *
+     * @param providerId the provider id
+     * @return the new max rank
+     */
     private Double getNewMaxRank(String providerId) {
         List<SocialUserConnection> socialUserConnections = socialUserConnectionRepository.findAllByUserIdAndProviderIdOrderByRankAsc(userId, providerId);
         return socialUserConnections.stream()
@@ -156,6 +213,12 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
             .orElse(0D) + 1D;
     }
 
+    /**
+     * Find primary connection.
+     *
+     * @param providerId the provider id
+     * @return the connection
+     */
     private Connection<?> findPrimaryConnection(String providerId) {
         List<SocialUserConnection> socialUserConnections = socialUserConnectionRepository.findAllByUserIdAndProviderIdOrderByRankAsc(userId, providerId);
         if (socialUserConnections.size() > 0) {
@@ -165,6 +228,13 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         }
     }
 
+    /**
+     * Connection to user social connection.
+     *
+     * @param connection the connection
+     * @param rank the rank
+     * @return the social user connection
+     */
     private SocialUserConnection connectionToUserSocialConnection(Connection<?> connection, Long rank) {
         ConnectionData connectionData = connection.createData();
         return new SocialUserConnection(
@@ -182,17 +252,36 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         );
     }
 
+    /**
+     * Provider user ids to connections.
+     *
+     * @param providerId the provider id
+     * @param providerUserIds the provider user ids
+     * @return the list
+     */
     private List<Connection<?>> providerUserIdsToConnections(String providerId, List<String> providerUserIds) {
         List<SocialUserConnection> socialUserConnections = socialUserConnectionRepository.findAllByUserIdAndProviderIdAndProviderUserIdIn(userId, providerId, providerUserIds);
         return socialUserConnectionsToConnections(socialUserConnections);
     }
 
+    /**
+     * Social user connections to connections.
+     *
+     * @param socialUserConnections the social user connections
+     * @return the list
+     */
     private List<Connection<?>> socialUserConnectionsToConnections(List<SocialUserConnection> socialUserConnections) {
         return socialUserConnections.stream()
             .map(this::socialUserConnectionToConnection)
             .collect(Collectors.toList());
     }
 
+    /**
+     * Social user connection to connection.
+     *
+     * @param socialUserConnection the social user connection
+     * @return the connection
+     */
     private Connection<?> socialUserConnectionToConnection(SocialUserConnection socialUserConnection) {
         ConnectionData connectionData = new ConnectionData(socialUserConnection.getProviderId(),
             socialUserConnection.getProviderUserId(),
@@ -207,6 +296,13 @@ public class CustomSocialConnectionRepository implements ConnectionRepository {
         return connectionFactory.createConnection(connectionData);
     }
 
+    /**
+     * Gets the provider id.
+     *
+     * @param <A> the generic type
+     * @param apiType the api type
+     * @return the provider id
+     */
     private <A> String getProviderId(Class<A> apiType) {
         return connectionFactoryLocator.getConnectionFactory(apiType).getProviderId();
     }

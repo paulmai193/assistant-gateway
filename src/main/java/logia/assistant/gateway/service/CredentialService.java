@@ -5,6 +5,8 @@ import java.util.List;
 
 /**
  * Service Interface for managing Credential.
+ *
+ * @author Dai Mai
  */
 public interface CredentialService {
 

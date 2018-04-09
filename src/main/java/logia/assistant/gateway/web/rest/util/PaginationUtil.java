@@ -9,16 +9,28 @@ import java.net.URLEncoder;
 
 /**
  * Utility class for handling pagination.
- *
+ * 
  * <p>
  * Pagination uses the same principles as the <a href="https://developer.github.com/v3/#pagination">GitHub API</a>,
  * and follow <a href="http://tools.ietf.org/html/rfc5988">RFC 5988 (Link header)</a>.
+ *
+ * @author Dai Mai
  */
 public final class PaginationUtil {
 
+    /**
+     * Instantiates a new pagination util.
+     */
     private PaginationUtil() {
     }
 
+    /**
+     * Generate pagination http headers.
+     *
+     * @param page the page
+     * @param baseUrl the base url
+     * @return the http headers
+     */
     public static HttpHeaders generatePaginationHttpHeaders(Page page, String baseUrl) {
 
         HttpHeaders headers = new HttpHeaders();
@@ -42,10 +54,26 @@ public final class PaginationUtil {
         return headers;
     }
 
+    /**
+     * Generate uri.
+     *
+     * @param baseUrl the base url
+     * @param page the page
+     * @param size the size
+     * @return the string
+     */
     private static String generateUri(String baseUrl, int page, int size) {
         return UriComponentsBuilder.fromUriString(baseUrl).queryParam("page", page).queryParam("size", size).toUriString();
     }
 
+    /**
+     * Generate search pagination http headers.
+     *
+     * @param query the query
+     * @param page the page
+     * @param baseUrl the base url
+     * @return the http headers
+     */
     public static HttpHeaders generateSearchPaginationHttpHeaders(String query, Page page, String baseUrl) {
         String escapedQuery;
         try {

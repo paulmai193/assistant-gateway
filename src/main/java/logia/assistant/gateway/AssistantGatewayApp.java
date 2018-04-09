@@ -23,6 +23,11 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 
+/**
+ * The Class AssistantGatewayApp.
+ *
+ * @author Dai Mai
+ */
 @ComponentScan(basePackages = {"logia.assistant.gateway", "logia.assistant.share.common", "logia.assistant.share.gateway"})
 @EnableAutoConfiguration(exclude = {MetricFilterAutoConfiguration.class, MetricRepositoryAutoConfiguration.class, MetricsDropwizardAutoConfiguration.class})
 @EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
@@ -30,10 +35,17 @@ import java.util.Collection;
 @EnableZuulProxy
 public class AssistantGatewayApp {
 
+    /** The Constant log. */
     private static final Logger log = LoggerFactory.getLogger(AssistantGatewayApp.class);
 
+    /** The env. */
     private final Environment env;
 
+    /**
+     * Instantiates a new assistant gateway app.
+     *
+     * @param env the env
+     */
     public AssistantGatewayApp(Environment env) {
         this.env = env;
     }

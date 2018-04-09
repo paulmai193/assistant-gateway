@@ -25,12 +25,18 @@ import java.util.stream.Collectors;
 /**
  * Controller advice to translate the server side exceptions to client-friendly json structures.
  * The error response follows RFC7807 - Problem Details for HTTP APIs (https://tools.ietf.org/html/rfc7807)
+ *
+ * @author Dai Mai
  */
 @ControllerAdvice
 public class ExceptionTranslator implements ProblemHandling {
 
     /**
-     * Post-process Problem payload to add the message key for front-end if needed
+     * Post-process Problem payload to add the message key for front-end if needed.
+     *
+     * @param entity the entity
+     * @param request the request
+     * @return the response entity
      */
     @Override
     public ResponseEntity<Problem> process(@Nullable ResponseEntity<Problem> entity, NativeWebRequest request) {
@@ -65,6 +71,9 @@ public class ExceptionTranslator implements ProblemHandling {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.zalando.problem.spring.web.advice.validation.MethodArgumentNotValidAdviceTrait#handleMethodArgumentNotValid(org.springframework.web.bind.MethodArgumentNotValidException, org.springframework.web.context.request.NativeWebRequest)
+     */
     @Override
     public ResponseEntity<Problem> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, @Nonnull NativeWebRequest request) {
         BindingResult result = ex.getBindingResult();
@@ -82,11 +91,25 @@ public class ExceptionTranslator implements ProblemHandling {
         return create(ex, problem, request);
     }
 
+    /**
+     * Handle bad request alert exception.
+     *
+     * @param ex the ex
+     * @param request the request
+     * @return the response entity
+     */
     @ExceptionHandler(BadRequestAlertException.class)
     public ResponseEntity<Problem> handleBadRequestAlertException(BadRequestAlertException ex, NativeWebRequest request) {
         return create(ex, request, HeaderUtil.createFailureAlert(ex.getEntityName(), ex.getErrorKey(), ex.getMessage()));
     }
 
+    /**
+     * Handle concurrency failure.
+     *
+     * @param ex the ex
+     * @param request the request
+     * @return the response entity
+     */
     @ExceptionHandler(ConcurrencyFailureException.class)
     public ResponseEntity<Problem> handleConcurrencyFailure(ConcurrencyFailureException ex, NativeWebRequest request) {
         Problem problem = Problem.builder()

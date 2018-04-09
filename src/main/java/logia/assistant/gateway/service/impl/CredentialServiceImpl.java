@@ -20,19 +20,32 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * Service Implementation for managing Credential.
+ *
+ * @author Dai Mai
  */
 @Service
 @Transactional
 public class CredentialServiceImpl implements CredentialService {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(CredentialServiceImpl.class);
 
+    /** The credential repository. */
     private final CredentialRepository credentialRepository;
 
+    /** The credential mapper. */
     private final CredentialMapper credentialMapper;
 
+    /** The credential search repository. */
     private final CredentialSearchRepository credentialSearchRepository;
 
+    /**
+     * Instantiates a new credential service impl.
+     *
+     * @param credentialRepository the credential repository
+     * @param credentialMapper the credential mapper
+     * @param credentialSearchRepository the credential search repository
+     */
     public CredentialServiceImpl(CredentialRepository credentialRepository, CredentialMapper credentialMapper, CredentialSearchRepository credentialSearchRepository) {
         this.credentialRepository = credentialRepository;
         this.credentialMapper = credentialMapper;

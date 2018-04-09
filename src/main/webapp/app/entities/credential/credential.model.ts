@@ -9,8 +9,10 @@ export class Credential implements BaseEntity {
         public activation_key?: string,
         public reset_key?: string,
         public reset_date?: any,
+        public activated?: boolean,
         public userLogin?: string,
         public userId?: number,
     ) {
+        this.activated = false;
     }
 }

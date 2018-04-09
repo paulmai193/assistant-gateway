@@ -16,18 +16,28 @@ import java.util.zip.GZIPInputStream;
 
 /**
  * Zuul filter to rewrite micro-services Swagger URL Base Path.
+ *
+ * @author Dai Mai
  */
 public class SwaggerBasePathRewritingFilter extends SendResponseFilter {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(SwaggerBasePathRewritingFilter.class);
 
+    /** The mapper. */
     private ObjectMapper mapper = new ObjectMapper();
 
+    /* (non-Javadoc)
+     * @see org.springframework.cloud.netflix.zuul.filters.post.SendResponseFilter#filterType()
+     */
     @Override
     public String filterType() {
         return "post";
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.cloud.netflix.zuul.filters.post.SendResponseFilter#filterOrder()
+     */
     @Override
     public int filterOrder() {
         return 100;
@@ -35,12 +45,17 @@ public class SwaggerBasePathRewritingFilter extends SendResponseFilter {
 
     /**
      * Filter requests to micro-services Swagger docs.
+     *
+     * @return true, if successful
      */
     @Override
     public boolean shouldFilter() {
         return RequestContext.getCurrentContext().getRequest().getRequestURI().endsWith(Swagger2Controller.DEFAULT_URL);
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.cloud.netflix.zuul.filters.post.SendResponseFilter#run()
+     */
     @Override
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
@@ -54,6 +69,12 @@ public class SwaggerBasePathRewritingFilter extends SendResponseFilter {
         return null;
     }
 
+    /**
+     * Rewrite base path.
+     *
+     * @param context the context
+     * @return the string
+     */
     @SuppressWarnings("unchecked")
     private String rewriteBasePath(RequestContext context) {
         InputStream responseDataStream = context.getResponseDataStream();

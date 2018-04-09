@@ -31,23 +31,40 @@ import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
  * Service class for managing users.
+ *
+ * @author Dai Mai
  */
 @Service
 @Transactional
 public class UserService {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
+    /** The user repository. */
     private final UserRepository userRepository;
 
+    /** The password encoder. */
     private final PasswordEncoder passwordEncoder;
 
+    /** The user search repository. */
     private final UserSearchRepository userSearchRepository;
 
+    /** The authority repository. */
     private final AuthorityRepository authorityRepository;
 
+    /** The cache manager. */
     private final CacheManager cacheManager;
 
+    /**
+     * Instantiates a new user service.
+     *
+     * @param userRepository the user repository
+     * @param passwordEncoder the password encoder
+     * @param userSearchRepository the user search repository
+     * @param authorityRepository the authority repository
+     * @param cacheManager the cache manager
+     */
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserSearchRepository userSearchRepository, AuthorityRepository authorityRepository, CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -56,6 +73,12 @@ public class UserService {
         this.cacheManager = cacheManager;
     }
 
+    /**
+     * Activate registration.
+     *
+     * @param key the key
+     * @return the optional
+     */
     public Optional<User> activateRegistration(String key) {
         log.debug("Activating user for activation key {}", key);
         return userRepository.findOneByActivationKey(key)
@@ -71,6 +94,13 @@ public class UserService {
             });
     }
 
+    /**
+     * Complete password reset.
+     *
+     * @param newPassword the new password
+     * @param key the key
+     * @return the optional
+     */
     public Optional<User> completePasswordReset(String newPassword, String key) {
        log.debug("Reset user password for reset key {}", key);
 
@@ -86,6 +116,12 @@ public class UserService {
            });
     }
 
+    /**
+     * Request password reset.
+     *
+     * @param mail the mail
+     * @return the optional
+     */
     public Optional<User> requestPasswordReset(String mail) {
         return userRepository.findOneByEmailIgnoreCase(mail)
             .filter(User::getActivated)
@@ -98,6 +134,13 @@ public class UserService {
             });
     }
 
+    /**
+     * Register user.
+     *
+     * @param userDTO the user DTO
+     * @param password the password
+     * @return the user
+     */
     public User registerUser(UserDTO userDTO, String password) {
 
         User newUser = new User();
@@ -126,6 +169,12 @@ public class UserService {
         return newUser;
     }
 
+    /**
+     * Creates the user.
+     *
+     * @param userDTO the user DTO
+     * @return the user
+     */
     public User createUser(UserDTO userDTO) {
         User user = new User();
         user.setLogin(userDTO.getLogin());
@@ -213,6 +262,11 @@ public class UserService {
             .map(UserDTO::new);
     }
 
+    /**
+     * Delete user.
+     *
+     * @param login the login
+     */
     public void deleteUser(String login) {
         userRepository.findOneByLogin(login).ifPresent(user -> {
             userRepository.delete(user);
@@ -223,6 +277,11 @@ public class UserService {
         });
     }
 
+    /**
+     * Change password.
+     *
+     * @param password the password
+     */
     public void changePassword(String password) {
         SecurityUtils.getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
@@ -235,21 +294,44 @@ public class UserService {
             });
     }
 
+    /**
+     * Gets the all managed users.
+     *
+     * @param pageable the pageable
+     * @return the all managed users
+     */
     @Transactional(readOnly = true)
     public Page<UserDTO> getAllManagedUsers(Pageable pageable) {
         return userRepository.findAllByLoginNot(pageable, Constants.ANONYMOUS_USER).map(UserDTO::new);
     }
 
+    /**
+     * Gets the user with authorities by login.
+     *
+     * @param login the login
+     * @return the user with authorities by login
+     */
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
         return userRepository.findOneWithAuthoritiesByLogin(login);
     }
 
+    /**
+     * Gets the user with authorities.
+     *
+     * @param id the id
+     * @return the user with authorities
+     */
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities(Long id) {
         return userRepository.findOneWithAuthoritiesById(id);
     }
 
+    /**
+     * Gets the user with authorities.
+     *
+     * @return the user with authorities
+     */
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities() {
         return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
@@ -273,6 +355,8 @@ public class UserService {
     }
 
     /**
+     * Gets the authorities.
+     *
      * @return a list of all the authorities
      */
     public List<String> getAuthorities() {

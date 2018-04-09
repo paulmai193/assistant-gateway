@@ -36,23 +36,32 @@ import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
 @SpringBootTest(classes = AssistantGatewayApp.class)
 public class UserJWTControllerIntTest {
 
+    /** The token provider. */
     @Autowired
     private TokenProvider tokenProvider;
 
+    /** The authentication manager. */
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    /** The user repository. */
     @Autowired
     private UserRepository userRepository;
 
+    /** The password encoder. */
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /** The exception translator. */
     @Autowired
     private ExceptionTranslator exceptionTranslator;
 
+    /** The mock mvc. */
     private MockMvc mockMvc;
 
+    /**
+     * Setup.
+     */
     @Before
     public void setup() {
         UserJWTController userJWTController = new UserJWTController(tokenProvider, authenticationManager);
@@ -61,6 +70,11 @@ public class UserJWTControllerIntTest {
             .build();
     }
 
+    /**
+     * Test authorize.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testAuthorize() throws Exception {
@@ -85,6 +99,11 @@ public class UserJWTControllerIntTest {
             .andExpect(header().string("Authorization", not(isEmptyString())));
     }
 
+    /**
+     * Test authorize with remember me.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testAuthorizeWithRememberMe() throws Exception {
@@ -110,6 +129,11 @@ public class UserJWTControllerIntTest {
             .andExpect(header().string("Authorization", not(isEmptyString())));
     }
 
+    /**
+     * Test authorize fails.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testAuthorizeFails() throws Exception {

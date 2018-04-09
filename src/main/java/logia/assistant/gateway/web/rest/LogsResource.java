@@ -14,11 +14,18 @@ import java.util.stream.Collectors;
 
 /**
  * Controller for view and managing Log Level at runtime.
+ *
+ * @author Dai Mai
  */
 @RestController
 @RequestMapping("/management")
 public class LogsResource {
 
+    /**
+     * Gets the list.
+     *
+     * @return the list
+     */
     @GetMapping("/logs")
     @Timed
     public List<LoggerVM> getList() {
@@ -29,6 +36,11 @@ public class LogsResource {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Change level.
+     *
+     * @param jsonLogger the json logger
+     */
     @PutMapping("/logs")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Timed

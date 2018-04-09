@@ -23,20 +23,36 @@ import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
 
 /**
  * Controller to authenticate users.
+ *
+ * @author Dai Mai
  */
 @RestController
 @RequestMapping("/api")
 public class UserJWTController {
 
+    /** The token provider. */
     private final TokenProvider tokenProvider;
 
+    /** The authentication manager. */
     private final AuthenticationManager authenticationManager;
 
+    /**
+     * Instantiates a new user JWT controller.
+     *
+     * @param tokenProvider the token provider
+     * @param authenticationManager the authentication manager
+     */
     public UserJWTController(TokenProvider tokenProvider, AuthenticationManager authenticationManager) {
         this.tokenProvider = tokenProvider;
         this.authenticationManager = authenticationManager;
     }
 
+    /**
+     * Authorize.
+     *
+     * @param loginVM the login VM
+     * @return the response entity
+     */
     @PostMapping("/authenticate")
     @Timed
     public ResponseEntity<JWTToken> authorize(@Valid @RequestBody LoginVM loginVM) {
@@ -55,20 +71,38 @@ public class UserJWTController {
 
     /**
      * Object to return as body in JWT Authentication.
+     *
+     * @author Dai Mai
      */
     static class JWTToken {
 
+        /** The id token. */
         private String idToken;
 
+        /**
+         * Instantiates a new JWT token.
+         *
+         * @param idToken the id token
+         */
         JWTToken(String idToken) {
             this.idToken = idToken;
         }
 
+        /**
+         * Gets the id token.
+         *
+         * @return the id token
+         */
         @JsonProperty("id_token")
         String getIdToken() {
             return idToken;
         }
 
+        /**
+         * Sets the id token.
+         *
+         * @param idToken the new id token
+         */
         void setIdToken(String idToken) {
             this.idToken = idToken;
         }

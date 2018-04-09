@@ -27,28 +27,51 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * The Class LoggingConfiguration.
+ *
+ * @author Dai Mai
+ */
 @Configuration
 @RefreshScope
 public class LoggingConfiguration {
 
+    /** The Constant LOGSTASH_APPENDER_NAME. */
     private static final String LOGSTASH_APPENDER_NAME = "LOGSTASH";
 
+    /** The Constant ASYNC_LOGSTASH_APPENDER_NAME. */
     private static final String ASYNC_LOGSTASH_APPENDER_NAME = "ASYNC_LOGSTASH";
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(LoggingConfiguration.class);
 
+    /** The context. */
     private LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
+    /** The app name. */
     private final String appName;
 
+    /** The server port. */
     private final String serverPort;
 
+    /** The eureka instance config bean. */
     private final EurekaInstanceConfigBean eurekaInstanceConfigBean;
 
+    /** The version. */
     private final String version;
 
+    /** The j hipster properties. */
     private final JHipsterProperties jHipsterProperties;
 
+    /**
+     * Instantiates a new logging configuration.
+     *
+     * @param appName the app name
+     * @param serverPort the server port
+     * @param eurekaInstanceConfigBean the eureka instance config bean
+     * @param version the version
+     * @param jHipsterProperties the j hipster properties
+     */
     public LoggingConfiguration(@Value("${spring.application.name}") String appName, @Value("${server.port}") String serverPort,
         @Autowired(required = false) EurekaInstanceConfigBean eurekaInstanceConfigBean, @Value("${info.project.version}") String version, JHipsterProperties jHipsterProperties) {
         this.appName = appName;
@@ -65,12 +88,22 @@ public class LoggingConfiguration {
         }
     }
 
+    /**
+     * Adds the context listener.
+     *
+     * @param context the context
+     */
     private void addContextListener(LoggerContext context) {
         LogbackLoggerContextListener loggerContextListener = new LogbackLoggerContextListener();
         loggerContextListener.setContext(context);
         context.addListener(loggerContextListener);
     }
 
+    /**
+     * Adds the logstash appender.
+     *
+     * @param context the context
+     */
     private void addLogstashAppender(LoggerContext context) {
         log.info("Initializing Logstash logging");
 
@@ -110,6 +143,11 @@ public class LoggingConfiguration {
         context.getLogger("ROOT").addAppender(asyncLogstashAppender);
     }
 
+    /**
+     * Sets the metrics marker logback filter.
+     *
+     * @param context the new metrics marker logback filter
+     */
     // Configure a log filter to remove "metrics" logs from all appenders except the "LOGSTASH" appender
     private void setMetricsMarkerLogbackFilter(LoggerContext context) {
         log.info("Filtering metrics logs from all appenders except the {} appender", LOGSTASH_APPENDER_NAME);
@@ -140,29 +178,46 @@ public class LoggingConfiguration {
      * Logback configuration is achieved by configuration file and API.
      * When configuration file change is detected, the configuration is reset.
      * This listener ensures that the programmatic configuration is also re-applied after reset.
+     *
+     * @see LogbackLoggerContextEvent
      */
     class LogbackLoggerContextListener extends ContextAwareBase implements LoggerContextListener {
 
+        /* (non-Javadoc)
+         * @see ch.qos.logback.classic.spi.LoggerContextListener#isResetResistant()
+         */
         @Override
         public boolean isResetResistant() {
             return true;
         }
 
+        /* (non-Javadoc)
+         * @see ch.qos.logback.classic.spi.LoggerContextListener#onStart(ch.qos.logback.classic.LoggerContext)
+         */
         @Override
         public void onStart(LoggerContext context) {
             addLogstashAppender(context);
         }
 
+        /* (non-Javadoc)
+         * @see ch.qos.logback.classic.spi.LoggerContextListener#onReset(ch.qos.logback.classic.LoggerContext)
+         */
         @Override
         public void onReset(LoggerContext context) {
             addLogstashAppender(context);
         }
 
+        /* (non-Javadoc)
+         * @see ch.qos.logback.classic.spi.LoggerContextListener#onStop(ch.qos.logback.classic.LoggerContext)
+         */
         @Override
         public void onStop(LoggerContext context) {
             // Nothing to do.
         }
 
+        /* (non-Javadoc)
+         * @see ch.qos.logback.classic.spi.LoggerContextListener#onLevelChange(ch.qos.logback.classic.Logger, ch.qos.logback.classic.Level)
+         */
         @Override
         public void onLevelChange(ch.qos.logback.classic.Logger logger, Level level) {
             // Nothing to do.

@@ -16,16 +16,25 @@ import java.util.Arrays;
 
 /**
  * Aspect for logging execution of service and repository Spring components.
- *
+ * 
  * By default, it only runs with the "dev" profile.
+ *
+ * @author Dai Mai
  */
 @Aspect
 public class LoggingAspect {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
+    /** The env. */
     private final Environment env;
 
+    /**
+     * Instantiates a new logging aspect.
+     *
+     * @param env the env
+     */
     public LoggingAspect(Environment env) {
         this.env = env;
     }

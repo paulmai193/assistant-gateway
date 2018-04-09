@@ -16,25 +16,42 @@ import com.netflix.zuul.context.RequestContext;
 
 /**
  * Zuul filter for restricting access to backend micro-services endpoints.
+ *
+ * @author Dai Mai
  */
 public class AccessControlFilter extends ZuulFilter {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(AccessControlFilter.class);
 
+    /** The route locator. */
     private final RouteLocator routeLocator;
 
+    /** The j hipster properties. */
     private final JHipsterProperties jHipsterProperties;
 
+    /**
+     * Instantiates a new access control filter.
+     *
+     * @param routeLocator the route locator
+     * @param jHipsterProperties the j hipster properties
+     */
     public AccessControlFilter(RouteLocator routeLocator, JHipsterProperties jHipsterProperties) {
         this.routeLocator = routeLocator;
         this.jHipsterProperties = jHipsterProperties;
     }
 
+    /* (non-Javadoc)
+     * @see com.netflix.zuul.ZuulFilter#filterType()
+     */
     @Override
     public String filterType() {
         return "pre";
     }
 
+    /* (non-Javadoc)
+     * @see com.netflix.zuul.ZuulFilter#filterOrder()
+     */
     @Override
     public int filterOrder() {
         return 0;
@@ -42,6 +59,8 @@ public class AccessControlFilter extends ZuulFilter {
 
     /**
      * Filter requests on endpoints that are not in the list of authorized microservices endpoints.
+     *
+     * @return true, if successful
      */
     @Override
     public boolean shouldFilter() {
@@ -61,6 +80,14 @@ public class AccessControlFilter extends ZuulFilter {
         return true;
     }
 
+    /**
+     * Checks if is authorized request.
+     *
+     * @param serviceUrl the service url
+     * @param serviceName the service name
+     * @param requestUri the request uri
+     * @return true, if is authorized request
+     */
     private boolean isAuthorizedRequest(String serviceUrl, String serviceName, String requestUri) {
         Map<String, List<String>> authorizedMicroservicesEndpoints = jHipsterProperties.getGateway()
             .getAuthorizedMicroservicesEndpoints();
@@ -87,6 +114,9 @@ public class AccessControlFilter extends ZuulFilter {
         return false;
     }
 
+    /* (non-Javadoc)
+     * @see com.netflix.zuul.IZuulFilter#run()
+     */
     @Override
     public Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();

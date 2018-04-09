@@ -45,6 +45,15 @@ describe('Credential e2e test', () => {
         expect(credentialDialogPage.getReset_keyInput()).toMatch('reset_key');
         credentialDialogPage.setReset_dateInput(12310020012301);
         expect(credentialDialogPage.getReset_dateInput()).toMatch('2001-12-31T02:30');
+        credentialDialogPage.getActivatedInput().isSelected().then((selected) => {
+            if (selected) {
+                credentialDialogPage.getActivatedInput().click();
+                expect(credentialDialogPage.getActivatedInput().isSelected()).toBeFalsy();
+            } else {
+                credentialDialogPage.getActivatedInput().click();
+                expect(credentialDialogPage.getActivatedInput().isSelected()).toBeTruthy();
+            }
+        });
         credentialDialogPage.userSelectLastOption();
         credentialDialogPage.save();
         expect(credentialDialogPage.getSaveButton().isPresent()).toBeFalsy();
@@ -78,6 +87,7 @@ export class CredentialDialogPage {
     activation_keyInput = element(by.css('input#field_activation_key'));
     reset_keyInput = element(by.css('input#field_reset_key'));
     reset_dateInput = element(by.css('input#field_reset_date'));
+    activatedInput = element(by.css('input#field_activated'));
     userSelect = element(by.css('select#field_user'));
 
     getModalTitle() {
@@ -132,6 +142,9 @@ export class CredentialDialogPage {
         return this.reset_dateInput.getAttribute('value');
     };
 
+    getActivatedInput = function() {
+        return this.activatedInput;
+    };
     userSelectLastOption = function() {
         this.userSelect.all(by.tagName('option')).last().click();
     };

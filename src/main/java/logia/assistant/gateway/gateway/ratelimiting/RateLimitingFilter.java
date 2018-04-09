@@ -26,23 +26,35 @@ import io.github.jhipster.config.JHipsterProperties;
 
 /**
  * Zuul filter for limiting the number of HTTP calls per client.
- *
+ * 
  * See the Bucket4j documentation at https://github.com/vladimir-bukhtoyarov/bucket4j
  * https://github.com/vladimir-bukhtoyarov/bucket4j/blob/master/doc-pages/jcache-usage
  * .md#example-1---limiting-access-to-http-server-by-ip-address
+ *
+ * @author Dai Mai
  */
 public class RateLimitingFilter extends ZuulFilter {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(RateLimitingFilter.class);
 
+    /** The Constant GATEWAY_RATE_LIMITING_CACHE_NAME. */
     public final static String GATEWAY_RATE_LIMITING_CACHE_NAME = "gateway-rate-limiting";
 
+    /** The j hipster properties. */
     private final JHipsterProperties jHipsterProperties;
 
+    /** The cache. */
     private javax.cache.Cache<String, GridBucketState> cache;
 
+    /** The buckets. */
     private ProxyManager<String> buckets;
 
+    /**
+     * Instantiates a new rate limiting filter.
+     *
+     * @param jHipsterProperties the j hipster properties
+     */
     public RateLimitingFilter(JHipsterProperties jHipsterProperties) {
         this.jHipsterProperties = jHipsterProperties;
 
@@ -56,16 +68,25 @@ public class RateLimitingFilter extends ZuulFilter {
         this.buckets = Bucket4j.extension(JCache.class).proxyManagerForCache(cache);
     }
 
+    /* (non-Javadoc)
+     * @see com.netflix.zuul.ZuulFilter#filterType()
+     */
     @Override
     public String filterType() {
         return "pre";
     }
 
+    /* (non-Javadoc)
+     * @see com.netflix.zuul.ZuulFilter#filterOrder()
+     */
     @Override
     public int filterOrder() {
         return 10;
     }
 
+    /* (non-Javadoc)
+     * @see com.netflix.zuul.IZuulFilter#shouldFilter()
+     */
     @Override
     public boolean shouldFilter() {
         // specific APIs can be filtered out using
@@ -73,6 +94,9 @@ public class RateLimitingFilter extends ZuulFilter {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see com.netflix.zuul.IZuulFilter#run()
+     */
     @Override
     public Object run() {
         String bucketId = getId(RequestContext.getCurrentContext().getRequest());
@@ -88,6 +112,11 @@ public class RateLimitingFilter extends ZuulFilter {
         return null;
     }
 
+    /**
+     * Gets the config supplier.
+     *
+     * @return the config supplier
+     */
     private Supplier<BucketConfiguration> getConfigSupplier() {
         return () -> {
             JHipsterProperties.Gateway.RateLimiting rateLimitingProperties =
@@ -114,6 +143,9 @@ public class RateLimitingFilter extends ZuulFilter {
 
     /**
      * The ID that will identify the limit: the user login or the user IP address.
+     *
+     * @param httpServletRequest the http servlet request
+     * @return the id
      */
     private String getId(HttpServletRequest httpServletRequest) {
         return SecurityUtils.getCurrentUserLogin().orElse(httpServletRequest.getRemoteAddr());

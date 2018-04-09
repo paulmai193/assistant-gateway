@@ -17,18 +17,30 @@ import java.util.stream.Collectors;
 
 /**
  * Authenticate a user from the database.
+ *
+ * @author Dai Mai
  */
 @Component("userDetailsService")
 public class DomainUserDetailsService implements UserDetailsService {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(DomainUserDetailsService.class);
 
+    /** The user repository. */
     private final UserRepository userRepository;
 
+    /**
+     * Instantiates a new domain user details service.
+     *
+     * @param userRepository the user repository
+     */
     public DomainUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
+     */
     @Override
     @Transactional
     public UserDetails loadUserByUsername(final String login) {
@@ -43,6 +55,13 @@ public class DomainUserDetailsService implements UserDetailsService {
         });
     }
 
+    /**
+     * Creates the spring security user.
+     *
+     * @param lowercaseLogin the lowercase login
+     * @param user the user
+     * @return the org.springframework.security.core.userdetails. user
+     */
     private org.springframework.security.core.userdetails.User createSpringSecurityUser(String lowercaseLogin, User user) {
         if (!user.getActivated()) {
             throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");

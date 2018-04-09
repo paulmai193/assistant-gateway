@@ -25,22 +25,41 @@ import logia.assistant.gateway.security.jwt.JWTConfigurer;
 import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
 
+/**
+ * The Class SecurityConfiguration.
+ *
+ * @author Dai Mai
+ */
 @Configuration
 @Import(SecurityProblemSupport.class)
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+    /** The authentication manager builder. */
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
+    /** The user details service. */
     private final UserDetailsService userDetailsService;
 
+    /** The token provider. */
     private final TokenProvider tokenProvider;
 
+    /** The cors filter. */
     private final CorsFilter corsFilter;
 
+    /** The problem support. */
     private final SecurityProblemSupport problemSupport;
 
+    /**
+     * Instantiates a new security configuration.
+     *
+     * @param authenticationManagerBuilder the authentication manager builder
+     * @param userDetailsService the user details service
+     * @param tokenProvider the token provider
+     * @param corsFilter the cors filter
+     * @param problemSupport the problem support
+     */
     public SecurityConfiguration(AuthenticationManagerBuilder authenticationManagerBuilder, UserDetailsService userDetailsService,TokenProvider tokenProvider,CorsFilter corsFilter, SecurityProblemSupport problemSupport) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.userDetailsService = userDetailsService;
@@ -49,6 +68,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.problemSupport = problemSupport;
     }
 
+    /**
+     * Inits the.
+     */
     @PostConstruct
     public void init() {
         try {
@@ -60,11 +82,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         }
     }
 
+    /**
+     * Password encoder.
+     *
+     * @return the password encoder
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter#configure(org.springframework.security.config.annotation.web.builders.WebSecurity)
+     */
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
@@ -76,6 +106,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/test/**");
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter#configure(org.springframework.security.config.annotation.web.builders.HttpSecurity)
+     */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -111,6 +144,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     }
 
+    /**
+     * Security configurer adapter.
+     *
+     * @return the JWT configurer
+     */
     private JWTConfigurer securityConfigurerAdapter() {
         return new JWTConfigurer(tokenProvider);
     }

@@ -35,14 +35,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 public class UserServiceIntTest {
 
+    /** The user repository. */
     @Autowired
     private UserRepository userRepository;
 
+    /** The user service. */
     @Autowired
     private UserService userService;
 
+    /** The user. */
     private User user;
 
+    /**
+     * Inits the.
+     */
     @Before
     public void init() {
         user = new User();
@@ -56,6 +62,9 @@ public class UserServiceIntTest {
         user.setLangKey("en");
     }
 
+    /**
+     * Assert that user must exist to reset password.
+     */
     @Test
     @Transactional
     public void assertThatUserMustExistToResetPassword() {
@@ -70,6 +79,9 @@ public class UserServiceIntTest {
         assertThat(maybeUser.orElse(null).getResetKey()).isNotNull();
     }
 
+    /**
+     * Assert that only activated user can request password reset.
+     */
     @Test
     @Transactional
     public void assertThatOnlyActivatedUserCanRequestPasswordReset() {
@@ -81,6 +93,9 @@ public class UserServiceIntTest {
         userRepository.delete(user);
     }
 
+    /**
+     * Assert that reset key must not be older than 24 hours.
+     */
     @Test
     @Transactional
     public void assertThatResetKeyMustNotBeOlderThan24Hours() {
@@ -96,6 +111,9 @@ public class UserServiceIntTest {
         userRepository.delete(user);
     }
 
+    /**
+     * Assert that reset key must be valid.
+     */
     @Test
     @Transactional
     public void assertThatResetKeyMustBeValid() {
@@ -110,6 +128,9 @@ public class UserServiceIntTest {
         userRepository.delete(user);
     }
 
+    /**
+     * Assert that user can reset password.
+     */
     @Test
     @Transactional
     public void assertThatUserCanResetPassword() {
@@ -130,6 +151,9 @@ public class UserServiceIntTest {
         userRepository.delete(user);
     }
 
+    /**
+     * Test find not activated users by creation date before.
+     */
     @Test
     @Transactional
     public void testFindNotActivatedUsersByCreationDateBefore() {
@@ -145,6 +169,9 @@ public class UserServiceIntTest {
         assertThat(users).isEmpty();
     }
 
+    /**
+     * Assert that anonymous user is not get.
+     */
     @Test
     @Transactional
     public void assertThatAnonymousUserIsNotGet() {
@@ -159,6 +186,9 @@ public class UserServiceIntTest {
             .isTrue();
     }
 
+    /**
+     * Test remove not activated users.
+     */
     @Test
     @Transactional
     public void testRemoveNotActivatedUsers() {

@@ -29,27 +29,41 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * The Class MailServiceIntTest.
+ *
+ * @author Dai Mai
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = AssistantGatewayApp.class)
 public class MailServiceIntTest {
 
+    /** The j hipster properties. */
     @Autowired
     private JHipsterProperties jHipsterProperties;
 
+    /** The message source. */
     @Autowired
     private MessageSource messageSource;
 
+    /** The template engine. */
     @Autowired
     private SpringTemplateEngine templateEngine;
 
+    /** The java mail sender. */
     @Spy
     private JavaMailSenderImpl javaMailSender;
 
+    /** The message captor. */
     @Captor
     private ArgumentCaptor messageCaptor;
 
+    /** The mail service. */
     private MailService mailService;
 
+    /**
+     * Setup.
+     */
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -57,6 +71,11 @@ public class MailServiceIntTest {
         mailService = new MailService(jHipsterProperties, javaMailSender, messageSource, templateEngine);
     }
 
+    /**
+     * Test send email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSendEmail() throws Exception {
         mailService.sendEmail("john.doe@example.com", "testSubject", "testContent", false, false);
@@ -70,6 +89,11 @@ public class MailServiceIntTest {
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/plain; charset=UTF-8");
     }
 
+    /**
+     * Test send html email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSendHtmlEmail() throws Exception {
         mailService.sendEmail("john.doe@example.com", "testSubject", "testContent", false, true);
@@ -83,6 +107,11 @@ public class MailServiceIntTest {
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
     }
 
+    /**
+     * Test send multipart email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSendMultipartEmail() throws Exception {
         mailService.sendEmail("john.doe@example.com", "testSubject", "testContent", true, false);
@@ -100,6 +129,11 @@ public class MailServiceIntTest {
         assertThat(part.getDataHandler().getContentType()).isEqualTo("text/plain; charset=UTF-8");
     }
 
+    /**
+     * Test send multipart html email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSendMultipartHtmlEmail() throws Exception {
         mailService.sendEmail("john.doe@example.com", "testSubject", "testContent", true, true);
@@ -117,6 +151,11 @@ public class MailServiceIntTest {
         assertThat(part.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
     }
 
+    /**
+     * Test send email from template.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSendEmailFromTemplate() throws Exception {
         User user = new User();
@@ -133,6 +172,11 @@ public class MailServiceIntTest {
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
     }
 
+    /**
+     * Test send activation email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSendActivationEmail() throws Exception {
         User user = new User();
@@ -148,6 +192,11 @@ public class MailServiceIntTest {
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
     }
 
+    /**
+     * Test creation email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testCreationEmail() throws Exception {
         User user = new User();
@@ -163,6 +212,11 @@ public class MailServiceIntTest {
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
     }
 
+    /**
+     * Test send password reset mail.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSendPasswordResetMail() throws Exception {
         User user = new User();
@@ -178,6 +232,11 @@ public class MailServiceIntTest {
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
     }
 
+    /**
+     * Test send email with exception.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testSendEmailWithException() throws Exception {
         doThrow(MailSendException.class).when(javaMailSender).send(any(MimeMessage.class));

@@ -24,19 +24,32 @@ import java.util.*;
 
 /**
  * REST controller for managing the current user's account.
+ *
+ * @author Dai Mai
  */
 @RestController
 @RequestMapping("/api")
 public class AccountResource {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(AccountResource.class);
 
+    /** The user repository. */
     private final UserRepository userRepository;
 
+    /** The user service. */
     private final UserService userService;
 
+    /** The mail service. */
     private final MailService mailService;
 
+    /**
+     * Instantiates a new account resource.
+     *
+     * @param userRepository the user repository
+     * @param userService the user service
+     * @param mailService the mail service
+     */
     public AccountResource(UserRepository userRepository, UserService userService, MailService mailService) {
 
         this.userRepository = userRepository;
@@ -131,7 +144,7 @@ public class AccountResource {
    }
 
     /**
-     * POST  /account/change-password : changes the current user's password
+     * POST  /account/change-password : changes the current user's password.
      *
      * @param password the new password
      * @throws InvalidPasswordException 400 (Bad Request) if the new password is incorrect
@@ -146,7 +159,7 @@ public class AccountResource {
    }
 
     /**
-     * POST   /account/reset-password/init : Send an email to reset the password of the user
+     * POST   /account/reset-password/init : Send an email to reset the password of the user.
      *
      * @param mail the mail of the user
      * @throws EmailNotFoundException 400 (Bad Request) if the email address is not registered
@@ -161,7 +174,7 @@ public class AccountResource {
     }
 
     /**
-     * POST   /account/reset-password/finish : Finish to reset the password of the user
+     * POST   /account/reset-password/finish : Finish to reset the password of the user.
      *
      * @param keyAndPassword the generated key and the new password
      * @throws InvalidPasswordException 400 (Bad Request) if the password is incorrect
@@ -181,6 +194,12 @@ public class AccountResource {
         }
     }
 
+    /**
+     * Check password length.
+     *
+     * @param password the password
+     * @return true, if successful
+     */
     private static boolean checkPasswordLength(String password) {
         return !StringUtils.isEmpty(password) &&
             password.length() >= ManagedUserVM.PASSWORD_MIN_LENGTH &&

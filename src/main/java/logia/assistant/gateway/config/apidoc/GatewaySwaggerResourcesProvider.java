@@ -20,23 +20,37 @@ import springfox.documentation.swagger.web.SwaggerResourcesProvider;
 
 /**
  * Retrieves all registered microservices Swagger resources.
+ *
+ * @author Dai Mai
  */
 @Component
 @Primary
 @Profile(JHipsterConstants.SPRING_PROFILE_SWAGGER)
 public class GatewaySwaggerResourcesProvider implements SwaggerResourcesProvider {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(GatewaySwaggerResourcesProvider.class);
 
+    /** The route locator. */
     private final RouteLocator routeLocator;
 
+    /** The discovery client. */
     private final DiscoveryClient discoveryClient;
 
+    /**
+     * Instantiates a new gateway swagger resources provider.
+     *
+     * @param routeLocator the route locator
+     * @param discoveryClient the discovery client
+     */
     public GatewaySwaggerResourcesProvider(RouteLocator routeLocator, DiscoveryClient discoveryClient) {
         this.routeLocator = routeLocator;
         this.discoveryClient = discoveryClient;
     }
 
+    /* (non-Javadoc)
+     * @see com.google.common.base.Supplier#get()
+     */
     @Override
     public List<SwaggerResource> get() {
         List<SwaggerResource> resources = new ArrayList<>();
@@ -53,6 +67,13 @@ public class GatewaySwaggerResourcesProvider implements SwaggerResourcesProvider
         return resources;
     }
 
+    /**
+     * Swagger resource.
+     *
+     * @param name the name
+     * @param location the location
+     * @return the swagger resource
+     */
     private SwaggerResource swaggerResource(String name, String location) {
         SwaggerResource swaggerResource = new SwaggerResource();
         swaggerResource.setName(name);

@@ -10,14 +10,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.stereotype.Component;
 
+/**
+ * The Class IndexReinitializer.
+ *
+ * @author Dai Mai
+ */
 @Component
 public class IndexReinitializer {
 
+    /** The logger. */
     private Logger logger = LoggerFactory.getLogger(getClass());
 
+    /** The elasticsearch template. */
     @Autowired
     private ElasticsearchTemplate elasticsearchTemplate;
 
+    /**
+     * Reset index.
+     */
     @PostConstruct
     public void resetIndex() {
         long t = currentTimeMillis();

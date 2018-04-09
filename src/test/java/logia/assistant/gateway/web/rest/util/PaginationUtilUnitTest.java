@@ -20,6 +20,9 @@ import org.springframework.http.HttpHeaders;
  */
 public class PaginationUtilUnitTest {
 
+    /**
+     * Generate pagination http headers test.
+     */
     @Test
     public void generatePaginationHttpHeadersTest() {
         String baseUrl = "/api/_search/example";
@@ -41,6 +44,9 @@ public class PaginationUtilUnitTest {
         assertTrue(Long.valueOf(xTotalCountHeaders.get(0)).equals(400L));
     }
 
+    /**
+     * Comma test.
+     */
     @Test
     public void commaTest() {
         String baseUrl = "/api/_search/example";
@@ -61,6 +67,9 @@ public class PaginationUtilUnitTest {
         assertTrue(Long.valueOf(xTotalCountHeaders.get(0)).equals(0L));
     }
 
+    /**
+     * Multiple pages test.
+     */
     @Test
     public void multiplePagesTest() {
         String baseUrl = "/api/_search/example";
@@ -132,6 +141,9 @@ public class PaginationUtilUnitTest {
         assertEquals(expectedData, headerData);
     }
 
+    /**
+     * Greater semicolon test.
+     */
     @Test
     public void greaterSemicolonTest() {
         String baseUrl = "/api/_search/example";

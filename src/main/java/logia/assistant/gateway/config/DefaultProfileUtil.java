@@ -11,11 +11,17 @@ import java.util.*;
  * Utility class to load a Spring profile to be used as default
  * when there is no <code>spring.profiles.active</code> set in the environment or as command line argument.
  * If the value is not available in <code>application.yml</code> then <code>dev</code> profile will be used as default.
+ *
+ * @author Dai Mai
  */
 public final class DefaultProfileUtil {
 
+    /** The Constant SPRING_PROFILE_DEFAULT. */
     private static final String SPRING_PROFILE_DEFAULT = "spring.profiles.default";
 
+    /**
+     * Instantiates a new default profile util.
+     */
     private DefaultProfileUtil() {
     }
 

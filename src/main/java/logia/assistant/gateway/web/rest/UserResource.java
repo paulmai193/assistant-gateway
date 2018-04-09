@@ -68,21 +68,36 @@ import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
  * </ul>
  * <p>
  * Another option would be to have a specific JPA entity graph to handle this case.
+ *
+ * @author Dai Mai
  */
 @RestController
 @RequestMapping("/api")
 public class UserResource {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(UserResource.class);
 
+    /** The user repository. */
     private final UserRepository userRepository;
 
+    /** The user service. */
     private final UserService userService;
 
+    /** The mail service. */
     private final MailService mailService;
 
+    /** The user search repository. */
     private final UserSearchRepository userSearchRepository;
 
+    /**
+     * Instantiates a new user resource.
+     *
+     * @param userRepository the user repository
+     * @param userService the user service
+     * @param mailService the mail service
+     * @param userSearchRepository the user search repository
+     */
     public UserResource(UserRepository userRepository, UserService userService, MailService mailService, UserSearchRepository userSearchRepository) {
 
         this.userRepository = userRepository;
@@ -167,6 +182,8 @@ public class UserResource {
     }
 
     /**
+     * Gets the authorities.
+     *
      * @return a string list of the all of the roles
      */
     @GetMapping("/users/authorities")

@@ -10,9 +10,14 @@ import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
  * Utility class for Spring Security.
+ *
+ * @author Dai Mai
  */
 public final class SecurityUtils {
 
+    /**
+     * Instantiates a new security utils.
+     */
     private SecurityUtils() {
     }
 

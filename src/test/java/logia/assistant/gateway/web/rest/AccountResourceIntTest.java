@@ -52,34 +52,47 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = AssistantGatewayApp.class)
 public class AccountResourceIntTest {
 
+    /** The user repository. */
     @Autowired
     private UserRepository userRepository;
 
+    /** The authority repository. */
     @Autowired
     private AuthorityRepository authorityRepository;
 
+    /** The user service. */
     @Autowired
     private UserService userService;
 
+    /** The password encoder. */
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /** The http message converters. */
     @Autowired
     private HttpMessageConverter[] httpMessageConverters;
 
+    /** The exception translator. */
     @Autowired
     private ExceptionTranslator exceptionTranslator;
 
+    /** The mock user service. */
     @Mock
     private UserService mockUserService;
 
+    /** The mock mail service. */
     @Mock
     private MailService mockMailService;
 
+    /** The rest mvc. */
     private MockMvc restMvc;
 
+    /** The rest user mock mvc. */
     private MockMvc restUserMockMvc;
 
+    /**
+     * Setup.
+     */
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -98,6 +111,11 @@ public class AccountResourceIntTest {
             .build();
     }
 
+    /**
+     * Test non authenticated user.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testNonAuthenticatedUser() throws Exception {
         restUserMockMvc.perform(get("/api/authenticate")
@@ -106,6 +124,11 @@ public class AccountResourceIntTest {
             .andExpect(content().string(""));
     }
 
+    /**
+     * Test authenticated user.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testAuthenticatedUser() throws Exception {
         restUserMockMvc.perform(get("/api/authenticate")
@@ -118,6 +141,11 @@ public class AccountResourceIntTest {
             .andExpect(content().string("test"));
     }
 
+    /**
+     * Test get existing account.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testGetExistingAccount() throws Exception {
         Set<Authority> authorities = new HashSet<>();
@@ -148,6 +176,11 @@ public class AccountResourceIntTest {
             .andExpect(jsonPath("$.authorities").value(AuthoritiesConstants.ADMIN));
     }
 
+    /**
+     * Test get unknown account.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testGetUnknownAccount() throws Exception {
         when(mockUserService.getUserWithAuthorities()).thenReturn(Optional.empty());
@@ -157,6 +190,11 @@ public class AccountResourceIntTest {
             .andExpect(status().isInternalServerError());
     }
 
+    /**
+     * Test register valid.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRegisterValid() throws Exception {
@@ -181,6 +219,11 @@ public class AccountResourceIntTest {
         assertThat(userRepository.findOneByLogin("joe").isPresent()).isTrue();
     }
 
+    /**
+     * Test register invalid login.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRegisterInvalidLogin() throws Exception {
@@ -205,6 +248,11 @@ public class AccountResourceIntTest {
         assertThat(user.isPresent()).isFalse();
     }
 
+    /**
+     * Test register invalid email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRegisterInvalidEmail() throws Exception {
@@ -229,6 +277,11 @@ public class AccountResourceIntTest {
         assertThat(user.isPresent()).isFalse();
     }
 
+    /**
+     * Test register invalid password.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRegisterInvalidPassword() throws Exception {
@@ -253,6 +306,11 @@ public class AccountResourceIntTest {
         assertThat(user.isPresent()).isFalse();
     }
 
+    /**
+     * Test register null password.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRegisterNullPassword() throws Exception {
@@ -277,6 +335,11 @@ public class AccountResourceIntTest {
         assertThat(user.isPresent()).isFalse();
     }
 
+    /**
+     * Test register duplicate login.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRegisterDuplicateLogin() throws Exception {
@@ -326,6 +389,11 @@ public class AccountResourceIntTest {
         assertThat(userDup.isPresent()).isFalse();
     }
 
+    /**
+     * Test register duplicate email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRegisterDuplicateEmail() throws Exception {
@@ -398,6 +466,11 @@ public class AccountResourceIntTest {
         assertThat(userDup.isPresent()).isFalse();
     }
 
+    /**
+     * Test register admin is ignored.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRegisterAdminIsIgnored() throws Exception {
@@ -424,6 +497,11 @@ public class AccountResourceIntTest {
             .containsExactly(authorityRepository.findOne(AuthoritiesConstants.USER));
     }
 
+    /**
+     * Test activate account.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testActivateAccount() throws Exception {
@@ -444,6 +522,11 @@ public class AccountResourceIntTest {
         assertThat(user.getActivated()).isTrue();
     }
 
+    /**
+     * Test activate account with wrong key.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testActivateAccountWithWrongKey() throws Exception {
@@ -451,6 +534,11 @@ public class AccountResourceIntTest {
             .andExpect(status().isInternalServerError());
     }
 
+    /**
+     * Test save account.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     @WithMockUser("save-account")
@@ -490,6 +578,11 @@ public class AccountResourceIntTest {
         assertThat(updatedUser.getAuthorities()).isEmpty();
     }
 
+    /**
+     * Test save invalid email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     @WithMockUser("save-invalid-email")
@@ -521,6 +614,11 @@ public class AccountResourceIntTest {
         assertThat(userRepository.findOneByEmailIgnoreCase("invalid email")).isNotPresent();
     }
 
+    /**
+     * Test save existing email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     @WithMockUser("save-existing-email")
@@ -561,6 +659,11 @@ public class AccountResourceIntTest {
         assertThat(updatedUser.getEmail()).isEqualTo("save-existing-email@example.com");
     }
 
+    /**
+     * Test save existing email and login.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     @WithMockUser("save-existing-email-and-login")
@@ -593,6 +696,11 @@ public class AccountResourceIntTest {
         assertThat(updatedUser.getEmail()).isEqualTo("save-existing-email-and-login@example.com");
     }
 
+    /**
+     * Test change password.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     @WithMockUser("change-password")
@@ -610,6 +718,11 @@ public class AccountResourceIntTest {
         assertThat(passwordEncoder.matches("new password", updatedUser.getPassword())).isTrue();
     }
 
+    /**
+     * Test change password too small.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     @WithMockUser("change-password-too-small")
@@ -627,6 +740,11 @@ public class AccountResourceIntTest {
         assertThat(updatedUser.getPassword()).isEqualTo(user.getPassword());
     }
 
+    /**
+     * Test change password too long.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     @WithMockUser("change-password-too-long")
@@ -644,6 +762,11 @@ public class AccountResourceIntTest {
         assertThat(updatedUser.getPassword()).isEqualTo(user.getPassword());
     }
 
+    /**
+     * Test change password empty.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     @WithMockUser("change-password-empty")
@@ -661,6 +784,11 @@ public class AccountResourceIntTest {
         assertThat(updatedUser.getPassword()).isEqualTo(user.getPassword());
     }
 
+    /**
+     * Test request password reset.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRequestPasswordReset() throws Exception {
@@ -676,6 +804,11 @@ public class AccountResourceIntTest {
             .andExpect(status().isOk());
     }
 
+    /**
+     * Test request password reset upper case email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testRequestPasswordResetUpperCaseEmail() throws Exception {
@@ -691,6 +824,11 @@ public class AccountResourceIntTest {
             .andExpect(status().isOk());
     }
 
+    /**
+     * Test request password reset wrong email.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testRequestPasswordResetWrongEmail() throws Exception {
         restMvc.perform(
@@ -699,6 +837,11 @@ public class AccountResourceIntTest {
             .andExpect(status().isBadRequest());
     }
 
+    /**
+     * Test finish password reset.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testFinishPasswordReset() throws Exception {
@@ -724,6 +867,11 @@ public class AccountResourceIntTest {
         assertThat(passwordEncoder.matches(keyAndPassword.getNewPassword(), updatedUser.getPassword())).isTrue();
     }
 
+    /**
+     * Test finish password reset too small.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testFinishPasswordResetTooSmall() throws Exception {
@@ -750,6 +898,11 @@ public class AccountResourceIntTest {
     }
 
 
+    /**
+     * Test finish password reset wrong key.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testFinishPasswordResetWrongKey() throws Exception {

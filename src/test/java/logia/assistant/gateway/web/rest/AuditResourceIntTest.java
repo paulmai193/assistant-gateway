@@ -37,30 +37,47 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class AuditResourceIntTest {
 
+    /** The Constant SAMPLE_PRINCIPAL. */
     private static final String SAMPLE_PRINCIPAL = "SAMPLE_PRINCIPAL";
+    
+    /** The Constant SAMPLE_TYPE. */
     private static final String SAMPLE_TYPE = "SAMPLE_TYPE";
+    
+    /** The Constant SAMPLE_TIMESTAMP. */
     private static final Instant SAMPLE_TIMESTAMP = Instant.parse("2015-08-04T10:11:30Z");
+    
+    /** The Constant SECONDS_PER_DAY. */
     private static final long SECONDS_PER_DAY = 60 * 60 * 24;
 
+    /** The audit event repository. */
     @Autowired
     private PersistenceAuditEventRepository auditEventRepository;
 
+    /** The audit event converter. */
     @Autowired
     private AuditEventConverter auditEventConverter;
 
+    /** The jackson message converter. */
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
+    /** The formatting conversion service. */
     @Autowired
     private FormattingConversionService formattingConversionService;
 
+    /** The pageable argument resolver. */
     @Autowired
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
+    /** The audit event. */
     private PersistentAuditEvent auditEvent;
 
+    /** The rest audit mock mvc. */
     private MockMvc restAuditMockMvc;
 
+    /**
+     * Setup.
+     */
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -73,6 +90,9 @@ public class AuditResourceIntTest {
             .setMessageConverters(jacksonMessageConverter).build();
     }
 
+    /**
+     * Inits the test.
+     */
     @Before
     public void initTest() {
         auditEventRepository.deleteAll();
@@ -82,6 +102,12 @@ public class AuditResourceIntTest {
         auditEvent.setAuditEventDate(SAMPLE_TIMESTAMP);
     }
 
+    /**
+     * Gets the all audits.
+     *
+     * @return the all audits
+     * @throws Exception the exception
+     */
     @Test
     public void getAllAudits() throws Exception {
         // Initialize the database
@@ -94,6 +120,12 @@ public class AuditResourceIntTest {
             .andExpect(jsonPath("$.[*].principal").value(hasItem(SAMPLE_PRINCIPAL)));
     }
 
+    /**
+     * Gets the audit.
+     *
+     * @return the audit
+     * @throws Exception the exception
+     */
     @Test
     public void getAudit() throws Exception {
         // Initialize the database
@@ -106,6 +138,12 @@ public class AuditResourceIntTest {
             .andExpect(jsonPath("$.principal").value(SAMPLE_PRINCIPAL));
     }
 
+    /**
+     * Gets the audits by date.
+     *
+     * @return the audits by date
+     * @throws Exception the exception
+     */
     @Test
     public void getAuditsByDate() throws Exception {
         // Initialize the database
@@ -122,6 +160,12 @@ public class AuditResourceIntTest {
             .andExpect(jsonPath("$.[*].principal").value(hasItem(SAMPLE_PRINCIPAL)));
     }
 
+    /**
+     * Gets the non existing audits by date.
+     *
+     * @return the non existing audits by date
+     * @throws Exception the exception
+     */
     @Test
     public void getNonExistingAuditsByDate() throws Exception {
         // Initialize the database
@@ -138,6 +182,12 @@ public class AuditResourceIntTest {
             .andExpect(header().string("X-Total-Count", "0"));
     }
 
+    /**
+     * Gets the non existing audit.
+     *
+     * @return the non existing audit
+     * @throws Exception the exception
+     */
     @Test
     public void getNonExistingAudit() throws Exception {
         // Get the audit

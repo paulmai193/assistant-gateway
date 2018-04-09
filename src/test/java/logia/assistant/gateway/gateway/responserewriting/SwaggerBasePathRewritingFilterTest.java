@@ -14,11 +14,17 @@ import static springfox.documentation.swagger2.web.Swagger2Controller.DEFAULT_UR
 
 /**
  * Tests SwaggerBasePathRewritingFilter class.
+ *
+ * @author Dai Mai
  */
 public class SwaggerBasePathRewritingFilterTest {
 
+    /** The filter. */
     private SwaggerBasePathRewritingFilter filter = new SwaggerBasePathRewritingFilter();
 
+    /**
+     * Should filter on default swagger url.
+     */
     @Test
     public void shouldFilter_on_default_swagger_url() {
 
@@ -41,6 +47,9 @@ public class SwaggerBasePathRewritingFilterTest {
         assertTrue(filter.shouldFilter());
     }
 
+    /**
+     * Should not filter on wrong url.
+     */
     @Test
     public void shouldNotFilter_on_wrong_url() {
 
@@ -50,6 +59,11 @@ public class SwaggerBasePathRewritingFilterTest {
         assertFalse(filter.shouldFilter());
     }
 
+    /**
+     * Run on valid response.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void run_on_valid_response() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/service1" + DEFAULT_URL);

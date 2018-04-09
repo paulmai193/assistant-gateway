@@ -17,17 +17,28 @@ import com.codahale.metrics.annotation.Timed;
 
 /**
  * REST controller for managing Gateway configuration.
+ *
+ * @author Dai Mai
  */
 @RestController
 @RequestMapping("/api/gateway")
 public class GatewayResource {
 
+    /** The log. */
     private final Logger log = LoggerFactory.getLogger(GatewayResource.class);
 
+    /** The route locator. */
     private final RouteLocator routeLocator;
 
+    /** The discovery client. */
     private final DiscoveryClient discoveryClient;
 
+    /**
+     * Instantiates a new gateway resource.
+     *
+     * @param routeLocator the route locator
+     * @param discoveryClient the discovery client
+     */
     public GatewayResource(RouteLocator routeLocator, DiscoveryClient discoveryClient) {
         this.routeLocator = routeLocator;
         this.discoveryClient = discoveryClient;

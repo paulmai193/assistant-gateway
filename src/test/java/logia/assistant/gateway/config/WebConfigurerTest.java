@@ -40,16 +40,24 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class WebConfigurerTest {
 
+    /** The web configurer. */
     private WebConfigurer webConfigurer;
 
+    /** The servlet context. */
     private MockServletContext servletContext;
 
+    /** The env. */
     private MockEnvironment env;
 
+    /** The props. */
     private JHipsterProperties props;
 
+    /** The metric registry. */
     private MetricRegistry metricRegistry;
 
+    /**
+     * Setup.
+     */
     @Before
     public void setup() {
         servletContext = spy(new MockServletContext());
@@ -66,6 +74,11 @@ public class WebConfigurerTest {
         webConfigurer.setMetricRegistry(metricRegistry);
     }
 
+    /**
+     * Test start up prod servlet context.
+     *
+     * @throws ServletException the servlet exception
+     */
     @Test
     public void testStartUpProdServletContext() throws ServletException {
         env.setActiveProfiles(JHipsterConstants.SPRING_PROFILE_PRODUCTION);
@@ -78,6 +91,11 @@ public class WebConfigurerTest {
         verify(servletContext).addFilter(eq("cachingHttpHeadersFilter"), any(CachingHttpHeadersFilter.class));
     }
 
+    /**
+     * Test start up dev servlet context.
+     *
+     * @throws ServletException the servlet exception
+     */
     @Test
     public void testStartUpDevServletContext() throws ServletException {
         env.setActiveProfiles(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT);
@@ -90,6 +108,9 @@ public class WebConfigurerTest {
         verify(servletContext, never()).addFilter(eq("cachingHttpHeadersFilter"), any(CachingHttpHeadersFilter.class));
     }
 
+    /**
+     * Test customize servlet container.
+     */
     @Test
     public void testCustomizeServletContainer() {
         env.setActiveProfiles(JHipsterConstants.SPRING_PROFILE_PRODUCTION);
@@ -108,6 +129,9 @@ public class WebConfigurerTest {
         assertThat(serverOptions.getMap().get(UndertowOptions.ENABLE_HTTP2)).isNull();
     }
 
+    /**
+     * Test undertow http 2 enabled.
+     */
     @Test
     public void testUndertowHttp2Enabled() {
         props.getHttp().setVersion(JHipsterProperties.Http.Version.V_2_0);
@@ -119,6 +143,11 @@ public class WebConfigurerTest {
         assertThat(serverOptions.getMap().get(UndertowOptions.ENABLE_HTTP2)).isTrue();
     }
 
+    /**
+     * Test cors filter on api path.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testCorsFilterOnApiPath() throws Exception {
         props.getCors().setAllowedOrigins(Collections.singletonList("*"));
@@ -149,6 +178,11 @@ public class WebConfigurerTest {
             .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "other.domain.com"));
     }
 
+    /**
+     * Test cors filter on other path.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testCorsFilterOnOtherPath() throws Exception {
         props.getCors().setAllowedOrigins(Collections.singletonList("*"));
@@ -168,6 +202,11 @@ public class WebConfigurerTest {
             .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
+    /**
+     * Test cors filter deactivated.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testCorsFilterDeactivated() throws Exception {
         props.getCors().setAllowedOrigins(null);
@@ -183,6 +222,11 @@ public class WebConfigurerTest {
             .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
+    /**
+     * Test cors filter deactivated 2.
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testCorsFilterDeactivated2() throws Exception {
         props.getCors().setAllowedOrigins(new ArrayList<>());
@@ -198,131 +242,216 @@ public class WebConfigurerTest {
             .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
     }
 
+    /**
+     * The Class MockFilterRegistration.
+     *
+     * @author Dai Mai
+     */
     static class MockFilterRegistration implements FilterRegistration, FilterRegistration.Dynamic {
 
+        /* (non-Javadoc)
+         * @see javax.servlet.FilterRegistration#addMappingForServletNames(java.util.EnumSet, boolean, java.lang.String[])
+         */
         @Override
         public void addMappingForServletNames(EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter, String... servletNames) {
 
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.FilterRegistration#getServletNameMappings()
+         */
         @Override
         public Collection<String> getServletNameMappings() {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.FilterRegistration#addMappingForUrlPatterns(java.util.EnumSet, boolean, java.lang.String[])
+         */
         @Override
         public void addMappingForUrlPatterns(EnumSet<DispatcherType> dispatcherTypes, boolean isMatchAfter, String... urlPatterns) {
 
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.FilterRegistration#getUrlPatternMappings()
+         */
         @Override
         public Collection<String> getUrlPatternMappings() {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration.Dynamic#setAsyncSupported(boolean)
+         */
         @Override
         public void setAsyncSupported(boolean isAsyncSupported) {
 
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#getName()
+         */
         @Override
         public String getName() {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#getClassName()
+         */
         @Override
         public String getClassName() {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#setInitParameter(java.lang.String, java.lang.String)
+         */
         @Override
         public boolean setInitParameter(String name, String value) {
             return false;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#getInitParameter(java.lang.String)
+         */
         @Override
         public String getInitParameter(String name) {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#setInitParameters(java.util.Map)
+         */
         @Override
         public Set<String> setInitParameters(Map<String, String> initParameters) {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#getInitParameters()
+         */
         @Override
         public Map<String, String> getInitParameters() {
             return null;
         }
     }
 
+    /**
+     * The Class MockServletRegistration.
+     *
+     * @author Dai Mai
+     */
     static class MockServletRegistration implements ServletRegistration, ServletRegistration.Dynamic {
 
+        /* (non-Javadoc)
+         * @see javax.servlet.ServletRegistration.Dynamic#setLoadOnStartup(int)
+         */
         @Override
         public void setLoadOnStartup(int loadOnStartup) {
 
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.ServletRegistration.Dynamic#setServletSecurity(javax.servlet.ServletSecurityElement)
+         */
         @Override
         public Set<String> setServletSecurity(ServletSecurityElement constraint) {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.ServletRegistration.Dynamic#setMultipartConfig(javax.servlet.MultipartConfigElement)
+         */
         @Override
         public void setMultipartConfig(MultipartConfigElement multipartConfig) {
 
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.ServletRegistration.Dynamic#setRunAsRole(java.lang.String)
+         */
         @Override
         public void setRunAsRole(String roleName) {
 
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration.Dynamic#setAsyncSupported(boolean)
+         */
         @Override
         public void setAsyncSupported(boolean isAsyncSupported) {
 
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.ServletRegistration#addMapping(java.lang.String[])
+         */
         @Override
         public Set<String> addMapping(String... urlPatterns) {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.ServletRegistration#getMappings()
+         */
         @Override
         public Collection<String> getMappings() {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.ServletRegistration#getRunAsRole()
+         */
         @Override
         public String getRunAsRole() {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#getName()
+         */
         @Override
         public String getName() {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#getClassName()
+         */
         @Override
         public String getClassName() {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#setInitParameter(java.lang.String, java.lang.String)
+         */
         @Override
         public boolean setInitParameter(String name, String value) {
             return false;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#getInitParameter(java.lang.String)
+         */
         @Override
         public String getInitParameter(String name) {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#setInitParameters(java.util.Map)
+         */
         @Override
         public Set<String> setInitParameters(Map<String, String> initParameters) {
             return null;
         }
 
+        /* (non-Javadoc)
+         * @see javax.servlet.Registration#getInitParameters()
+         */
         @Override
         public Map<String, String> getInitParameters() {
             return null;
