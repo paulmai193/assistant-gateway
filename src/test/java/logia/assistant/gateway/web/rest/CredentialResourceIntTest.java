@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static logia.assistant.gateway.web.rest.TestUtil.sameInstant;
@@ -56,6 +57,15 @@ public class CredentialResourceIntTest {
 
     private static final ZonedDateTime DEFAULT_LAST_LOGIN_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime UPDATED_LAST_LOGIN_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
+
+    private static final String DEFAULT_ACTIVATION_KEY = "AAAAAAAAAA";
+    private static final String UPDATED_ACTIVATION_KEY = "BBBBBBBBBB";
+
+    private static final String DEFAULT_RESET_KEY = "AAAAAAAAAA";
+    private static final String UPDATED_RESET_KEY = "BBBBBBBBBB";
+
+    private static final Instant DEFAULT_RESET_DATE = Instant.ofEpochMilli(0L);
+    private static final Instant UPDATED_RESET_DATE = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
     @Autowired
     private CredentialRepository credentialRepository;
@@ -104,9 +114,12 @@ public class CredentialResourceIntTest {
      */
     public static Credential createEntity(EntityManager em) {
         Credential credential = new Credential()
-            .login(DEFAULT_LOGIN)
+            .credential(DEFAULT_LOGIN)
             .passwordHash(DEFAULT_PASSWORD_HASH)
-            .lastLoginDate(DEFAULT_LAST_LOGIN_DATE);
+            .lastLoginDate(DEFAULT_LAST_LOGIN_DATE)
+            .activation_key(DEFAULT_ACTIVATION_KEY)
+            .reset_key(DEFAULT_RESET_KEY)
+            .reset_date(DEFAULT_RESET_DATE);
         // Add required entity
         User user = UserResourceIntTest.createEntity(em);
         em.persist(user);
@@ -137,9 +150,12 @@ public class CredentialResourceIntTest {
         List<Credential> credentialList = credentialRepository.findAll();
         assertThat(credentialList).hasSize(databaseSizeBeforeCreate + 1);
         Credential testCredential = credentialList.get(credentialList.size() - 1);
-        assertThat(testCredential.getLogin()).isEqualTo(DEFAULT_LOGIN);
+        assertThat(testCredential.getCredential()).isEqualTo(DEFAULT_LOGIN);
         assertThat(testCredential.getPasswordHash()).isEqualTo(DEFAULT_PASSWORD_HASH);
         assertThat(testCredential.getLastLoginDate()).isEqualTo(DEFAULT_LAST_LOGIN_DATE);
+        assertThat(testCredential.getActivation_key()).isEqualTo(DEFAULT_ACTIVATION_KEY);
+        assertThat(testCredential.getReset_key()).isEqualTo(DEFAULT_RESET_KEY);
+        assertThat(testCredential.getReset_date()).isEqualTo(DEFAULT_RESET_DATE);
 
         // Validate the Credential in Elasticsearch
         Credential credentialEs = credentialSearchRepository.findOne(testCredential.getId());
@@ -172,7 +188,7 @@ public class CredentialResourceIntTest {
     public void checkLoginIsRequired() throws Exception {
         int databaseSizeBeforeTest = credentialRepository.findAll().size();
         // set the field null
-        credential.setLogin(null);
+        credential.setCredential(null);
 
         // Create the Credential, which fails.
         CredentialDTO credentialDTO = credentialMapper.toDto(credential);
@@ -216,9 +232,12 @@ public class CredentialResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(credential.getId().intValue())))
-            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN.toString())))
+            .andExpect(jsonPath("$.[*].credential").value(hasItem(DEFAULT_LOGIN.toString())))
             .andExpect(jsonPath("$.[*].passwordHash").value(hasItem(DEFAULT_PASSWORD_HASH.toString())))
-            .andExpect(jsonPath("$.[*].lastLoginDate").value(hasItem(sameInstant(DEFAULT_LAST_LOGIN_DATE))));
+            .andExpect(jsonPath("$.[*].lastLoginDate").value(hasItem(sameInstant(DEFAULT_LAST_LOGIN_DATE))))
+            .andExpect(jsonPath("$.[*].activation_key").value(hasItem(DEFAULT_ACTIVATION_KEY.toString())))
+            .andExpect(jsonPath("$.[*].reset_key").value(hasItem(DEFAULT_RESET_KEY.toString())))
+            .andExpect(jsonPath("$.[*].reset_date").value(hasItem(DEFAULT_RESET_DATE.toString())));
     }
 
     @Test
@@ -232,9 +251,12 @@ public class CredentialResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.id").value(credential.getId().intValue()))
-            .andExpect(jsonPath("$.login").value(DEFAULT_LOGIN.toString()))
+            .andExpect(jsonPath("$.credential").value(DEFAULT_LOGIN.toString()))
             .andExpect(jsonPath("$.passwordHash").value(DEFAULT_PASSWORD_HASH.toString()))
-            .andExpect(jsonPath("$.lastLoginDate").value(sameInstant(DEFAULT_LAST_LOGIN_DATE)));
+            .andExpect(jsonPath("$.lastLoginDate").value(sameInstant(DEFAULT_LAST_LOGIN_DATE)))
+            .andExpect(jsonPath("$.activation_key").value(DEFAULT_ACTIVATION_KEY.toString()))
+            .andExpect(jsonPath("$.reset_key").value(DEFAULT_RESET_KEY.toString()))
+            .andExpect(jsonPath("$.reset_date").value(DEFAULT_RESET_DATE.toString()));
     }
 
     @Test
@@ -258,9 +280,12 @@ public class CredentialResourceIntTest {
         // Disconnect from session so that the updates on updatedCredential are not directly saved in db
         em.detach(updatedCredential);
         updatedCredential
-            .login(UPDATED_LOGIN)
+            .credential(UPDATED_LOGIN)
             .passwordHash(UPDATED_PASSWORD_HASH)
-            .lastLoginDate(UPDATED_LAST_LOGIN_DATE);
+            .lastLoginDate(UPDATED_LAST_LOGIN_DATE)
+            .activation_key(UPDATED_ACTIVATION_KEY)
+            .reset_key(UPDATED_RESET_KEY)
+            .reset_date(UPDATED_RESET_DATE);
         CredentialDTO credentialDTO = credentialMapper.toDto(updatedCredential);
 
         restCredentialMockMvc.perform(put("/api/credentials")
@@ -272,9 +297,12 @@ public class CredentialResourceIntTest {
         List<Credential> credentialList = credentialRepository.findAll();
         assertThat(credentialList).hasSize(databaseSizeBeforeUpdate);
         Credential testCredential = credentialList.get(credentialList.size() - 1);
-        assertThat(testCredential.getLogin()).isEqualTo(UPDATED_LOGIN);
+        assertThat(testCredential.getCredential()).isEqualTo(UPDATED_LOGIN);
         assertThat(testCredential.getPasswordHash()).isEqualTo(UPDATED_PASSWORD_HASH);
         assertThat(testCredential.getLastLoginDate()).isEqualTo(UPDATED_LAST_LOGIN_DATE);
+        assertThat(testCredential.getActivation_key()).isEqualTo(UPDATED_ACTIVATION_KEY);
+        assertThat(testCredential.getReset_key()).isEqualTo(UPDATED_RESET_KEY);
+        assertThat(testCredential.getReset_date()).isEqualTo(UPDATED_RESET_DATE);
 
         // Validate the Credential in Elasticsearch
         Credential credentialEs = credentialSearchRepository.findOne(testCredential.getId());
@@ -335,9 +363,12 @@ public class CredentialResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(credential.getId().intValue())))
-            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN.toString())))
+            .andExpect(jsonPath("$.[*].credential").value(hasItem(DEFAULT_LOGIN.toString())))
             .andExpect(jsonPath("$.[*].passwordHash").value(hasItem(DEFAULT_PASSWORD_HASH.toString())))
-            .andExpect(jsonPath("$.[*].lastLoginDate").value(hasItem(sameInstant(DEFAULT_LAST_LOGIN_DATE))));
+            .andExpect(jsonPath("$.[*].lastLoginDate").value(hasItem(sameInstant(DEFAULT_LAST_LOGIN_DATE))))
+            .andExpect(jsonPath("$.[*].activation_key").value(hasItem(DEFAULT_ACTIVATION_KEY.toString())))
+            .andExpect(jsonPath("$.[*].reset_key").value(hasItem(DEFAULT_RESET_KEY.toString())))
+            .andExpect(jsonPath("$.[*].reset_date").value(hasItem(DEFAULT_RESET_DATE.toString())));
     }
 
     @Test

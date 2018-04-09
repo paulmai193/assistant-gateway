@@ -6,7 +6,7 @@ import logia.assistant.gateway.domain.Authority;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.AuthorityRepository;
 import logia.assistant.gateway.repository.UserRepository;
-import logia.assistant.gateway.security.AuthoritiesConstants;
+import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 import logia.assistant.gateway.service.MailService;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;

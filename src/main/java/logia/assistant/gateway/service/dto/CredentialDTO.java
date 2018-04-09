@@ -1,6 +1,7 @@
 package logia.assistant.gateway.service.dto;
 
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import javax.validation.constraints.*;
 import java.io.Serializable;
@@ -16,8 +17,8 @@ public class CredentialDTO implements Serializable {
     private Long id;
 
     @NotNull
-    @Size(min = 1, max = 50)
-    private String login;
+    @Size(min = 5, max = 100)
+    private String credential;
 
     @NotNull
     @Size(min = 60, max = 60)
@@ -25,9 +26,15 @@ public class CredentialDTO implements Serializable {
 
     private ZonedDateTime lastLoginDate;
 
-    private Long userId;
+    @Size(max = 20)
+    private String activation_key;
 
-    private String userLogin;
+    @Size(max = 20)
+    private String reset_key;
+
+    private Instant reset_date;
+
+    private Long userId;
 
     public Long getId() {
         return id;
@@ -37,12 +44,12 @@ public class CredentialDTO implements Serializable {
         this.id = id;
     }
 
-    public String getLogin() {
-        return login;
+    public String getCredential() {
+        return credential;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
+    public void setCredential(String credential) {
+        this.credential = credential;
     }
 
     public String getPasswordHash() {
@@ -61,20 +68,36 @@ public class CredentialDTO implements Serializable {
         this.lastLoginDate = lastLoginDate;
     }
 
+    public String getActivation_key() {
+        return activation_key;
+    }
+
+    public void setActivation_key(String activation_key) {
+        this.activation_key = activation_key;
+    }
+
+    public String getReset_key() {
+        return reset_key;
+    }
+
+    public void setReset_key(String reset_key) {
+        this.reset_key = reset_key;
+    }
+
+    public Instant getReset_date() {
+        return reset_date;
+    }
+
+    public void setReset_date(Instant reset_date) {
+        this.reset_date = reset_date;
+    }
+
     public Long getUserId() {
         return userId;
     }
 
     public void setUserId(Long userId) {
         this.userId = userId;
-    }
-
-    public String getUserLogin() {
-        return userLogin;
-    }
-
-    public void setUserLogin(String userLogin) {
-        this.userLogin = userLogin;
     }
 
     @Override
@@ -102,9 +125,12 @@ public class CredentialDTO implements Serializable {
     public String toString() {
         return "CredentialDTO{" +
             "id=" + getId() +
-            ", login='" + getLogin() + "'" +
+            ", credential='" + getCredential() + "'" +
             ", passwordHash='" + getPasswordHash() + "'" +
             ", lastLoginDate='" + getLastLoginDate() + "'" +
+            ", activation_key='" + getActivation_key() + "'" +
+            ", reset_key='" + getReset_key() + "'" +
+            ", reset_date='" + getReset_date() + "'" +
             "}";
     }
 }

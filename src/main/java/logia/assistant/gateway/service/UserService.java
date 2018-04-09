@@ -1,16 +1,12 @@
 package logia.assistant.gateway.service;
 
-import logia.assistant.gateway.config.CacheConfiguration;
-import logia.assistant.gateway.domain.Authority;
-import logia.assistant.gateway.domain.User;
-import logia.assistant.gateway.repository.AuthorityRepository;
-import logia.assistant.gateway.config.Constants;
-import logia.assistant.gateway.repository.UserRepository;
-import logia.assistant.gateway.repository.search.UserSearchRepository;
-import logia.assistant.gateway.security.AuthoritiesConstants;
-import logia.assistant.gateway.security.SecurityUtils;
-import logia.assistant.gateway.service.util.RandomUtil;
-import logia.assistant.gateway.service.dto.UserDTO;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +18,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
+import logia.assistant.gateway.config.Constants;
+import logia.assistant.gateway.domain.Authority;
+import logia.assistant.gateway.domain.User;
+import logia.assistant.gateway.repository.AuthorityRepository;
+import logia.assistant.gateway.repository.UserRepository;
+import logia.assistant.gateway.repository.search.UserSearchRepository;
+import logia.assistant.gateway.security.SecurityUtils;
+import logia.assistant.gateway.service.dto.UserDTO;
+import logia.assistant.gateway.service.util.RandomUtil;
+import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
  * Service class for managing users.

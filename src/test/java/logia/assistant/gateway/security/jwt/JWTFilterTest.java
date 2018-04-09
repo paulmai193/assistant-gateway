@@ -15,7 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import logia.assistant.gateway.security.AuthoritiesConstants;
+import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 import logia.assistant.share.gateway.config.GatewayProperties;
 import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
 

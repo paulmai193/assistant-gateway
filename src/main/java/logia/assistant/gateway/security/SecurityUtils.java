@@ -1,10 +1,12 @@
 package logia.assistant.gateway.security;
 
+import java.util.Optional;
+
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Optional;
+import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
  * Utility class for Spring Security.

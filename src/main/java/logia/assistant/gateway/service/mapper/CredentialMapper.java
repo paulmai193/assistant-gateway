@@ -12,7 +12,6 @@ import org.mapstruct.*;
 public interface CredentialMapper extends EntityMapper<CredentialDTO, Credential> {
 
     @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "user.login", target = "userLogin")
     CredentialDTO toDto(Credential credential);
 
     @Mapping(source = "userId", target = "user")

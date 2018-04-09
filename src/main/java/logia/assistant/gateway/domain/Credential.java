@@ -8,6 +8,7 @@ import javax.validation.constraints.*;
 
 import org.springframework.data.elasticsearch.annotations.Document;
 import java.io.Serializable;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
@@ -28,9 +29,9 @@ public class Credential implements Serializable {
     private Long id;
 
     @NotNull
-    @Size(min = 1, max = 50)
-    @Column(name = "login", length = 50, nullable = false)
-    private String login;
+    @Size(min = 5, max = 100)
+    @Column(name = "credential", length = 100, unique = true, nullable = false)
+    private String credential;
 
     @NotNull
     @Size(min = 60, max = 60)
@@ -39,6 +40,17 @@ public class Credential implements Serializable {
 
     @Column(name = "last_login_date")
     private ZonedDateTime lastLoginDate;
+
+    @Size(max = 20)
+    @Column(name = "activation_key", length = 20)
+    private String activation_key;
+
+    @Size(max = 20)
+    @Column(name = "reset_key", length = 20)
+    private String reset_key;
+
+    @Column(name = "reset_date")
+    private Instant reset_date;
 
     @ManyToOne(optional = false)
     @NotNull
@@ -53,17 +65,17 @@ public class Credential implements Serializable {
         this.id = id;
     }
 
-    public String getLogin() {
-        return login;
+    public String getCredential() {
+        return credential;
     }
 
-    public Credential login(String login) {
-        this.login = login;
+    public void setCredential(String credential) {
+        this.credential = credential;
+    }
+
+    public Credential credential(String credential) {
+        this.setCredential(credential);;
         return this;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
     }
 
     public String getPasswordHash() {
@@ -90,6 +102,45 @@ public class Credential implements Serializable {
 
     public void setLastLoginDate(ZonedDateTime lastLoginDate) {
         this.lastLoginDate = lastLoginDate;
+    }
+
+    public String getActivation_key() {
+        return activation_key;
+    }
+
+    public Credential activation_key(String activation_key) {
+        this.activation_key = activation_key;
+        return this;
+    }
+
+    public void setActivation_key(String activation_key) {
+        this.activation_key = activation_key;
+    }
+
+    public String getReset_key() {
+        return reset_key;
+    }
+
+    public Credential reset_key(String reset_key) {
+        this.reset_key = reset_key;
+        return this;
+    }
+
+    public void setReset_key(String reset_key) {
+        this.reset_key = reset_key;
+    }
+
+    public Instant getReset_date() {
+        return reset_date;
+    }
+
+    public Credential reset_date(Instant reset_date) {
+        this.reset_date = reset_date;
+        return this;
+    }
+
+    public void setReset_date(Instant reset_date) {
+        this.reset_date = reset_date;
     }
 
     public User getUser() {
@@ -130,9 +181,12 @@ public class Credential implements Serializable {
     public String toString() {
         return "Credential{" +
             "id=" + getId() +
-            ", login='" + getLogin() + "'" +
+            ", login='" + getCredential() + "'" +
             ", passwordHash='" + getPasswordHash() + "'" +
             ", lastLoginDate='" + getLastLoginDate() + "'" +
+            ", activation_key='" + getActivation_key() + "'" +
+            ", reset_key='" + getReset_key() + "'" +
+            ", reset_date='" + getReset_date() + "'" +
             "}";
     }
 }

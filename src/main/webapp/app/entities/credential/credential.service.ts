@@ -72,6 +72,8 @@ export class CredentialService {
         const copy: Credential = Object.assign({}, credential);
         copy.lastLoginDate = this.dateUtils
             .convertDateTimeFromServer(credential.lastLoginDate);
+        copy.reset_date = this.dateUtils
+            .convertDateTimeFromServer(credential.reset_date);
         return copy;
     }
 
@@ -82,6 +84,8 @@ export class CredentialService {
         const copy: Credential = Object.assign({}, credential);
 
         copy.lastLoginDate = this.dateUtils.toDate(credential.lastLoginDate);
+
+        copy.reset_date = this.dateUtils.toDate(credential.reset_date);
         return copy;
     }
 }

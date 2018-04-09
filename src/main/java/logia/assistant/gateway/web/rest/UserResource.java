@@ -1,20 +1,15 @@
 package logia.assistant.gateway.web.rest;
 
-import logia.assistant.gateway.config.Constants;
-import com.codahale.metrics.annotation.Timed;
-import logia.assistant.gateway.domain.User;
-import logia.assistant.gateway.repository.UserRepository;
-import logia.assistant.gateway.repository.search.UserSearchRepository;
-import logia.assistant.gateway.security.AuthoritiesConstants;
-import logia.assistant.gateway.service.MailService;
-import logia.assistant.gateway.service.UserService;
-import logia.assistant.gateway.service.dto.UserDTO;
-import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
-import logia.assistant.gateway.web.rest.errors.EmailAlreadyUsedException;
-import logia.assistant.gateway.web.rest.errors.LoginAlreadyUsedException;
-import logia.assistant.gateway.web.rest.util.HeaderUtil;
-import logia.assistant.gateway.web.rest.util.PaginationUtil;
-import io.github.jhipster.web.util.ResponseUtil;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,16 +19,31 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import com.codahale.metrics.annotation.Timed;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
+import io.github.jhipster.web.util.ResponseUtil;
+import logia.assistant.gateway.config.Constants;
+import logia.assistant.gateway.domain.User;
+import logia.assistant.gateway.repository.UserRepository;
+import logia.assistant.gateway.repository.search.UserSearchRepository;
+import logia.assistant.gateway.service.MailService;
+import logia.assistant.gateway.service.UserService;
+import logia.assistant.gateway.service.dto.UserDTO;
+import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
+import logia.assistant.gateway.web.rest.errors.EmailAlreadyUsedException;
+import logia.assistant.gateway.web.rest.errors.LoginAlreadyUsedException;
+import logia.assistant.gateway.web.rest.util.HeaderUtil;
+import logia.assistant.gateway.web.rest.util.PaginationUtil;
+import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
  * REST controller for managing users.

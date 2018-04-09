@@ -39,6 +39,12 @@ describe('Credential e2e test', () => {
         expect(credentialDialogPage.getPasswordHashInput()).toMatch('passwordHash');
         credentialDialogPage.setLastLoginDateInput(12310020012301);
         expect(credentialDialogPage.getLastLoginDateInput()).toMatch('2001-12-31T02:30');
+        credentialDialogPage.setActivation_keyInput('activation_key');
+        expect(credentialDialogPage.getActivation_keyInput()).toMatch('activation_key');
+        credentialDialogPage.setReset_keyInput('reset_key');
+        expect(credentialDialogPage.getReset_keyInput()).toMatch('reset_key');
+        credentialDialogPage.setReset_dateInput(12310020012301);
+        expect(credentialDialogPage.getReset_dateInput()).toMatch('2001-12-31T02:30');
         credentialDialogPage.userSelectLastOption();
         credentialDialogPage.save();
         expect(credentialDialogPage.getSaveButton().isPresent()).toBeFalsy();
@@ -69,6 +75,9 @@ export class CredentialDialogPage {
     loginInput = element(by.css('input#field_login'));
     passwordHashInput = element(by.css('input#field_passwordHash'));
     lastLoginDateInput = element(by.css('input#field_lastLoginDate'));
+    activation_keyInput = element(by.css('input#field_activation_key'));
+    reset_keyInput = element(by.css('input#field_reset_key'));
+    reset_dateInput = element(by.css('input#field_reset_date'));
     userSelect = element(by.css('select#field_user'));
 
     getModalTitle() {
@@ -97,6 +106,30 @@ export class CredentialDialogPage {
 
     getLastLoginDateInput = function() {
         return this.lastLoginDateInput.getAttribute('value');
+    };
+
+    setActivation_keyInput = function(activation_key) {
+        this.activation_keyInput.sendKeys(activation_key);
+    };
+
+    getActivation_keyInput = function() {
+        return this.activation_keyInput.getAttribute('value');
+    };
+
+    setReset_keyInput = function(reset_key) {
+        this.reset_keyInput.sendKeys(reset_key);
+    };
+
+    getReset_keyInput = function() {
+        return this.reset_keyInput.getAttribute('value');
+    };
+
+    setReset_dateInput = function(reset_date) {
+        this.reset_dateInput.sendKeys(reset_date);
+    };
+
+    getReset_dateInput = function() {
+        return this.reset_dateInput.getAttribute('value');
     };
 
     userSelectLastOption = function() {

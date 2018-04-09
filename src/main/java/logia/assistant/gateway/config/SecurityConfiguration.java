@@ -21,8 +21,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.filter.CorsFilter;
 import org.zalando.problem.spring.web.advice.security.SecurityProblemSupport;
 
-import logia.assistant.gateway.security.AuthoritiesConstants;
 import logia.assistant.gateway.security.jwt.JWTConfigurer;
+import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
 
 @Configuration
