@@ -3,6 +3,7 @@ package logia.assistant.gateway.service.dto;
 import logia.assistant.gateway.config.Constants;
 
 import logia.assistant.gateway.domain.Authority;
+import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 
 import org.hibernate.validator.constraints.Email;
@@ -82,11 +83,32 @@ public class UserDTO {
      */
     public UserDTO(User user) {
         this.id = user.getId();
-        this.login = user.getLogin();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
-        this.email = user.getEmail();
-        this.activated = user.getActivated();
+        this.imageUrl = user.getImageUrl();
+        this.langKey = user.getLangKey();
+        this.createdBy = user.getCreatedBy();
+        this.createdDate = user.getCreatedDate();
+        this.lastModifiedBy = user.getLastModifiedBy();
+        this.lastModifiedDate = user.getLastModifiedDate();
+        this.authorities = user.getAuthorities().stream()
+            .map(Authority::getName)
+            .collect(Collectors.toSet());
+    }
+    
+    /**
+     * Instantiates a new user DTO.
+     *
+     * @param user the user
+     */
+    public UserDTO(Credential credential) {
+        User user = credential.getUser();
+        this.id = user.getId();
+        this.login = credential.getLogin();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
+//        this.email = credential.getEmail();
+        this.activated = credential.isActivated();
         this.imageUrl = user.getImageUrl();
         this.langKey = user.getLangKey();
         this.createdBy = user.getCreatedBy();

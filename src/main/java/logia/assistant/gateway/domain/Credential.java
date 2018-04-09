@@ -7,6 +7,11 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 
 import org.springframework.data.elasticsearch.annotations.Document;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+
+import logia.assistant.share.common.entity.AbstractAuditingEntity;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -21,7 +26,8 @@ import java.util.Objects;
 @Table(name = "credential")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Document(indexName = "credential")
-public class Credential implements Serializable {
+@JsonIgnoreType
+public class Credential extends AbstractAuditingEntity implements Serializable {
 
     /** The Constant serialVersionUID. */
     private static final long serialVersionUID = 1L;
@@ -50,17 +56,17 @@ public class Credential implements Serializable {
 
     /** The activation key. */
     @Size(max = 20)
-    @Column(name = "activation_key", length = 20)
-    private String activation_key;
+    @Column(name = "activationKey", length = 20)
+    private String activationKey;
 
     /** The reset key. */
     @Size(max = 20)
-    @Column(name = "reset_key", length = 20)
-    private String reset_key;
+    @Column(name = "resetKey", length = 20)
+    private String resetKey;
 
     /** The reset date. */
-    @Column(name = "reset_date")
-    private Instant reset_date;
+    @Column(name = "resetDate")
+    private Instant resetDate;
 
     /** The activated. */
     @NotNull
@@ -183,28 +189,28 @@ public class Credential implements Serializable {
      *
      * @return the activation key
      */
-    public String getActivation_key() {
-        return activation_key;
+    public String getActivationKey() {
+        return activationKey;
     }
 
     /**
      * Activation key.
      *
-     * @param activation_key the activation key
+     * @param activationKey the activation key
      * @return the credential
      */
-    public Credential activation_key(String activation_key) {
-        this.activation_key = activation_key;
+    public Credential activationKey(String activationKey) {
+        this.activationKey = activationKey;
         return this;
     }
 
     /**
      * Sets the activation key.
      *
-     * @param activation_key the new activation key
+     * @param activationKey the new activation key
      */
-    public void setActivation_key(String activation_key) {
-        this.activation_key = activation_key;
+    public void setActivationKey(String activationKey) {
+        this.activationKey = activationKey;
     }
 
     /**
@@ -212,28 +218,28 @@ public class Credential implements Serializable {
      *
      * @return the reset key
      */
-    public String getReset_key() {
-        return reset_key;
+    public String getResetKey() {
+        return resetKey;
     }
 
     /**
      * Reset key.
      *
-     * @param reset_key the reset key
+     * @param resetKey the reset key
      * @return the credential
      */
-    public Credential reset_key(String reset_key) {
-        this.reset_key = reset_key;
+    public Credential resetKey(String resetKey) {
+        this.resetKey = resetKey;
         return this;
     }
 
     /**
      * Sets the reset key.
      *
-     * @param reset_key the new reset key
+     * @param resetKey the new reset key
      */
-    public void setReset_key(String reset_key) {
-        this.reset_key = reset_key;
+    public void setResetKey(String resetKey) {
+        this.resetKey = resetKey;
     }
 
     /**
@@ -241,28 +247,28 @@ public class Credential implements Serializable {
      *
      * @return the reset date
      */
-    public Instant getReset_date() {
-        return reset_date;
+    public Instant getResetDate() {
+        return resetDate;
     }
 
     /**
      * Reset date.
      *
-     * @param reset_date the reset date
+     * @param resetDate the reset date
      * @return the credential
      */
-    public Credential reset_date(Instant reset_date) {
-        this.reset_date = reset_date;
+    public Credential resetDate(Instant resetDate) {
+        this.resetDate = resetDate;
         return this;
     }
 
     /**
      * Sets the reset date.
      *
-     * @param reset_date the new reset date
+     * @param resetDate the new reset date
      */
-    public void setReset_date(Instant reset_date) {
-        this.reset_date = reset_date;
+    public void setResetDate(Instant resetDate) {
+        this.resetDate = resetDate;
     }
 
     /**
@@ -360,9 +366,9 @@ public class Credential implements Serializable {
             ", login='" + getLogin() + "'" +
             ", passwordHash='" + getPasswordHash() + "'" +
             ", lastLoginDate='" + getLastLoginDate() + "'" +
-            ", activation_key='" + getActivation_key() + "'" +
-            ", reset_key='" + getReset_key() + "'" +
-            ", reset_date='" + getReset_date() + "'" +
+            ", activationKey='" + getActivationKey() + "'" +
+            ", resetKey='" + getResetKey() + "'" +
+            ", resetDate='" + getResetDate() + "'" +
             ", activated='" + isActivated() + "'" +
             "}";
     }

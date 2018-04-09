@@ -2,12 +2,14 @@ package logia.assistant.gateway.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
 
+import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.UserRepository;
 import logia.assistant.gateway.security.SecurityUtils;
 import logia.assistant.gateway.service.MailService;
 import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.service.dto.UserDTO;
+import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.gateway.web.rest.errors.*;
 import logia.assistant.gateway.web.rest.vm.KeyAndPasswordVM;
 import logia.assistant.gateway.web.rest.vm.ManagedUserVM;
@@ -42,6 +44,9 @@ public class AccountResource {
 
     /** The mail service. */
     private final MailService mailService;
+    
+    /** The credential service. */
+    private final CredentialServiceImpl credentialService;
 
     /**
      * Instantiates a new account resource.
@@ -49,12 +54,15 @@ public class AccountResource {
      * @param userRepository the user repository
      * @param userService the user service
      * @param mailService the mail service
+     * @param credentialService the credential service
      */
-    public AccountResource(UserRepository userRepository, UserService userService, MailService mailService) {
-
+    public AccountResource(UserRepository userRepository, UserService userService,
+            MailService mailService, CredentialServiceImpl credentialService) {
+        super();
         this.userRepository = userRepository;
         this.userService = userService;
         this.mailService = mailService;
+        this.credentialService = credentialService;
     }
 
     /**
@@ -87,8 +95,8 @@ public class AccountResource {
     @GetMapping("/activate")
     @Timed
     public void activateAccount(@RequestParam(value = "key") String key) {
-        Optional<User> user = userService.activateRegistration(key);
-        if (!user.isPresent()) {
+        Optional<Credential> credential = this.credentialService.activateRegistration(key);
+        if (!credential.isPresent()) {
             throw new InternalServerErrorException("No user was found for this reset key");
         }
     }
@@ -121,26 +129,15 @@ public class AccountResource {
     }
 
     /**
-     * POST  /account : update the current user information.
+     * PUT  /account : update the current user information.
      *
      * @param userDTO the current user information
-     * @throws EmailAlreadyUsedException 400 (Bad Request) if the email is already used
      * @throws RuntimeException 500 (Internal Server Error) if the user login wasn't found
      */
-    @PostMapping("/account")
+    @PutMapping("/account")
     @Timed
     public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
-        final String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new InternalServerErrorException("Current user login not found"));
-        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(userLogin))) {
-            throw new EmailAlreadyUsedException();
-        }
-        Optional<User> user = userRepository.findOneByLogin(userLogin);
-        if (!user.isPresent()) {
-            throw new InternalServerErrorException("User could not be found");
-        }
-        userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail(),
-            userDTO.getLangKey(), userDTO.getImageUrl());
+        userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getLangKey(), userDTO.getImageUrl());
    }
 
     /**
@@ -155,7 +152,7 @@ public class AccountResource {
         if (!checkPasswordLength(password)) {
             throw new InvalidPasswordException();
         }
-        userService.changePassword(password);
+        this.credentialService.changePassword(password);
    }
 
     /**
@@ -168,7 +165,7 @@ public class AccountResource {
     @Timed
     public void requestPasswordReset(@RequestBody String mail) {
        mailService.sendPasswordResetMail(
-           userService.requestPasswordReset(mail)
+           this.credentialService.requestPasswordReset(mail)
                .orElseThrow(EmailNotFoundException::new)
        );
     }
@@ -186,10 +183,10 @@ public class AccountResource {
         if (!checkPasswordLength(keyAndPassword.getNewPassword())) {
             throw new InvalidPasswordException();
         }
-        Optional<User> user =
-            userService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
+        Optional<Credential> credential =
+                this.credentialService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
 
-        if (!user.isPresent()) {
+        if (!credential.isPresent()) {
             throw new InternalServerErrorException("No user was found for this reset key");
         }
     }

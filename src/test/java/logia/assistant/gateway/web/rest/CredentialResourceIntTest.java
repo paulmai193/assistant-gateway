@@ -157,9 +157,9 @@ public class CredentialResourceIntTest {
             .login(DEFAULT_LOGIN)
             .passwordHash(DEFAULT_PASSWORD_HASH)
             .lastLoginDate(DEFAULT_LAST_LOGIN_DATE)
-            .activation_key(DEFAULT_ACTIVATION_KEY)
-            .reset_key(DEFAULT_RESET_KEY)
-            .reset_date(DEFAULT_RESET_DATE)
+            .activationKey(DEFAULT_ACTIVATION_KEY)
+            .resetKey(DEFAULT_RESET_KEY)
+            .resetDate(DEFAULT_RESET_DATE)
             .activated(DEFAULT_ACTIVATED);
         // Add required entity
         User user = UserResourceIntTest.createEntity(em);
@@ -202,9 +202,9 @@ public class CredentialResourceIntTest {
         assertThat(testCredential.getLogin()).isEqualTo(DEFAULT_LOGIN);
         assertThat(testCredential.getPasswordHash()).isEqualTo(DEFAULT_PASSWORD_HASH);
         assertThat(testCredential.getLastLoginDate()).isEqualTo(DEFAULT_LAST_LOGIN_DATE);
-        assertThat(testCredential.getActivation_key()).isEqualTo(DEFAULT_ACTIVATION_KEY);
-        assertThat(testCredential.getReset_key()).isEqualTo(DEFAULT_RESET_KEY);
-        assertThat(testCredential.getReset_date()).isEqualTo(DEFAULT_RESET_DATE);
+        assertThat(testCredential.getActivationKey()).isEqualTo(DEFAULT_ACTIVATION_KEY);
+        assertThat(testCredential.getResetKey()).isEqualTo(DEFAULT_RESET_KEY);
+        assertThat(testCredential.getResetDate()).isEqualTo(DEFAULT_RESET_DATE);
         assertThat(testCredential.isActivated()).isEqualTo(DEFAULT_ACTIVATED);
 
         // Validate the Credential in Elasticsearch
@@ -397,9 +397,9 @@ public class CredentialResourceIntTest {
             .login(UPDATED_LOGIN)
             .passwordHash(UPDATED_PASSWORD_HASH)
             .lastLoginDate(UPDATED_LAST_LOGIN_DATE)
-            .activation_key(UPDATED_ACTIVATION_KEY)
-            .reset_key(UPDATED_RESET_KEY)
-            .reset_date(UPDATED_RESET_DATE)
+            .activationKey(UPDATED_ACTIVATION_KEY)
+            .resetKey(UPDATED_RESET_KEY)
+            .resetDate(UPDATED_RESET_DATE)
             .activated(UPDATED_ACTIVATED);
         CredentialDTO credentialDTO = credentialMapper.toDto(updatedCredential);
 
@@ -415,9 +415,9 @@ public class CredentialResourceIntTest {
         assertThat(testCredential.getLogin()).isEqualTo(UPDATED_LOGIN);
         assertThat(testCredential.getPasswordHash()).isEqualTo(UPDATED_PASSWORD_HASH);
         assertThat(testCredential.getLastLoginDate()).isEqualTo(UPDATED_LAST_LOGIN_DATE);
-        assertThat(testCredential.getActivation_key()).isEqualTo(UPDATED_ACTIVATION_KEY);
-        assertThat(testCredential.getReset_key()).isEqualTo(UPDATED_RESET_KEY);
-        assertThat(testCredential.getReset_date()).isEqualTo(UPDATED_RESET_DATE);
+        assertThat(testCredential.getActivationKey()).isEqualTo(UPDATED_ACTIVATION_KEY);
+        assertThat(testCredential.getResetKey()).isEqualTo(UPDATED_RESET_KEY);
+        assertThat(testCredential.getResetDate()).isEqualTo(UPDATED_RESET_DATE);
         assertThat(testCredential.isActivated()).isEqualTo(UPDATED_ACTIVATED);
 
         // Validate the Credential in Elasticsearch

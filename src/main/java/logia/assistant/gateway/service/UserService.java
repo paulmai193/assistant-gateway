@@ -1,9 +1,11 @@
 package logia.assistant.gateway.service;
 
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,13 +22,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import logia.assistant.gateway.config.Constants;
 import logia.assistant.gateway.domain.Authority;
+import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.AuthorityRepository;
 import logia.assistant.gateway.repository.UserRepository;
 import logia.assistant.gateway.repository.search.UserSearchRepository;
 import logia.assistant.gateway.security.SecurityUtils;
 import logia.assistant.gateway.service.dto.UserDTO;
+import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.gateway.service.util.RandomUtil;
+import logia.assistant.gateway.web.rest.errors.EmailAlreadyUsedException;
+import logia.assistant.gateway.web.rest.errors.InternalServerErrorException;
 import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
@@ -49,6 +55,9 @@ public class UserService {
 
     /** The user search repository. */
     private final UserSearchRepository userSearchRepository;
+    
+    /** The credential service. */
+    private final CredentialServiceImpl credentialService;
 
     /** The authority repository. */
     private final AuthorityRepository authorityRepository;
@@ -62,76 +71,20 @@ public class UserService {
      * @param userRepository the user repository
      * @param passwordEncoder the password encoder
      * @param userSearchRepository the user search repository
+     * @param credentialService the credential service
      * @param authorityRepository the authority repository
      * @param cacheManager the cache manager
      */
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserSearchRepository userSearchRepository, AuthorityRepository authorityRepository, CacheManager cacheManager) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            UserSearchRepository userSearchRepository, CredentialServiceImpl credentialService,
+            AuthorityRepository authorityRepository, CacheManager cacheManager) {
+        super();
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userSearchRepository = userSearchRepository;
+        this.credentialService = credentialService;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
-    }
-
-    /**
-     * Activate registration.
-     *
-     * @param key the key
-     * @return the optional
-     */
-    public Optional<User> activateRegistration(String key) {
-        log.debug("Activating user for activation key {}", key);
-        return userRepository.findOneByActivationKey(key)
-            .map(user -> {
-                // activate given user for the registration key.
-                user.setActivated(true);
-                user.setActivationKey(null);
-                userSearchRepository.save(user);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-                cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
-                log.debug("Activated user: {}", user);
-                return user;
-            });
-    }
-
-    /**
-     * Complete password reset.
-     *
-     * @param newPassword the new password
-     * @param key the key
-     * @return the optional
-     */
-    public Optional<User> completePasswordReset(String newPassword, String key) {
-       log.debug("Reset user password for reset key {}", key);
-
-       return userRepository.findOneByResetKey(key)
-           .filter(user -> user.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
-           .map(user -> {
-                user.setPassword(passwordEncoder.encode(newPassword));
-                user.setResetKey(null);
-                user.setResetDate(null);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-                cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
-                return user;
-           });
-    }
-
-    /**
-     * Request password reset.
-     *
-     * @param mail the mail
-     * @return the optional
-     */
-    public Optional<User> requestPasswordReset(String mail) {
-        return userRepository.findOneByEmailIgnoreCase(mail)
-            .filter(User::getActivated)
-            .map(user -> {
-                user.setResetKey(RandomUtil.generateResetKey());
-                user.setResetDate(Instant.now());
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-                cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
-                return user;
-            });
     }
 
     /**
@@ -215,18 +168,28 @@ public class UserService {
      * @param langKey language key
      * @param imageUrl image URL of user
      */
-    public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
+    public void updateUser(String firstName, String lastName, String langKey, String imageUrl) {
+        final String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new InternalServerErrorException("Current user login not found"));
+        Optional<Credential> credential = this.credentialService.findOneByLogin(userLogin);
+        if (!credential.isPresent()) {
+            throw new InternalServerErrorException(MessageFormat.format("User {0} could not be found", userLogin));
+        }
         SecurityUtils.getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
             .ifPresent(user -> {
-                user.setFirstName(firstName);
-                user.setLastName(lastName);
-                user.setEmail(email);
-                user.setLangKey(langKey);
-                user.setImageUrl(imageUrl);
+                if (Objects.nonNull(firstName)) {
+                    user.setFirstName(firstName);    
+                }
+                if (Objects.nonNull(lastName)) {
+                    user.setLastName(lastName);    
+                }
+                if (Objects.nonNull(langKey)) {
+                    user.setLangKey(langKey);    
+                }
+                if (Objects.nonNull(imageUrl)) {
+                    user.setImageUrl(imageUrl);    
+                }                
                 userSearchRepository.save(user);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-                cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
                 log.debug("Changed Information for User: {}", user);
             });
     }
@@ -241,12 +204,9 @@ public class UserService {
         return Optional.of(userRepository
             .findOne(userDTO.getId()))
             .map(user -> {
-                user.setLogin(userDTO.getLogin());
                 user.setFirstName(userDTO.getFirstName());
                 user.setLastName(userDTO.getLastName());
-                user.setEmail(userDTO.getEmail());
                 user.setImageUrl(userDTO.getImageUrl());
-                user.setActivated(userDTO.isActivated());
                 user.setLangKey(userDTO.getLangKey());
                 Set<Authority> managedAuthorities = user.getAuthorities();
                 managedAuthorities.clear();
@@ -254,8 +214,6 @@ public class UserService {
                     .map(authorityRepository::findOne)
                     .forEach(managedAuthorities::add);
                 userSearchRepository.save(user);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-                cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
                 log.debug("Changed Information for User: {}", user);
                 return user;
             })
@@ -271,27 +229,8 @@ public class UserService {
         userRepository.findOneByLogin(login).ifPresent(user -> {
             userRepository.delete(user);
             userSearchRepository.delete(user);
-            cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-            cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
             log.debug("Deleted User: {}", user);
         });
-    }
-
-    /**
-     * Change password.
-     *
-     * @param password the password
-     */
-    public void changePassword(String password) {
-        SecurityUtils.getCurrentUserLogin()
-            .flatMap(userRepository::findOneByLogin)
-            .ifPresent(user -> {
-                String encryptedPassword = passwordEncoder.encode(password);
-                user.setPassword(encryptedPassword);
-                cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-                cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
-                log.debug("Changed password for User: {}", user);
-            });
     }
 
     /**

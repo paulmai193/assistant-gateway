@@ -1,9 +1,7 @@
 package logia.assistant.gateway.domain;
 
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -17,19 +15,14 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.validator.constraints.Email;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import logia.assistant.gateway.config.Constants;
 import logia.assistant.share.common.entity.AbstractAuditingEntity;
 
 /**
@@ -52,19 +45,19 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
-    /** The login. */
-    @NotNull
-    @Pattern(regexp = Constants.LOGIN_REGEX)
-    @Size(min = 1, max = 50)
-    @Column(length = 50, unique = true, nullable = false)
-    private String login;
-
-    /** The password. */
-    @JsonIgnore
-    @NotNull
-    @Size(min = 60, max = 60)
-    @Column(name = "password_hash", length = 60)
-    private String password;
+//    /** The login. */
+//    @NotNull
+//    @Pattern(regexp = Constants.LOGIN_REGEX)
+//    @Size(min = 1, max = 50)
+//    @Column(length = 50, unique = true, nullable = false)
+//    private String login;
+//
+//    /** The password. */
+//    @JsonIgnore
+//    @NotNull
+//    @Size(min = 60, max = 60)
+//    @Column(name = "password_hash", length = 60)
+//    private String password;
 
     /** The first name. */
     @Size(max = 50)
@@ -76,16 +69,16 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(name = "last_name", length = 50)
     private String lastName;
 
-    /** The email. */
-    @Email
-    @Size(min = 5, max = 100)
-    @Column(length = 100, unique = true)
-    private String email;
-
-    /** The activated. */
-    @NotNull
-    @Column(nullable = false)
-    private boolean activated = false;
+//    /** The email. */
+//    @Email
+//    @Size(min = 5, max = 100)
+//    @Column(length = 100, unique = true)
+//    private String email;
+//
+//    /** The activated. */
+//    @NotNull
+//    @Column(nullable = false)
+//    private boolean activated = false;
 
     /** The lang key. */
     @Size(min = 2, max = 6)
@@ -97,21 +90,21 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(name = "image_url", length = 256)
     private String imageUrl;
 
-    /** The activation key. */
-    @Size(max = 20)
-    @Column(name = "activation_key", length = 20)
-    @JsonIgnore
-    private String activationKey;
-
-    /** The reset key. */
-    @Size(max = 20)
-    @Column(name = "reset_key", length = 20)
-    @JsonIgnore
-    private String resetKey;
-
-    /** The reset date. */
-    @Column(name = "reset_date")
-    private Instant resetDate = null;
+//    /** The activation key. */
+//    @Size(max = 20)
+//    @Column(name = "activation_key", length = 20)
+//    @JsonIgnore
+//    private String activationKey;
+//
+//    /** The reset key. */
+//    @Size(max = 20)
+//    @Column(name = "reset_key", length = 20)
+//    @JsonIgnore
+//    private String resetKey;
+//
+//    /** The reset date. */
+//    @Column(name = "reset_date")
+//    private Instant resetDate = null;
 
     /** The authorities. */
     @JsonIgnore
@@ -142,42 +135,42 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.id = id;
     }
 
-    /**
-     * Gets the login.
-     *
-     * @return the login
-     */
-    public String getLogin() {
-        return login;
-    }
-
-    /**
-     * Sets the login.
-     *
-     * @param login the new login
-     */
-    // Lowercase the login before saving it in database
-    public void setLogin(String login) {
-        this.login = StringUtils.lowerCase(login, Locale.ENGLISH);
-    }
-
-    /**
-     * Gets the password.
-     *
-     * @return the password
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
-     * Sets the password.
-     *
-     * @param password the new password
-     */
-    public void setPassword(String password) {
-        this.password = password;
-    }
+//    /**
+//     * Gets the login.
+//     *
+//     * @return the login
+//     */
+//    public String getLogin() {
+//        return login;
+//    }
+//
+//    /**
+//     * Sets the login.
+//     *
+//     * @param login the new login
+//     */
+//    // Lowercase the login before saving it in database
+//    public void setLogin(String login) {
+//        this.login = StringUtils.lowerCase(login, Locale.ENGLISH);
+//    }
+//
+//    /**
+//     * Gets the password.
+//     *
+//     * @return the password
+//     */
+//    public String getPassword() {
+//        return password;
+//    }
+//
+//    /**
+//     * Sets the password.
+//     *
+//     * @param password the new password
+//     */
+//    public void setPassword(String password) {
+//        this.password = password;
+//    }
 
     /**
      * Gets the first name.
@@ -215,23 +208,23 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.lastName = lastName;
     }
 
-    /**
-     * Gets the email.
-     *
-     * @return the email
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * Sets the email.
-     *
-     * @param email the new email
-     */
-    public void setEmail(String email) {
-        this.email = email;
-    }
+//    /**
+//     * Gets the email.
+//     *
+//     * @return the email
+//     */
+//    public String getEmail() {
+//        return email;
+//    }
+//
+//    /**
+//     * Sets the email.
+//     *
+//     * @param email the new email
+//     */
+//    public void setEmail(String email) {
+//        this.email = email;
+//    }
 
     /**
      * Gets the image url.
@@ -251,77 +244,77 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.imageUrl = imageUrl;
     }
 
-    /**
-     * Gets the activated.
-     *
-     * @return the activated
-     */
-    public boolean getActivated() {
-        return activated;
-    }
-
-    /**
-     * Sets the activated.
-     *
-     * @param activated the new activated
-     */
-    public void setActivated(boolean activated) {
-        this.activated = activated;
-    }
-
-    /**
-     * Gets the activation key.
-     *
-     * @return the activation key
-     */
-    public String getActivationKey() {
-        return activationKey;
-    }
-
-    /**
-     * Sets the activation key.
-     *
-     * @param activationKey the new activation key
-     */
-    public void setActivationKey(String activationKey) {
-        this.activationKey = activationKey;
-    }
-
-    /**
-     * Gets the reset key.
-     *
-     * @return the reset key
-     */
-    public String getResetKey() {
-        return resetKey;
-    }
-
-    /**
-     * Sets the reset key.
-     *
-     * @param resetKey the new reset key
-     */
-    public void setResetKey(String resetKey) {
-        this.resetKey = resetKey;
-    }
-
-    /**
-     * Gets the reset date.
-     *
-     * @return the reset date
-     */
-    public Instant getResetDate() {
-        return resetDate;
-    }
-
-    /**
-     * Sets the reset date.
-     *
-     * @param resetDate the new reset date
-     */
-    public void setResetDate(Instant resetDate) {
-        this.resetDate = resetDate;
-    }
+//    /**
+//     * Gets the activated.
+//     *
+//     * @return the activated
+//     */
+//    public boolean getActivated() {
+//        return activated;
+//    }
+//
+//    /**
+//     * Sets the activated.
+//     *
+//     * @param activated the new activated
+//     */
+//    public void setActivated(boolean activated) {
+//        this.activated = activated;
+//    }
+//
+//    /**
+//     * Gets the activation key.
+//     *
+//     * @return the activation key
+//     */
+//    public String getActivationKey() {
+//        return activationKey;
+//    }
+//
+//    /**
+//     * Sets the activation key.
+//     *
+//     * @param activationKey the new activation key
+//     */
+//    public void setActivationKey(String activationKey) {
+//        this.activationKey = activationKey;
+//    }
+//
+//    /**
+//     * Gets the reset key.
+//     *
+//     * @return the reset key
+//     */
+//    public String getResetKey() {
+//        return resetKey;
+//    }
+//
+//    /**
+//     * Sets the reset key.
+//     *
+//     * @param resetKey the new reset key
+//     */
+//    public void setResetKey(String resetKey) {
+//        this.resetKey = resetKey;
+//    }
+//
+//    /**
+//     * Gets the reset date.
+//     *
+//     * @return the reset date
+//     */
+//    public Instant getResetDate() {
+//        return resetDate;
+//    }
+//
+//    /**
+//     * Sets the reset date.
+//     *
+//     * @param resetDate the new reset date
+//     */
+//    public void setResetDate(Instant resetDate) {
+//        this.resetDate = resetDate;
+//    }
 
     /**
      * Gets the lang key.
@@ -389,14 +382,14 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Override
     public String toString() {
         return "User{" +
-            "login='" + login + '\'' +
-            ", firstName='" + firstName + '\'' +
+//            "login='" + login + '\'' +
+            "firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
-            ", email='" + email + '\'' +
+//            ", email='" + email + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
-            ", activated='" + activated + '\'' +
+//            ", activated='" + activated + '\'' +
             ", langKey='" + langKey + '\'' +
-            ", activationKey='" + activationKey + '\'' +
+//            ", activationKey='" + activationKey + '\'' +
             "}";
     }
 }
