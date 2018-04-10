@@ -45,20 +45,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
-//    /** The login. */
-//    @NotNull
-//    @Pattern(regexp = Constants.LOGIN_REGEX)
-//    @Size(min = 1, max = 50)
-//    @Column(length = 50, unique = true, nullable = false)
-//    private String login;
-//
-//    /** The password. */
-//    @JsonIgnore
-//    @NotNull
-//    @Size(min = 60, max = 60)
-//    @Column(name = "password_hash", length = 60)
-//    private String password;
-
     /** The first name. */
     @Size(max = 50)
     @Column(name = "first_name", length = 50)
@@ -74,11 +60,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
 //    @Size(min = 5, max = 100)
 //    @Column(length = 100, unique = true)
 //    private String email;
-//
-//    /** The activated. */
-//    @NotNull
-//    @Column(nullable = false)
-//    private boolean activated = false;
 
     /** The lang key. */
     @Size(min = 2, max = 6)
@@ -89,22 +70,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Size(max = 256)
     @Column(name = "image_url", length = 256)
     private String imageUrl;
-
-//    /** The activation key. */
-//    @Size(max = 20)
-//    @Column(name = "activation_key", length = 20)
-//    @JsonIgnore
-//    private String activationKey;
-//
-//    /** The reset key. */
-//    @Size(max = 20)
-//    @Column(name = "reset_key", length = 20)
-//    @JsonIgnore
-//    private String resetKey;
-//
-//    /** The reset date. */
-//    @Column(name = "reset_date")
-//    private Instant resetDate = null;
 
     /** The authorities. */
     @JsonIgnore
@@ -134,43 +99,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-
-//    /**
-//     * Gets the login.
-//     *
-//     * @return the login
-//     */
-//    public String getLogin() {
-//        return login;
-//    }
-//
-//    /**
-//     * Sets the login.
-//     *
-//     * @param login the new login
-//     */
-//    // Lowercase the login before saving it in database
-//    public void setLogin(String login) {
-//        this.login = StringUtils.lowerCase(login, Locale.ENGLISH);
-//    }
-//
-//    /**
-//     * Gets the password.
-//     *
-//     * @return the password
-//     */
-//    public String getPassword() {
-//        return password;
-//    }
-//
-//    /**
-//     * Sets the password.
-//     *
-//     * @param password the new password
-//     */
-//    public void setPassword(String password) {
-//        this.password = password;
-//    }
 
     /**
      * Gets the first name.
@@ -244,78 +172,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.imageUrl = imageUrl;
     }
 
-//    /**
-//     * Gets the activated.
-//     *
-//     * @return the activated
-//     */
-//    public boolean getActivated() {
-//        return activated;
-//    }
-//
-//    /**
-//     * Sets the activated.
-//     *
-//     * @param activated the new activated
-//     */
-//    public void setActivated(boolean activated) {
-//        this.activated = activated;
-//    }
-//
-//    /**
-//     * Gets the activation key.
-//     *
-//     * @return the activation key
-//     */
-//    public String getActivationKey() {
-//        return activationKey;
-//    }
-//
-//    /**
-//     * Sets the activation key.
-//     *
-//     * @param activationKey the new activation key
-//     */
-//    public void setActivationKey(String activationKey) {
-//        this.activationKey = activationKey;
-//    }
-//
-//    /**
-//     * Gets the reset key.
-//     *
-//     * @return the reset key
-//     */
-//    public String getResetKey() {
-//        return resetKey;
-//    }
-//
-//    /**
-//     * Sets the reset key.
-//     *
-//     * @param resetKey the new reset key
-//     */
-//    public void setResetKey(String resetKey) {
-//        this.resetKey = resetKey;
-//    }
-//
-//    /**
-//     * Gets the reset date.
-//     *
-//     * @return the reset date
-//     */
-//    public Instant getResetDate() {
-//        return resetDate;
-//    }
-//
-//    /**
-//     * Sets the reset date.
-//     *
-//     * @param resetDate the new reset date
-//     */
-//    public void setResetDate(Instant resetDate) {
-//        this.resetDate = resetDate;
-//    }
-
     /**
      * Gets the lang key.
      *
@@ -382,14 +238,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Override
     public String toString() {
         return "User{" +
-//            "login='" + login + '\'' +
             "firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
 //            ", email='" + email + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
-//            ", activated='" + activated + '\'' +
             ", langKey='" + langKey + '\'' +
-//            ", activationKey='" + activationKey + '\'' +
             "}";
     }
 }

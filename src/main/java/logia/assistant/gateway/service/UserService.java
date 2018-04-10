@@ -3,6 +3,7 @@ package logia.assistant.gateway.service;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +20,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.google.common.collect.Sets;
 
 import logia.assistant.gateway.config.Constants;
 import logia.assistant.gateway.domain.Authority;
@@ -95,19 +98,18 @@ public class UserService {
      * @return the user
      */
     public User registerUser(UserDTO userDTO, String password) {
-
         User newUser = new User();
         Authority authority = authorityRepository.findOne(AuthoritiesConstants.USER);
         Set<Authority> authorities = new HashSet<>();
         String encryptedPassword = passwordEncoder.encode(password);
-        newUser.setLogin(userDTO.getLogin());
         // new user gets initially a generated password
-        newUser.setPassword(encryptedPassword);
         newUser.setFirstName(userDTO.getFirstName());
         newUser.setLastName(userDTO.getLastName());
-        newUser.setEmail(userDTO.getEmail());
+//        newUser.setEmail(userDTO.getEmail());
         newUser.setImageUrl(userDTO.getImageUrl());
         newUser.setLangKey(userDTO.getLangKey());
+        newUser.setLogin(userDTO.getLogin());
+        newUser.setPassword(encryptedPassword);
         // new user is not active
         newUser.setActivated(false);
         // new user gets registration key
@@ -116,8 +118,6 @@ public class UserService {
         newUser.setAuthorities(authorities);
         userRepository.save(newUser);
         userSearchRepository.save(newUser);
-        cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(newUser.getLogin());
-        cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(newUser.getEmail());
         log.debug("Created Information for User: {}", newUser);
         return newUser;
     }
@@ -130,10 +130,9 @@ public class UserService {
      */
     public User createUser(UserDTO userDTO) {
         User user = new User();
-        user.setLogin(userDTO.getLogin());
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
-        user.setEmail(userDTO.getEmail());
+//        user.setEmail(userDTO.getEmail());
         user.setImageUrl(userDTO.getImageUrl());
         if (userDTO.getLangKey() == null) {
             user.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
@@ -147,14 +146,13 @@ public class UserService {
             user.setAuthorities(authorities);
         }
         String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
+        user.setLogin(userDTO.getLogin());
         user.setPassword(encryptedPassword);
         user.setResetKey(RandomUtil.generateResetKey());
         user.setResetDate(Instant.now());
         user.setActivated(true);
         userRepository.save(user);
         userSearchRepository.save(user);
-        cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-        cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
         log.debug("Created Information for User: {}", user);
         return user;
     }
@@ -204,15 +202,25 @@ public class UserService {
         return Optional.of(userRepository
             .findOne(userDTO.getId()))
             .map(user -> {
-                user.setFirstName(userDTO.getFirstName());
-                user.setLastName(userDTO.getLastName());
-                user.setImageUrl(userDTO.getImageUrl());
-                user.setLangKey(userDTO.getLangKey());
-                Set<Authority> managedAuthorities = user.getAuthorities();
-                managedAuthorities.clear();
-                userDTO.getAuthorities().stream()
-                    .map(authorityRepository::findOne)
-                    .forEach(managedAuthorities::add);
+                if (Objects.nonNull(userDTO.getFirstName())) {
+                    user.setFirstName(userDTO.getFirstName());    
+                }
+                if (Objects.nonNull(userDTO.getLastName())) {
+                    user.setLastName(userDTO.getLastName());    
+                }
+                if (Objects.nonNull(userDTO.getImageUrl())) {
+                    user.setImageUrl(userDTO.getImageUrl());    
+                }
+                if (Objects.nonNull(userDTO.getLangKey())) {
+                    user.setLangKey(userDTO.getLangKey());    
+                }
+                if (Objects.nonNull(userDTO.getAuthorities()) && !userDTO.getAuthorities().isEmpty()) {
+                    Set<Authority> managedAuthorities = user.getAuthorities();
+                    managedAuthorities.clear();
+                    userDTO.getAuthorities().stream()
+                        .map(authorityRepository::findOne)
+                        .forEach(managedAuthorities::add);    
+                }                
                 userSearchRepository.save(user);
                 log.debug("Changed Information for User: {}", user);
                 return user;
@@ -226,11 +234,9 @@ public class UserService {
      * @param login the login
      */
     public void deleteUser(String login) {
-        userRepository.findOneByLogin(login).ifPresent(user -> {
-            userRepository.delete(user);
-            userSearchRepository.delete(user);
-            log.debug("Deleted User: {}", user);
-        });
+        log.debug("Request to delete User login : {}", login);
+        Credential credential = this.credentialService.delete(login);;
+        this.delete(credential.getUser().getId());
     }
 
     /**
@@ -277,19 +283,16 @@ public class UserService {
     }
 
     /**
-     * Not activated users should be automatically deleted after 3 days.
+     * Non credential users should be automatically deleted.
      * <p>
      * This is scheduled to get fired everyday, at 01:00 (am).
      */
     @Scheduled(cron = "0 0 1 * * ?")
-    public void removeNotActivatedUsers() {
-        List<User> users = userRepository.findAllByActivatedIsFalseAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS));
+    public void removeNonCredentialUsers() {
+        List<User> users = userRepository.findAllNotHaveCredential();
         for (User user : users) {
-            log.debug("Deleting not activated user {}", user.getLogin());
-            userRepository.delete(user);
-            userSearchRepository.delete(user);
-            cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-            cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
+            log.debug("Deleting user {} not have credential", user.getId());
+            this.delete(user.getId());
         }
     }
 
@@ -300,6 +303,17 @@ public class UserService {
      */
     public List<String> getAuthorities() {
         return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
+    }
+    
+    /**
+     * Delete.
+     *
+     * @param userId the user id
+     */
+    private void delete(Long userId) {
+        userRepository.delete(userId);
+        userSearchRepository.delete(userId);
+        log.debug("Deleted User: {}", userId);
     }
 
 }

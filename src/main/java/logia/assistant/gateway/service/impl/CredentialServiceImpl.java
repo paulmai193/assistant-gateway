@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -19,9 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import logia.assistant.gateway.domain.Credential;
-import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.CredentialRepository;
-import logia.assistant.gateway.repository.UserRepository;
 import logia.assistant.gateway.repository.search.CredentialSearchRepository;
 import logia.assistant.gateway.security.SecurityUtils;
 import logia.assistant.gateway.service.CredentialService;
@@ -134,9 +133,21 @@ public class CredentialServiceImpl implements CredentialService {
      */
     @Override
     public void delete(Long id) {
-        log.debug("Request to delete Credential : {}", id);
-        credentialRepository.delete(id);
-        credentialSearchRepository.delete(id);
+        log.debug("Request to delete Credential ID : {}", id);
+        this.delete(id);
+    }
+    
+    /**
+     * Delete.
+     *
+     * @param login the login
+     */
+    public Credential delete(String login) {
+        log.debug("Request to delete Credential login : {}", login);
+        return this.credentialRepository.findOneByLogin(login).map(credential -> {
+            this.delete(credential.getId(), credential.getLogin());
+            return credential;
+        }).get();
     }
 
     /**
@@ -166,8 +177,7 @@ public class CredentialServiceImpl implements CredentialService {
         return this.credentialRepository.findOneByActivationKey(key)
             .map(credential -> {
                 // activate given credential for the registration key.
-                credential.setActivated(true);
-                credential.setActivationKey(null);
+                credential.activated(true).activationKey(null);
                 this.credentialSearchRepository.save(credential);
                 cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(credential.getLogin());
                 log.debug("Activated user: {}", credential);
@@ -189,6 +199,7 @@ public class CredentialServiceImpl implements CredentialService {
            .filter(credential -> credential.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
            .map(credential -> {
                 credential.passwordHash(passwordEncoder.encode(newPassword)).resetKey(null).resetDate(null);
+                this.credentialSearchRepository.save(credential);
                 cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(credential.getLogin());
                 return credential;
            });
@@ -205,8 +216,8 @@ public class CredentialServiceImpl implements CredentialService {
         return this.credentialRepository.findOneByLoginIgnoreCase(mail)
             .filter(Credential::isActivated)
             .map(credential -> {
-                credential.setResetKey(RandomUtil.generateResetKey());
-                credential.setResetDate(Instant.now());
+                credential.resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now());
+                this.credentialSearchRepository.save(credential);
                 cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(credential.getLogin());
                 return credential;
             });
@@ -223,6 +234,7 @@ public class CredentialServiceImpl implements CredentialService {
             .ifPresent(credential -> {
                 String encryptedPassword = passwordEncoder.encode(password);
                 credential.setPasswordHash(encryptedPassword);
+                this.credentialSearchRepository.save(credential);
                 cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(credential.getLogin());
                 log.debug("Changed password for User: {}", credential);
             });
@@ -245,13 +257,24 @@ public class CredentialServiceImpl implements CredentialService {
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void removeNotActivatedUsers() {
-        List<Credential> users = this.credentialRepository.findAllByActivatedIsFalseAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS));
-        for (User user : users) {
-            log.debug("Deleting not activated user {}", user.getLogin());
-            userRepository.delete(user);
-            userSearchRepository.delete(user);
-            cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).evict(user.getLogin());
-            cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).evict(user.getEmail());
-        }
+        this.credentialRepository.findAllByActivatedIsFalseAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS)).forEach(credential -> {
+            log.debug("Deleting not activated user {}", credential.getLogin());
+            this.delete(credential.getId(), credential.getLogin());
+        });
+    }
+    
+    /**
+     * Delete.
+     *
+     * @param credentialId the credential id
+     * @param login the login
+     */
+    private void delete(Long credentialId, String login) {
+        this.credentialRepository.delete(credentialId);
+        this.credentialSearchRepository.delete(credentialId);
+        if (Objects.nonNull(login)) {
+            cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(login);    
+        }        
+        log.debug("Deleted Credential: {}", credentialId);
     }
 }

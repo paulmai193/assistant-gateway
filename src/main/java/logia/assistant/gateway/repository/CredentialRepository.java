@@ -68,6 +68,12 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
      */
     Optional<Credential> findOneByLogin(String login);
     
+    /**
+     * Find all by activated is false and created date before.
+     *
+     * @param dateTime the date time
+     * @return the list
+     */
     List<Credential> findAllByActivatedIsFalseAndCreatedDateBefore(Instant dateTime);
-
+    
 }
