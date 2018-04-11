@@ -34,14 +34,14 @@ public class CredentialDTO implements Serializable {
 
     /** The activation key. */
     @Size(max = 20)
-    private String activation_key;
+    private String activationKey;
 
     /** The reset key. */
     @Size(max = 20)
-    private String reset_key;
+    private String resetKey;
 
     /** The reset date. */
-    private Instant reset_date;
+    private Instant resetDate;
 
     /** The activated. */
     @NotNull
@@ -88,6 +88,17 @@ public class CredentialDTO implements Serializable {
     public void setLogin(String login) {
         this.login = login;
     }
+    
+    /**
+     * Login.
+     *
+     * @param login the login
+     * @return the credential DTO
+     */
+    public CredentialDTO login(String login) {
+        this.setLogin(login);
+        return this;
+    }
 
     /**
      * Gets the password hash.
@@ -105,6 +116,17 @@ public class CredentialDTO implements Serializable {
      */
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+    
+    /**
+     * Password hash.
+     *
+     * @param passwordHash the password hash
+     * @return the credential DTO
+     */
+    public CredentialDTO passwordHash(String passwordHash) {
+        this.setPasswordHash(passwordHash);
+        return this;
     }
 
     /**
@@ -124,23 +146,45 @@ public class CredentialDTO implements Serializable {
     public void setLastLoginDate(ZonedDateTime lastLoginDate) {
         this.lastLoginDate = lastLoginDate;
     }
+    
+    /**
+     * Last login date.
+     *
+     * @param lastLoginDate the last login date
+     * @return the credential DTO
+     */
+    public CredentialDTO lastLoginDate(ZonedDateTime lastLoginDate) {
+        this.setLastLoginDate(lastLoginDate);
+        return this;
+    }
 
     /**
      * Gets the activation key.
      *
      * @return the activation key
      */
-    public String getActivation_key() {
-        return activation_key;
+    public String getActivationKey() {
+        return activationKey;
     }
 
     /**
      * Sets the activation key.
      *
-     * @param activation_key the new activation key
+     * @param activationKey the new activation key
      */
-    public void setActivation_key(String activation_key) {
-        this.activation_key = activation_key;
+    public void setActivationKey(String activationKey) {
+        this.activationKey = activationKey;
+    }
+    
+    /**
+     * Activation key.
+     *
+     * @param activationKey the activation key
+     * @return the credential DTO
+     */
+    public CredentialDTO activationKey(String activationKey) {
+        this.setActivated(activated);
+        return this;
     }
 
     /**
@@ -148,17 +192,28 @@ public class CredentialDTO implements Serializable {
      *
      * @return the reset key
      */
-    public String getReset_key() {
-        return reset_key;
+    public String getResetKey() {
+        return resetKey;
     }
 
     /**
      * Sets the reset key.
      *
-     * @param reset_key the new reset key
+     * @param resetKey the new reset key
      */
-    public void setReset_key(String reset_key) {
-        this.reset_key = reset_key;
+    public void setResetKey(String resetKey) {
+        this.resetKey = resetKey;
+    }
+    
+    /**
+     * Reset key.
+     *
+     * @param resetKey the reset key
+     * @return the credential DTO
+     */
+    public CredentialDTO resetKey(String resetKey) {
+        this.setResetKey(resetKey);
+        return this;
     }
 
     /**
@@ -166,17 +221,28 @@ public class CredentialDTO implements Serializable {
      *
      * @return the reset date
      */
-    public Instant getReset_date() {
-        return reset_date;
+    public Instant getResetDate() {
+        return resetDate;
     }
 
     /**
      * Sets the reset date.
      *
-     * @param reset_date the new reset date
+     * @param resetDate the new reset date
      */
-    public void setReset_date(Instant reset_date) {
-        this.reset_date = reset_date;
+    public void setResetDate(Instant resetDate) {
+        this.resetDate = resetDate;
+    }
+    
+    /**
+     * Reset date.
+     *
+     * @param resetDate the reset date
+     * @return the credential DTO
+     */
+    public CredentialDTO resetDate(Instant resetDate) {
+        this.setResetDate(resetDate);
+        return this;
     }
 
     /**
@@ -196,6 +262,17 @@ public class CredentialDTO implements Serializable {
     public void setActivated(Boolean activated) {
         this.activated = activated;
     }
+    
+    /**
+     * Activated.
+     *
+     * @param activated the activated
+     * @return the credential DTO
+     */
+    public CredentialDTO activated(Boolean activated) {
+        this.setActivated(activated);
+        return this;
+    }
 
     /**
      * Gets the user id.
@@ -214,6 +291,17 @@ public class CredentialDTO implements Serializable {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+    
+    /**
+     * User id.
+     *
+     * @param userId the user id
+     * @return the credential DTO
+     */
+    public CredentialDTO userId(Long userId) {
+        this.setUserId(userId);
+        return this;
+    }
 
     /**
      * Gets the user login.
@@ -231,6 +319,17 @@ public class CredentialDTO implements Serializable {
      */
     public void setUserLogin(String userLogin) {
         this.userLogin = userLogin;
+    }
+    
+    /**
+     * User login.
+     *
+     * @param userLogin the user login
+     * @return the credential DTO
+     */
+    public CredentialDTO userLogin(String userLogin) {
+        this.setUserLogin(userLogin);
+        return this;
     }
 
     /* (non-Javadoc)
@@ -270,9 +369,9 @@ public class CredentialDTO implements Serializable {
             ", login='" + getLogin() + "'" +
             ", passwordHash='" + getPasswordHash() + "'" +
             ", lastLoginDate='" + getLastLoginDate() + "'" +
-            ", activation_key='" + getActivation_key() + "'" +
-            ", reset_key='" + getReset_key() + "'" +
-            ", reset_date='" + getReset_date() + "'" +
+            ", activationKey='" + getActivationKey() + "'" +
+            ", resetKey='" + getResetKey() + "'" +
+            ", resetDate='" + getResetDate() + "'" +
             ", activated='" + isActivated() + "'" +
             "}";
     }

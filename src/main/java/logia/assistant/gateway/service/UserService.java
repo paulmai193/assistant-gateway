@@ -31,6 +31,7 @@ import logia.assistant.gateway.repository.AuthorityRepository;
 import logia.assistant.gateway.repository.UserRepository;
 import logia.assistant.gateway.repository.search.UserSearchRepository;
 import logia.assistant.gateway.security.SecurityUtils;
+import logia.assistant.gateway.service.dto.CredentialDTO;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.gateway.service.util.RandomUtil;
@@ -108,17 +109,17 @@ public class UserService {
 //        newUser.setEmail(userDTO.getEmail());
         newUser.setImageUrl(userDTO.getImageUrl());
         newUser.setLangKey(userDTO.getLangKey());
-        newUser.setLogin(userDTO.getLogin());
-        newUser.setPassword(encryptedPassword);
-        // new user is not active
-        newUser.setActivated(false);
-        // new user gets registration key
-        newUser.setActivationKey(RandomUtil.generateActivationKey());
         authorities.add(authority);
         newUser.setAuthorities(authorities);
         userRepository.save(newUser);
         userSearchRepository.save(newUser);
         log.debug("Created Information for User: {}", newUser);
+        
+        // Create new credential, new user is not active, new user gets registration key
+        this.credentialService
+                .save(new CredentialDTO().login(userDTO.getLogin()).passwordHash(encryptedPassword)
+                        .activated(false).activationKey(RandomUtil.generateActivationKey()));
+        
         return newUser;
     }
 
@@ -145,15 +146,17 @@ public class UserService {
                 .collect(Collectors.toSet());
             user.setAuthorities(authorities);
         }
-        String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
-        user.setLogin(userDTO.getLogin());
-        user.setPassword(encryptedPassword);
-        user.setResetKey(RandomUtil.generateResetKey());
-        user.setResetDate(Instant.now());
-        user.setActivated(true);
         userRepository.save(user);
         userSearchRepository.save(user);
         log.debug("Created Information for User: {}", user);
+        
+        String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
+        
+        // Create new credential
+        this.credentialService
+                .save(new CredentialDTO().login(userDTO.getLogin()).passwordHash(encryptedPassword)
+                        .activated(true).resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now()));
+        
         return user;
     }
 
@@ -258,7 +261,8 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
-        return userRepository.findOneWithAuthoritiesByLogin(login);
+        return this.credentialService.findOneByLogin(login)
+                .flatMap(credential -> Optional.of(credential.getUser()));
     }
 
     /**
@@ -279,7 +283,8 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities() {
-        return SecurityUtils.getCurrentUserLogin().flatMap(userRepository::findOneWithAuthoritiesByLogin);
+        return SecurityUtils.getCurrentUserLogin().flatMap(login -> this.credentialService.findOneByLogin(login)
+                .flatMap(credential -> Optional.of(credential.getUser())));
     }
 
     /**
