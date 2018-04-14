@@ -2,14 +2,13 @@ package logia.assistant.gateway.service;
 
 import java.text.MessageFormat;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +19,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.google.common.collect.Sets;
 
 import logia.assistant.gateway.config.Constants;
 import logia.assistant.gateway.domain.Authority;
@@ -35,7 +32,7 @@ import logia.assistant.gateway.service.dto.CredentialDTO;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.gateway.service.util.RandomUtil;
-import logia.assistant.gateway.web.rest.errors.EmailAlreadyUsedException;
+import logia.assistant.gateway.service.validator.ValidatorService;
 import logia.assistant.gateway.web.rest.errors.InternalServerErrorException;
 import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
@@ -49,25 +46,29 @@ import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 public class UserService {
 
     /** The log. */
-    private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final Logger                log = LoggerFactory.getLogger(UserService.class);
 
     /** The user repository. */
-    private final UserRepository userRepository;
+    private final UserRepository        userRepository;
 
     /** The password encoder. */
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder       passwordEncoder;
 
     /** The user search repository. */
-    private final UserSearchRepository userSearchRepository;
-    
+    private final UserSearchRepository  userSearchRepository;
+
     /** The credential service. */
     private final CredentialServiceImpl credentialService;
 
     /** The authority repository. */
-    private final AuthorityRepository authorityRepository;
+    private final AuthorityRepository   authorityRepository;
 
     /** The cache manager. */
-    private final CacheManager cacheManager;
+    @SuppressWarnings("unused")
+    private final CacheManager          cacheManager;
+
+    @Inject
+    private ValidatorService            validatorService;
 
     /**
      * Instantiates a new user service.
@@ -99,27 +100,22 @@ public class UserService {
      * @return the user
      */
     public User registerUser(UserDTO userDTO, String password) {
-        User newUser = new User();
-        Authority authority = authorityRepository.findOne(AuthoritiesConstants.USER);
-        Set<Authority> authorities = new HashSet<>();
-        String encryptedPassword = passwordEncoder.encode(password);
+        log.debug("User create new account: {}", userDTO);
+        // Validate register information
+        this.validatorService.validateNewCredential(userDTO.getLogin(), password);
+        // userRepository.findOneByEmailIgnoreCase(managedUserVM.getEmail()).ifPresent(u -> {throw
+        // new EmailAlreadyUsedException();});
+
         // new user gets initially a generated password
-        newUser.setFirstName(userDTO.getFirstName());
-        newUser.setLastName(userDTO.getLastName());
-//        newUser.setEmail(userDTO.getEmail());
-        newUser.setImageUrl(userDTO.getImageUrl());
-        newUser.setLangKey(userDTO.getLangKey());
-        authorities.add(authority);
-        newUser.setAuthorities(authorities);
-        userRepository.save(newUser);
-        userSearchRepository.save(newUser);
-        log.debug("Created Information for User: {}", newUser);
-        
+        userDTO.authority(AuthoritiesConstants.USER);
+        User newUser = this.updateOrCreateUser(null, userDTO);
+
         // Create new credential, new user is not active, new user gets registration key
+        String encryptedPassword = passwordEncoder.encode(password);
         this.credentialService
                 .save(new CredentialDTO().login(userDTO.getLogin()).passwordHash(encryptedPassword)
                         .activated(false).activationKey(RandomUtil.generateActivationKey()));
-        
+
         return newUser;
     }
 
@@ -130,33 +126,18 @@ public class UserService {
      * @return the user
      */
     public User createUser(UserDTO userDTO) {
-        User user = new User();
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
-//        user.setEmail(userDTO.getEmail());
-        user.setImageUrl(userDTO.getImageUrl());
+        log.debug("Admin created Information for User: {}", userDTO);
         if (userDTO.getLangKey() == null) {
-            user.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
-        } else {
-            user.setLangKey(userDTO.getLangKey());
+            userDTO.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
         }
-        if (userDTO.getAuthorities() != null) {
-            Set<Authority> authorities = userDTO.getAuthorities().stream()
-                .map(authorityRepository::findOne)
-                .collect(Collectors.toSet());
-            user.setAuthorities(authorities);
-        }
-        userRepository.save(user);
-        userSearchRepository.save(user);
-        log.debug("Created Information for User: {}", user);
-        
-        String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
-        
+        User user = this.updateOrCreateUser(null, userDTO);
+
         // Create new credential
-        this.credentialService
-                .save(new CredentialDTO().login(userDTO.getLogin()).passwordHash(encryptedPassword)
-                        .activated(true).resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now()));
-        
+        String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
+        this.credentialService.save(new CredentialDTO().login(userDTO.getLogin())
+                .passwordHash(encryptedPassword).activated(true)
+                .resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now()));
+
         return user;
     }
 
@@ -170,29 +151,18 @@ public class UserService {
      * @param imageUrl image URL of user
      */
     public void updateUser(String firstName, String lastName, String langKey, String imageUrl) {
-        final String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new InternalServerErrorException("Current user login not found"));
+        final String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(
+                () -> new InternalServerErrorException("Current user login not found"));
         Optional<Credential> credential = this.credentialService.findOneByLogin(userLogin);
         if (!credential.isPresent()) {
-            throw new InternalServerErrorException(MessageFormat.format("User {0} could not be found", userLogin));
+            throw new InternalServerErrorException(
+                    MessageFormat.format("User {0} could not be found", userLogin));
         }
-        SecurityUtils.getCurrentUserLogin()
-            .flatMap(userRepository::findOneByLogin)
-            .ifPresent(user -> {
-                if (Objects.nonNull(firstName)) {
-                    user.setFirstName(firstName);    
-                }
-                if (Objects.nonNull(lastName)) {
-                    user.setLastName(lastName);    
-                }
-                if (Objects.nonNull(langKey)) {
-                    user.setLangKey(langKey);    
-                }
-                if (Objects.nonNull(imageUrl)) {
-                    user.setImageUrl(imageUrl);    
-                }                
-                userSearchRepository.save(user);
-                log.debug("Changed Information for User: {}", user);
-            });
+        User user = credential.get().getUser();
+        UserDTO userDTO = new UserDTO().firstName(firstName).lastName(lastName).langKey(langKey)
+                .imageUrl(imageUrl);
+        log.debug("User {} change information to {}", user.getId(), userDTO);
+        this.updateOrCreateUser(user, userDTO);
     }
 
     /**
@@ -202,33 +172,51 @@ public class UserService {
      * @return updated user
      */
     public Optional<UserDTO> updateUser(UserDTO userDTO) {
-        return Optional.of(userRepository
-            .findOne(userDTO.getId()))
-            .map(user -> {
-                if (Objects.nonNull(userDTO.getFirstName())) {
-                    user.setFirstName(userDTO.getFirstName());    
-                }
-                if (Objects.nonNull(userDTO.getLastName())) {
-                    user.setLastName(userDTO.getLastName());    
-                }
-                if (Objects.nonNull(userDTO.getImageUrl())) {
-                    user.setImageUrl(userDTO.getImageUrl());    
-                }
-                if (Objects.nonNull(userDTO.getLangKey())) {
-                    user.setLangKey(userDTO.getLangKey());    
-                }
-                if (Objects.nonNull(userDTO.getAuthorities()) && !userDTO.getAuthorities().isEmpty()) {
-                    Set<Authority> managedAuthorities = user.getAuthorities();
-                    managedAuthorities.clear();
-                    userDTO.getAuthorities().stream()
-                        .map(authorityRepository::findOne)
-                        .forEach(managedAuthorities::add);    
-                }                
-                userSearchRepository.save(user);
-                log.debug("Changed Information for User: {}", user);
-                return user;
-            })
-            .map(UserDTO::new);
+        log.debug("Admin change information of user {}", userDTO);
+        return Optional.of(userRepository.findOne(userDTO.getId())).map(user -> {
+            return this.updateOrCreateUser(user, userDTO);
+        }).map(UserDTO::new);
+    }
+
+    /**
+     * Update or create user.
+     *
+     * @param user the user. <code><strong>NULL</strong></code> if create new user
+     * @param updateInformation the update information
+     * @return the user
+     */
+    private User updateOrCreateUser(User user, UserDTO updateInformation) {
+        if (Objects.isNull(user)) {
+            user = new User();
+        }
+        if (Objects.nonNull(updateInformation.getFirstName())) {
+            user.setFirstName(updateInformation.getFirstName());
+        }
+        if (Objects.nonNull(updateInformation.getLastName())) {
+            user.setLastName(updateInformation.getLastName());
+        }
+        // if (Objects.nonNull(updateInformation.getEmail())) {
+        // user.setEmail(updateInformation.setEmail());
+        // }
+        if (Objects.nonNull(updateInformation.getImageUrl())) {
+            user.setImageUrl(updateInformation.getImageUrl());
+        }
+        if (Objects.nonNull(updateInformation.getLangKey())) {
+            user.setLangKey(updateInformation.getLangKey());
+        }
+        if (Objects.nonNull(updateInformation.getAuthorities())
+                && !updateInformation.getAuthorities().isEmpty()) {
+            Set<Authority> managedAuthorities = user.getAuthorities();
+            managedAuthorities.clear();
+            updateInformation.getAuthorities().stream().map(authorityRepository::findOne)
+                    .forEach(managedAuthorities::add);
+        }
+        if (Objects.isNull(user.getId())) {
+            user = this.userRepository.save(user);
+        }
+        userSearchRepository.save(user);
+        log.debug("Create user or change information for User: {}", user);
+        return user;
     }
 
     /**
@@ -238,7 +226,8 @@ public class UserService {
      */
     public void deleteUser(String login) {
         log.debug("Request to delete User login : {}", login);
-        Credential credential = this.credentialService.delete(login);;
+        Credential credential = this.credentialService.delete(login);
+        ;
         this.delete(credential.getUser().getId());
     }
 
@@ -250,7 +239,8 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Page<UserDTO> getAllManagedUsers(Pageable pageable) {
-        return userRepository.findAllByLoginNot(pageable, Constants.ANONYMOUS_USER).map(UserDTO::new);
+        return userRepository.findAllByLoginNot(pageable, Constants.ANONYMOUS_USER)
+                .map(UserDTO::new);
     }
 
     /**
@@ -283,8 +273,8 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities() {
-        return SecurityUtils.getCurrentUserLogin().flatMap(login -> this.credentialService.findOneByLogin(login)
-                .flatMap(credential -> Optional.of(credential.getUser())));
+        return SecurityUtils.getCurrentUserLogin().flatMap(login -> this.credentialService
+                .findOneByLogin(login).flatMap(credential -> Optional.of(credential.getUser())));
     }
 
     /**
@@ -307,9 +297,10 @@ public class UserService {
      * @return a list of all the authorities
      */
     public List<String> getAuthorities() {
-        return authorityRepository.findAll().stream().map(Authority::getName).collect(Collectors.toList());
+        return authorityRepository.findAll().stream().map(Authority::getName)
+                .collect(Collectors.toList());
     }
-    
+
     /**
      * Delete.
      *

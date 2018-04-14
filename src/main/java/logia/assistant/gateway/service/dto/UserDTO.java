@@ -173,6 +173,17 @@ public class UserDTO {
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
+    
+    /**
+     * First name.
+     *
+     * @param firstName the first name
+     * @return the user DTO
+     */
+    public UserDTO firstName(String firstName) {
+        this.setFirstName(firstName);
+        return this;
+    }
 
     /**
      * Gets the last name.
@@ -190,6 +201,17 @@ public class UserDTO {
      */
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+    
+    /**
+     * Last name.
+     *
+     * @param lastName the last name
+     * @return the user DTO
+     */
+    public UserDTO lastName(String lastName) {
+        this.setLastName(lastName);
+        return this;
     }
 
     /**
@@ -209,6 +231,17 @@ public class UserDTO {
     public void setEmail(String email) {
         this.email = email;
     }
+    
+    /**
+     * Email.
+     *
+     * @param email the email
+     * @return the user DTO
+     */
+    public UserDTO email(String email) {
+        this.setEmail(email);
+        return this;
+    }
 
     /**
      * Gets the image url.
@@ -226,6 +259,17 @@ public class UserDTO {
      */
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+    
+    /**
+     * Image url.
+     *
+     * @param imageUrl the image url
+     * @return the user DTO
+     */
+    public UserDTO imageUrl(String imageUrl) {
+        this.setImageUrl(imageUrl);
+        return this;
     }
 
     /**
@@ -262,6 +306,17 @@ public class UserDTO {
      */
     public void setLangKey(String langKey) {
         this.langKey = langKey;
+    }
+    
+    /**
+     * Lang key.
+     *
+     * @param langKey the lang key
+     * @return the user DTO
+     */
+    public UserDTO langKey(String langKey) {
+        this.setLangKey(langKey);
+        return this;
     }
 
     /**
@@ -352,6 +407,22 @@ public class UserDTO {
      */
     public void setAuthorities(Set<String> authorities) {
         this.authorities = authorities;
+    }
+    
+    /**
+     * Authorities.
+     *
+     * @param authorities the authorities
+     * @return the user DTO
+     */
+    public UserDTO authorities(Set<String> authorities) {
+        this.setAuthorities(authorities);
+        return this;
+    }
+    
+    public UserDTO authority(String authority) {
+        this.authorities.add(authority);
+        return this;
     }
 
     /* (non-Javadoc)

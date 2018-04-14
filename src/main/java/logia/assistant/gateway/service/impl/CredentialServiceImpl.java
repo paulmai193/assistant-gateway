@@ -194,7 +194,7 @@ public class CredentialServiceImpl implements CredentialService {
      */
     public Optional<Credential> completePasswordReset(String newPassword, String key) {
        log.debug("Reset user password for reset key {}", key);
-
+       this.validatorService.validatePassword(newPassword);
        return this.credentialRepository.findOneByResetKey(key)
            .filter(credential -> credential.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
            .map(credential -> {
@@ -229,6 +229,7 @@ public class CredentialServiceImpl implements CredentialService {
      * @param password the password
      */
     public void changePassword(String password) {
+        this.validatorService.validatePassword(password);
         SecurityUtils.getCurrentUserLogin()
             .flatMap(this.credentialRepository::findOneWithUserBylogin)
             .ifPresent(credential -> {

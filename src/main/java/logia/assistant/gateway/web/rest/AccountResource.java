@@ -1,28 +1,38 @@
 package logia.assistant.gateway.web.rest;
 
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.codahale.metrics.annotation.Timed;
 
 import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.UserRepository;
-import logia.assistant.gateway.security.SecurityUtils;
 import logia.assistant.gateway.service.MailService;
 import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
-import logia.assistant.gateway.web.rest.errors.*;
+import logia.assistant.gateway.web.rest.errors.EmailAlreadyUsedException;
+import logia.assistant.gateway.web.rest.errors.EmailNotFoundException;
+import logia.assistant.gateway.web.rest.errors.InternalServerErrorException;
+import logia.assistant.gateway.web.rest.errors.InvalidPasswordException;
+import logia.assistant.gateway.web.rest.errors.LoginAlreadyUsedException;
 import logia.assistant.gateway.web.rest.vm.KeyAndPasswordVM;
 import logia.assistant.gateway.web.rest.vm.ManagedUserVM;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import java.util.*;
 
 /**
  * REST controller for managing the current user's account.
@@ -36,9 +46,6 @@ public class AccountResource {
     /** The log. */
     private final Logger log = LoggerFactory.getLogger(AccountResource.class);
 
-    /** The user repository. */
-    private final UserRepository userRepository;
-
     /** The user service. */
     private final UserService userService;
 
@@ -51,15 +58,13 @@ public class AccountResource {
     /**
      * Instantiates a new account resource.
      *
-     * @param userRepository the user repository
      * @param userService the user service
      * @param mailService the mail service
      * @param credentialService the credential service
      */
-    public AccountResource(UserRepository userRepository, UserService userService,
+    public AccountResource(UserService userService,
             MailService mailService, CredentialServiceImpl credentialService) {
         super();
-        this.userRepository = userRepository;
         this.userService = userService;
         this.mailService = mailService;
         this.credentialService = credentialService;
@@ -77,11 +82,7 @@ public class AccountResource {
     @Timed
     @ResponseStatus(HttpStatus.CREATED)
     public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
-        if (!checkPasswordLength(managedUserVM.getPassword())) {
-            throw new InvalidPasswordException();
-        }
-        userRepository.findOneByLogin(managedUserVM.getLogin().toLowerCase()).ifPresent(u -> {throw new LoginAlreadyUsedException();});
-        userRepository.findOneByEmailIgnoreCase(managedUserVM.getEmail()).ifPresent(u -> {throw new EmailAlreadyUsedException();});
+        log.info("REST request to register account {}", managedUserVM);
         User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
         mailService.sendActivationEmail(user);
     }
@@ -95,6 +96,7 @@ public class AccountResource {
     @GetMapping("/activate")
     @Timed
     public void activateAccount(@RequestParam(value = "key") String key) {
+        log.info("REST request to activate account by key {}", key);
         Optional<Credential> credential = this.credentialService.activateRegistration(key);
         if (!credential.isPresent()) {
             throw new InternalServerErrorException("No user was found for this reset key");
@@ -110,7 +112,7 @@ public class AccountResource {
     @GetMapping("/authenticate")
     @Timed
     public String isAuthenticated(HttpServletRequest request) {
-        log.debug("REST request to check if the current user is authenticated");
+        log.info("REST request to check if the current user is authenticated");
         return request.getRemoteUser();
     }
 
@@ -123,6 +125,7 @@ public class AccountResource {
     @GetMapping("/account")
     @Timed
     public UserDTO getAccount() {
+        log.info("REST request to get information of current authorized user");
         return userService.getUserWithAuthorities()
             .map(UserDTO::new)
             .orElseThrow(() -> new InternalServerErrorException("User could not be found"));
@@ -137,6 +140,7 @@ public class AccountResource {
     @PutMapping("/account")
     @Timed
     public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
+        log.info("REST request to change information of current authorized account: {}", userDTO);
         userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getLangKey(), userDTO.getImageUrl());
    }
 
@@ -149,9 +153,7 @@ public class AccountResource {
     @PostMapping(path = "/account/change-password")
     @Timed
     public void changePassword(@RequestBody String password) {
-        if (!checkPasswordLength(password)) {
-            throw new InvalidPasswordException();
-        }
+        log.info("REST request to change current authorized account password {}", password);
         this.credentialService.changePassword(password);
    }
 
@@ -164,6 +166,7 @@ public class AccountResource {
     @PostMapping(path = "/account/reset-password/init")
     @Timed
     public void requestPasswordReset(@RequestBody String mail) {
+        log.info("REST request to reset password of email {}", mail);
        mailService.sendPasswordResetMail(
            this.credentialService.requestPasswordReset(mail)
                .orElseThrow(EmailNotFoundException::new)
@@ -180,26 +183,12 @@ public class AccountResource {
     @PostMapping(path = "/account/reset-password/finish")
     @Timed
     public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
-        if (!checkPasswordLength(keyAndPassword.getNewPassword())) {
-            throw new InvalidPasswordException();
-        }
+        log.info("REST request to finish reset password by key: {}", keyAndPassword.getKey());
         Optional<Credential> credential =
                 this.credentialService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
 
         if (!credential.isPresent()) {
             throw new InternalServerErrorException("No user was found for this reset key");
         }
-    }
-
-    /**
-     * Check password length.
-     *
-     * @param password the password
-     * @return true, if successful
-     */
-    private static boolean checkPasswordLength(String password) {
-        return !StringUtils.isEmpty(password) &&
-            password.length() >= ManagedUserVM.PASSWORD_MIN_LENGTH &&
-            password.length() <= ManagedUserVM.PASSWORD_MAX_LENGTH;
     }
 }
