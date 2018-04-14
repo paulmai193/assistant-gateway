@@ -35,16 +35,14 @@ describe('Credential e2e test', () => {
         credentialComponentsPage.clickOnCreateButton();
         credentialDialogPage.setLoginInput('login');
         expect(credentialDialogPage.getLoginInput()).toMatch('login');
-        credentialDialogPage.setPasswordHashInput('passwordHash');
-        expect(credentialDialogPage.getPasswordHashInput()).toMatch('passwordHash');
         credentialDialogPage.setLastLoginDateInput(12310020012301);
         expect(credentialDialogPage.getLastLoginDateInput()).toMatch('2001-12-31T02:30');
-        credentialDialogPage.setActivation_keyInput('activation_key');
-        expect(credentialDialogPage.getActivation_keyInput()).toMatch('activation_key');
-        credentialDialogPage.setReset_keyInput('reset_key');
-        expect(credentialDialogPage.getReset_keyInput()).toMatch('reset_key');
-        credentialDialogPage.setReset_dateInput(12310020012301);
-        expect(credentialDialogPage.getReset_dateInput()).toMatch('2001-12-31T02:30');
+        credentialDialogPage.setActivationKeyInput('activationKey');
+        expect(credentialDialogPage.getActivationKeyInput()).toMatch('activationKey');
+        credentialDialogPage.setResetKeyInput('resetKey');
+        expect(credentialDialogPage.getResetKeyInput()).toMatch('resetKey');
+        credentialDialogPage.setResetDateInput(12310020012301);
+        expect(credentialDialogPage.getResetDateInput()).toMatch('2001-12-31T02:30');
         credentialDialogPage.getActivatedInput().isSelected().then((selected) => {
             if (selected) {
                 credentialDialogPage.getActivatedInput().click();
@@ -52,6 +50,15 @@ describe('Credential e2e test', () => {
             } else {
                 credentialDialogPage.getActivatedInput().click();
                 expect(credentialDialogPage.getActivatedInput().isSelected()).toBeTruthy();
+            }
+        });
+        credentialDialogPage.getPrimaryInput().isSelected().then((selected) => {
+            if (selected) {
+                credentialDialogPage.getPrimaryInput().click();
+                expect(credentialDialogPage.getPrimaryInput().isSelected()).toBeFalsy();
+            } else {
+                credentialDialogPage.getPrimaryInput().click();
+                expect(credentialDialogPage.getPrimaryInput().isSelected()).toBeTruthy();
             }
         });
         credentialDialogPage.userSelectLastOption();
@@ -82,12 +89,12 @@ export class CredentialDialogPage {
     saveButton = element(by.css('.modal-footer .btn.btn-primary'));
     closeButton = element(by.css('button.close'));
     loginInput = element(by.css('input#field_login'));
-    passwordHashInput = element(by.css('input#field_passwordHash'));
     lastLoginDateInput = element(by.css('input#field_lastLoginDate'));
-    activation_keyInput = element(by.css('input#field_activation_key'));
-    reset_keyInput = element(by.css('input#field_reset_key'));
-    reset_dateInput = element(by.css('input#field_reset_date'));
+    activationKeyInput = element(by.css('input#field_activationKey'));
+    resetKeyInput = element(by.css('input#field_resetKey'));
+    resetDateInput = element(by.css('input#field_resetDate'));
     activatedInput = element(by.css('input#field_activated'));
+    primaryInput = element(by.css('input#field_primary'));
     userSelect = element(by.css('select#field_user'));
 
     getModalTitle() {
@@ -102,14 +109,6 @@ export class CredentialDialogPage {
         return this.loginInput.getAttribute('value');
     };
 
-    setPasswordHashInput = function(passwordHash) {
-        this.passwordHashInput.sendKeys(passwordHash);
-    };
-
-    getPasswordHashInput = function() {
-        return this.passwordHashInput.getAttribute('value');
-    };
-
     setLastLoginDateInput = function(lastLoginDate) {
         this.lastLoginDateInput.sendKeys(lastLoginDate);
     };
@@ -118,32 +117,35 @@ export class CredentialDialogPage {
         return this.lastLoginDateInput.getAttribute('value');
     };
 
-    setActivation_keyInput = function(activation_key) {
-        this.activation_keyInput.sendKeys(activation_key);
+    setActivationKeyInput = function(activationKey) {
+        this.activationKeyInput.sendKeys(activationKey);
     };
 
-    getActivation_keyInput = function() {
-        return this.activation_keyInput.getAttribute('value');
+    getActivationKeyInput = function() {
+        return this.activationKeyInput.getAttribute('value');
     };
 
-    setReset_keyInput = function(reset_key) {
-        this.reset_keyInput.sendKeys(reset_key);
+    setResetKeyInput = function(resetKey) {
+        this.resetKeyInput.sendKeys(resetKey);
     };
 
-    getReset_keyInput = function() {
-        return this.reset_keyInput.getAttribute('value');
+    getResetKeyInput = function() {
+        return this.resetKeyInput.getAttribute('value');
     };
 
-    setReset_dateInput = function(reset_date) {
-        this.reset_dateInput.sendKeys(reset_date);
+    setResetDateInput = function(resetDate) {
+        this.resetDateInput.sendKeys(resetDate);
     };
 
-    getReset_dateInput = function() {
-        return this.reset_dateInput.getAttribute('value');
+    getResetDateInput = function() {
+        return this.resetDateInput.getAttribute('value');
     };
 
     getActivatedInput = function() {
         return this.activatedInput;
+    };
+    getPrimaryInput = function() {
+        return this.primaryInput;
     };
     userSelectLastOption = function() {
         this.userSelect.all(by.tagName('option')).last().click();

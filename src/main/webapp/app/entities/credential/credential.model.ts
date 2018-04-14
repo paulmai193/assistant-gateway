@@ -4,15 +4,16 @@ export class Credential implements BaseEntity {
     constructor(
         public id?: number,
         public login?: string,
-        public passwordHash?: string,
         public lastLoginDate?: any,
-        public activation_key?: string,
-        public reset_key?: string,
-        public reset_date?: any,
+        public activationKey?: string,
+        public resetKey?: string,
+        public resetDate?: any,
         public activated?: boolean,
+        public primary?: boolean,
         public userLogin?: string,
         public userId?: number,
     ) {
         this.activated = false;
+        this.primary = false;
     }
 }

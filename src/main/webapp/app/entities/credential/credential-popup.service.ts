@@ -33,8 +33,8 @@ export class CredentialPopupService {
                         const credential: Credential = credentialResponse.body;
                         credential.lastLoginDate = this.datePipe
                             .transform(credential.lastLoginDate, 'yyyy-MM-ddTHH:mm:ss');
-                        credential.reset_date = this.datePipe
-                            .transform(credential.reset_date, 'yyyy-MM-ddTHH:mm:ss');
+                        credential.resetDate = this.datePipe
+                            .transform(credential.resetDate, 'yyyy-MM-ddTHH:mm:ss');
                         this.ngbModalRef = this.credentialModalRef(component, credential);
                         resolve(this.ngbModalRef);
                     });

@@ -15,6 +15,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.BatchSize;
@@ -44,6 +45,13 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
+    
+    /** The password. */
+    @JsonIgnore
+    @NotNull
+    @Size(min = 60, max = 60)
+    @Column(name = "password_hash", length = 60)
+    private String password;
 
     /** The first name. */
     @Size(max = 50)
@@ -98,6 +106,24 @@ public class User extends AbstractAuditingEntity implements Serializable {
      */
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    /**
+     * Gets the password.
+     *
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Sets the password.
+     *
+     * @param password the new password
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     /**

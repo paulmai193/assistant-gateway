@@ -1,13 +1,13 @@
 package logia.assistant.gateway.service.dto;
 
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import javax.validation.constraints.*;
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Objects;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * A DTO for the Credential entity.
@@ -16,6 +16,9 @@ import java.util.Objects;
  */
 public class CredentialDTO implements Serializable {
 
+    /** The Constant serialVersionUID. */
+    private static final long serialVersionUID = 1L;
+
     /** The id. */
     private Long id;
 
@@ -23,11 +26,6 @@ public class CredentialDTO implements Serializable {
     @NotNull
     @Size(min = 1, max = 50)
     private String login;
-
-    /** The password hash. */
-    @NotNull
-    @Size(min = 60, max = 60)
-    private String passwordHash;
 
     /** The last login date. */
     private ZonedDateTime lastLoginDate;
@@ -46,6 +44,10 @@ public class CredentialDTO implements Serializable {
     /** The activated. */
     @NotNull
     private Boolean activated;
+    
+    /** The primary. */
+    @NotNull
+    private Boolean primary;
 
     /** The user id. */
     private Long userId;
@@ -97,35 +99,6 @@ public class CredentialDTO implements Serializable {
      */
     public CredentialDTO login(String login) {
         this.setLogin(login);
-        return this;
-    }
-
-    /**
-     * Gets the password hash.
-     *
-     * @return the password hash
-     */
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    /**
-     * Sets the password hash.
-     *
-     * @param passwordHash the new password hash
-     */
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-    
-    /**
-     * Password hash.
-     *
-     * @param passwordHash the password hash
-     * @return the credential DTO
-     */
-    public CredentialDTO passwordHash(String passwordHash) {
-        this.setPasswordHash(passwordHash);
         return this;
     }
 
@@ -273,6 +246,35 @@ public class CredentialDTO implements Serializable {
         this.setActivated(activated);
         return this;
     }
+    
+    /**
+     * Checks if is primary.
+     *
+     * @return the boolean
+     */
+    public Boolean isPrimary() {
+        return primary;
+    }
+    
+    /**
+     * Sets the primary.
+     *
+     * @param primary the new primary
+     */
+    public void setPrimary(Boolean primary) {
+        this.primary = primary;
+    }
+    
+    /**
+     * Primary.
+     *
+     * @param primary the primary
+     * @return the credential DTO
+     */
+    public CredentialDTO primary(Boolean primary) {
+        this.setPrimary(primary);
+        return this;
+    }
 
     /**
      * Gets the user id.
@@ -367,7 +369,6 @@ public class CredentialDTO implements Serializable {
         return "CredentialDTO{" +
             "id=" + getId() +
             ", login='" + getLogin() + "'" +
-            ", passwordHash='" + getPasswordHash() + "'" +
             ", lastLoginDate='" + getLastLoginDate() + "'" +
             ", activationKey='" + getActivationKey() + "'" +
             ", resetKey='" + getResetKey() + "'" +
