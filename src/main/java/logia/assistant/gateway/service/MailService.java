@@ -105,16 +105,17 @@ public class MailService {
      * @param user the user
      * @param templateName the template name
      * @param titleKey the title key
+     * @param string 
      */
     @Async
-    public void sendEmailFromTemplate(User user, String templateName, String titleKey) {
+    public void sendEmailFromTemplate(User user, String email, String templateName, String titleKey) {
         Locale locale = Locale.forLanguageTag(user.getLangKey());
         Context context = new Context(locale);
         context.setVariable(USER, user);
         context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
         String content = templateEngine.process(templateName, context);
         String subject = messageSource.getMessage(titleKey, null, locale);
-        sendEmail(user.getEmail(), subject, content, false, true);
+        sendEmail(email, subject, content, false, true);
 
     }
 
@@ -124,9 +125,9 @@ public class MailService {
      * @param user the user
      */
     @Async
-    public void sendActivationEmail(User user) {
-        log.debug("Sending activation email to '{}'", user.getEmail());
-        sendEmailFromTemplate(user, "activationEmail", "email.activation.title");
+    public void sendActivationEmail(User user, String email) {
+        log.debug("Sending activation email to '{}'", email);
+        sendEmailFromTemplate(user, email, "activationEmail", "email.activation.title");
     }
 
     /**
@@ -135,9 +136,9 @@ public class MailService {
      * @param user the user
      */
     @Async
-    public void sendCreationEmail(User user) {
-        log.debug("Sending creation email to '{}'", user.getEmail());
-        sendEmailFromTemplate(user, "creationEmail", "email.activation.title");
+    public void sendCreationEmail(User user, String email) {
+        log.debug("Sending creation email to '{}'", email);
+        sendEmailFromTemplate(user, email, "creationEmail", "email.activation.title");
     }
 
     /**
@@ -146,8 +147,8 @@ public class MailService {
      * @param user the user
      */
     @Async
-    public void sendPasswordResetMail(User user) {
-        log.debug("Sending password reset email to '{}'", user.getEmail());
-        sendEmailFromTemplate(user, "passwordResetEmail", "email.reset.title");
+    public void sendPasswordResetMail(User user, String email) {
+        log.debug("Sending password reset email to '{}'", email);
+        sendEmailFromTemplate(user, email, "passwordResetEmail", "email.reset.title");
     }
 }

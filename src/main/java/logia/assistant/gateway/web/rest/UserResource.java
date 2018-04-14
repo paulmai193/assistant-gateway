@@ -33,9 +33,7 @@ import com.codahale.metrics.annotation.Timed;
 import io.github.jhipster.web.util.ResponseUtil;
 import logia.assistant.gateway.config.Constants;
 import logia.assistant.gateway.domain.User;
-import logia.assistant.gateway.repository.UserRepository;
 import logia.assistant.gateway.repository.search.UserSearchRepository;
-import logia.assistant.gateway.service.MailService;
 import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
@@ -78,14 +76,8 @@ public class UserResource {
     /** The log. */
     private final Logger log = LoggerFactory.getLogger(UserResource.class);
 
-    /** The user repository. */
-    private final UserRepository userRepository;
-
     /** The user service. */
     private final UserService userService;
-
-    /** The mail service. */
-    private final MailService mailService;
 
     /** The user search repository. */
     private final UserSearchRepository userSearchRepository;
@@ -93,16 +85,12 @@ public class UserResource {
     /**
      * Instantiates a new user resource.
      *
-     * @param userRepository the user repository
      * @param userService the user service
-     * @param mailService the mail service
      * @param userSearchRepository the user search repository
      */
-    public UserResource(UserRepository userRepository, UserService userService, MailService mailService, UserSearchRepository userSearchRepository) {
-
-        this.userRepository = userRepository;
+    public UserResource(UserService userService, UserSearchRepository userSearchRepository) {
+        super();
         this.userService = userService;
-        this.mailService = mailService;
         this.userSearchRepository = userSearchRepository;
     }
 
@@ -122,22 +110,11 @@ public class UserResource {
     @Timed
     @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<User> createUser(@Valid @RequestBody UserDTO userDTO) throws URISyntaxException {
-        log.debug("REST request to save User : {}", userDTO);
-
-        if (userDTO.getId() != null) {
-            throw new BadRequestAlertException("A new user cannot already have an ID", "userManagement", "idexists");
-            // Lowercase the user login before comparing with database
-        } else if (userRepository.findOneByLogin(userDTO.getLogin().toLowerCase()).isPresent()) {
-            throw new LoginAlreadyUsedException();
-        } else if (userRepository.findOneByEmailIgnoreCase(userDTO.getEmail()).isPresent()) {
-            throw new EmailAlreadyUsedException();
-        } else {
-            User newUser = userService.createUser(userDTO);
-            mailService.sendCreationEmail(newUser);
-            return ResponseEntity.created(new URI("/api/users/" + newUser.getLogin()))
-                .headers(HeaderUtil.createAlert( "userManagement.created", newUser.getLogin()))
-                .body(newUser);
-        }
+        log.info("REST request to save User : {}", userDTO);
+        User newUser = userService.createUser(userDTO);
+        return ResponseEntity.created(new URI("/api/users/" + userDTO.getLogin()))
+            .headers(HeaderUtil.createAlert( "userManagement.created", userDTO.getLogin()))
+            .body(newUser);
     }
 
     /**
@@ -152,17 +129,8 @@ public class UserResource {
     @Timed
     @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<UserDTO> updateUser(@Valid @RequestBody UserDTO userDTO) {
-        log.debug("REST request to update User : {}", userDTO);
-        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
-            throw new EmailAlreadyUsedException();
-        }
-        existingUser = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase());
-        if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
-            throw new LoginAlreadyUsedException();
-        }
+        log.info("REST request to update User : {}", userDTO);
         Optional<UserDTO> updatedUser = userService.updateUser(userDTO);
-
         return ResponseUtil.wrapOrNotFound(updatedUser,
             HeaderUtil.createAlert("userManagement.updated", userDTO.getLogin()));
     }

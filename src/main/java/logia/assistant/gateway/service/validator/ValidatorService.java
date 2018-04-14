@@ -45,6 +45,15 @@ public final class ValidatorService {
      */
     public void validateNewCredential(String login, String password) {
         this.validatePassword(password);
+        this.validateNewCredential(login);
+    }
+    
+    /**
+     * Validate new credential.
+     *
+     * @param login the login
+     */
+    public void validateNewCredential(String login) {
         this.credentialRepository.findOneByLogin(login.toLowerCase()).ifPresent(u -> {
             throw new LoginAlreadyUsedException();
         });

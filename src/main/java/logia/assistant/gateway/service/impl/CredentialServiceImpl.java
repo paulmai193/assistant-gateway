@@ -15,15 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.repository.CredentialRepository;
 import logia.assistant.gateway.repository.search.CredentialSearchRepository;
-import logia.assistant.gateway.security.SecurityUtils;
 import logia.assistant.gateway.service.CredentialService;
+import logia.assistant.gateway.service.MailService;
 import logia.assistant.gateway.service.dto.CredentialDTO;
 import logia.assistant.gateway.service.mapper.CredentialMapper;
 import logia.assistant.gateway.service.util.RandomUtil;
@@ -39,25 +38,25 @@ import logia.assistant.gateway.service.validator.ValidatorService;
 public class CredentialServiceImpl implements CredentialService {
 
     /** The log. */
-    private final Logger log = LoggerFactory.getLogger(CredentialServiceImpl.class);
+    private final Logger                     log = LoggerFactory
+            .getLogger(CredentialServiceImpl.class);
 
     /** The credential repository. */
-    private final CredentialRepository credentialRepository;
+    private final CredentialRepository       credentialRepository;
 
     /** The credential mapper. */
-    private final CredentialMapper credentialMapper;
+    private final CredentialMapper           credentialMapper;
 
     /** The credential search repository. */
     private final CredentialSearchRepository credentialSearchRepository;
-    
+
     /** The cache manager. */
-    private final CacheManager cacheManager;
-    
-    /** The password encoder. */
-    private final PasswordEncoder passwordEncoder;
-    
+    private final CacheManager               cacheManager;
+
     /** The validator service. */
-    private final ValidatorService validatorService; 
+    private final ValidatorService           validatorService;
+
+    private final MailService mailService;
 
     /**
      * Instantiates a new credential service impl.
@@ -66,20 +65,20 @@ public class CredentialServiceImpl implements CredentialService {
      * @param credentialMapper the credential mapper
      * @param credentialSearchRepository the credential search repository
      * @param cacheManager the cache manager
-     * @param passwordEncoder the password encoder
      * @param validatorService the validator service
+     * @param mailService the mail service
      */
     public CredentialServiceImpl(CredentialRepository credentialRepository,
             CredentialMapper credentialMapper,
             CredentialSearchRepository credentialSearchRepository, CacheManager cacheManager,
-            PasswordEncoder passwordEncoder, ValidatorService validatorService) {
+            ValidatorService validatorService, MailService mailService) {
         super();
         this.credentialRepository = credentialRepository;
         this.credentialMapper = credentialMapper;
         this.credentialSearchRepository = credentialSearchRepository;
         this.cacheManager = cacheManager;
-        this.passwordEncoder = passwordEncoder;
         this.validatorService = validatorService;
+        this.mailService = mailService;
     }
 
     /**
@@ -92,10 +91,23 @@ public class CredentialServiceImpl implements CredentialService {
     public CredentialDTO save(CredentialDTO credentialDTO) {
         log.debug("Request to save Credential : {}", credentialDTO);
         Credential credential = credentialMapper.toEntity(credentialDTO);
-        credential = credentialRepository.save(credential);
+        credential = this.save(credential);
         CredentialDTO result = credentialMapper.toDto(credential);
-        credentialSearchRepository.save(credential);
         return result;
+    }
+
+    /**
+     * Save.
+     *
+     * @param credential the credential
+     * @return the credential
+     */
+    public Credential save(Credential credential) {
+        Credential savedCredential = this.credentialRepository.save(credential);
+        credentialSearchRepository.save(savedCredential);
+        cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
+                .evict(savedCredential.getLogin());
+        return savedCredential;
     }
 
     /**
@@ -107,9 +119,8 @@ public class CredentialServiceImpl implements CredentialService {
     @Transactional(readOnly = true)
     public List<CredentialDTO> findAll() {
         log.debug("Request to get all Credentials");
-        return credentialRepository.findAll().stream()
-            .map(credentialMapper::toDto)
-            .collect(Collectors.toCollection(LinkedList::new));
+        return credentialRepository.findAll().stream().map(credentialMapper::toDto)
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     /**
@@ -136,11 +147,12 @@ public class CredentialServiceImpl implements CredentialService {
         log.debug("Request to delete Credential ID : {}", id);
         this.delete(id);
     }
-    
+
     /**
      * Delete.
      *
      * @param login the login
+     * @return the credential
      */
     public Credential delete(String login) {
         log.debug("Request to delete Credential login : {}", login);
@@ -161,11 +173,11 @@ public class CredentialServiceImpl implements CredentialService {
     public List<CredentialDTO> search(String query) {
         log.debug("Request to search Credentials for query {}", query);
         return StreamSupport
-            .stream(credentialSearchRepository.search(queryStringQuery(query)).spliterator(), false)
-            .map(credentialMapper::toDto)
-            .collect(Collectors.toList());
+                .stream(credentialSearchRepository.search(queryStringQuery(query)).spliterator(),
+                        false)
+                .map(credentialMapper::toDto).collect(Collectors.toList());
     }
-    
+
     /**
      * Activate registration.
      *
@@ -174,35 +186,15 @@ public class CredentialServiceImpl implements CredentialService {
      */
     public Optional<Credential> activateRegistration(String key) {
         log.debug("Activating user for activation key {}", key);
-        return this.credentialRepository.findOneByActivationKey(key)
-            .map(credential -> {
-                // activate given credential for the registration key.
-                credential.activated(true).activationKey(null);
-                this.credentialSearchRepository.save(credential);
-                cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(credential.getLogin());
-                log.debug("Activated user: {}", credential);
-                return credential;
-            });
-    }
-
-    /**
-     * Complete password reset.
-     *
-     * @param newPassword the new password
-     * @param key the key
-     * @return the optional
-     */
-    public Optional<Credential> completePasswordReset(String newPassword, String key) {
-       log.debug("Reset user password for reset key {}", key);
-       this.validatorService.validatePassword(newPassword);
-       return this.credentialRepository.findOneByResetKey(key)
-           .filter(credential -> credential.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
-           .map(credential -> {
-                credential.passwordHash(passwordEncoder.encode(newPassword)).resetKey(null).resetDate(null);
-                this.credentialSearchRepository.save(credential);
-                cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(credential.getLogin());
-                return credential;
-           });
+        return this.credentialRepository.findOneByActivationKey(key).map(credential -> {
+            // activate given credential for the registration key.
+            credential.activated(true).activationKey(null);
+            this.credentialSearchRepository.save(credential);
+            cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
+                    .evict(credential.getLogin());
+            log.debug("Activated user: {}", credential);
+            return credential;
+        });
     }
 
     /**
@@ -214,43 +206,29 @@ public class CredentialServiceImpl implements CredentialService {
     public Optional<Credential> requestPasswordReset(String mail) {
         this.validatorService.validateEmail(mail);
         return this.credentialRepository.findOneByLoginIgnoreCase(mail)
-            .filter(Credential::isActivated)
-            .map(credential -> {
-                credential.resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now());
-                this.credentialSearchRepository.save(credential);
-                cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(credential.getLogin());
-                return credential;
-            });
-    }
-    
-    /**
-     * Change password.
-     *
-     * @param password the password
-     */
-    public void changePassword(String password) {
-        this.validatorService.validatePassword(password);
-        SecurityUtils.getCurrentUserLogin()
-            .flatMap(this.credentialRepository::findOneWithUserBylogin)
-            .ifPresent(credential -> {
-                String encryptedPassword = passwordEncoder.encode(password);
-                credential.setPasswordHash(encryptedPassword);
-                this.credentialSearchRepository.save(credential);
-                cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(credential.getLogin());
-                log.debug("Changed password for User: {}", credential);
-            });
+                .filter(Credential::isActivated).map(credential -> {
+                    credential.resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now());
+                    this.credentialSearchRepository.save(credential);
+                    cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
+                            .evict(credential.getLogin());
+                    
+                    // Send reset password email
+                    mailService.sendPasswordResetMail(credential.getUser(), mail);   
+                    return credential;
+                });
     }
 
     /**
-     * Find one by login.
+     * Find one by reset key.
      *
-     * @param userLogin the user login
+     * @param resetKey the reset key
      * @return the optional
      */
-    public Optional<Credential> findOneByLogin(String userLogin) {
-        return this.credentialRepository.findOneByLogin(userLogin);
+    @Transactional(readOnly = true)
+    public Optional<Credential> findOneByResetKey(String resetKey) {
+        return this.credentialRepository.findOneByResetKey(resetKey);
     }
-    
+
     /**
      * Not activated credential should be automatically deleted after 3 days.
      * <p>
@@ -258,12 +236,13 @@ public class CredentialServiceImpl implements CredentialService {
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void removeNotActivatedUsers() {
-        this.credentialRepository.findAllByActivatedIsFalseAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS)).forEach(credential -> {
-            log.debug("Deleting not activated user {}", credential.getLogin());
-            this.delete(credential.getId(), credential.getLogin());
-        });
+        this.credentialRepository.findAllByActivatedIsFalseAndCreatedDateBefore(
+                Instant.now().minus(3, ChronoUnit.DAYS)).forEach(credential -> {
+                    log.debug("Deleting not activated user {}", credential.getLogin());
+                    this.delete(credential.getId(), credential.getLogin());
+                });
     }
-    
+
     /**
      * Delete.
      *
@@ -274,8 +253,20 @@ public class CredentialServiceImpl implements CredentialService {
         this.credentialRepository.delete(credentialId);
         this.credentialSearchRepository.delete(credentialId);
         if (Objects.nonNull(login)) {
-            cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(login);    
-        }        
+            cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).evict(login);
+        }
         log.debug("Deleted Credential: {}", credentialId);
     }
+
+    /**
+     * Find one by login.
+     *
+     * @param userLogin the user login
+     * @return the optional
+     */
+    @Transactional(readOnly = true)
+    public Optional<Credential> findOneByLogin(String userLogin) {
+        return this.credentialRepository.findOneByLogin(userLogin);
+    }
+
 }

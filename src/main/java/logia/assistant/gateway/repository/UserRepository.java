@@ -24,13 +24,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /** The users by email cache. */
     String USERS_BY_EMAIL_CACHE = "usersByEmail";
 
-    /**
-     * Find one by email ignore case.
-     *
-     * @param email the email
-     * @return the optional
-     */
-    Optional<User> findOneByEmailIgnoreCase(String email);
+//    /**
+//     * Find one by email ignore case.
+//     *
+//     * @param email the email
+//     * @return the optional
+//     */
+//    Optional<User> findOneByEmailIgnoreCase(String email);
 
     /**
      * Find one with authorities by id.

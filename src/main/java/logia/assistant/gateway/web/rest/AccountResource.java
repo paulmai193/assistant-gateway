@@ -21,8 +21,6 @@ import com.codahale.metrics.annotation.Timed;
 
 import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
-import logia.assistant.gateway.repository.UserRepository;
-import logia.assistant.gateway.service.MailService;
 import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
@@ -44,14 +42,11 @@ import logia.assistant.gateway.web.rest.vm.ManagedUserVM;
 public class AccountResource {
 
     /** The log. */
-    private final Logger log = LoggerFactory.getLogger(AccountResource.class);
+    private final Logger                log = LoggerFactory.getLogger(AccountResource.class);
 
     /** The user service. */
-    private final UserService userService;
+    private final UserService           userService;
 
-    /** The mail service. */
-    private final MailService mailService;
-    
     /** The credential service. */
     private final CredentialServiceImpl credentialService;
 
@@ -59,19 +54,16 @@ public class AccountResource {
      * Instantiates a new account resource.
      *
      * @param userService the user service
-     * @param mailService the mail service
      * @param credentialService the credential service
      */
-    public AccountResource(UserService userService,
-            MailService mailService, CredentialServiceImpl credentialService) {
+    public AccountResource(UserService userService, CredentialServiceImpl credentialService) {
         super();
         this.userService = userService;
-        this.mailService = mailService;
         this.credentialService = credentialService;
     }
 
     /**
-     * POST  /register : register the user.
+     * POST /register : register the user.
      *
      * @param managedUserVM the managed user View Model
      * @throws InvalidPasswordException 400 (Bad Request) if the password is incorrect
@@ -83,12 +75,11 @@ public class AccountResource {
     @ResponseStatus(HttpStatus.CREATED)
     public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
         log.info("REST request to register account {}", managedUserVM);
-        User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
-        mailService.sendActivationEmail(user);
+        userService.registerUser(managedUserVM, managedUserVM.getPassword());
     }
 
     /**
-     * GET  /activate : activate the registered user.
+     * GET /activate : activate the registered user.
      *
      * @param key the activation key
      * @throws RuntimeException 500 (Internal Server Error) if the user couldn't be activated
@@ -104,7 +95,7 @@ public class AccountResource {
     }
 
     /**
-     * GET  /authenticate : check if the user is authenticated, and return its login.
+     * GET /authenticate : check if the user is authenticated, and return its login.
      *
      * @param request the HTTP request
      * @return the login if the user is authenticated
@@ -117,7 +108,7 @@ public class AccountResource {
     }
 
     /**
-     * GET  /account : get the current user.
+     * GET /account : get the current user.
      *
      * @return the current user
      * @throws RuntimeException 500 (Internal Server Error) if the user couldn't be returned
@@ -126,13 +117,12 @@ public class AccountResource {
     @Timed
     public UserDTO getAccount() {
         log.info("REST request to get information of current authorized user");
-        return userService.getUserWithAuthorities()
-            .map(UserDTO::new)
-            .orElseThrow(() -> new InternalServerErrorException("User could not be found"));
+        return userService.getUserWithAuthorities().map(UserDTO::new)
+                .orElseThrow(() -> new InternalServerErrorException("User could not be found"));
     }
 
     /**
-     * PUT  /account : update the current user information.
+     * PUT /account : update the current user information.
      *
      * @param userDTO the current user information
      * @throws RuntimeException 500 (Internal Server Error) if the user login wasn't found
@@ -141,11 +131,12 @@ public class AccountResource {
     @Timed
     public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
         log.info("REST request to change information of current authorized account: {}", userDTO);
-        userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getLangKey(), userDTO.getImageUrl());
-   }
+        userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getLangKey(),
+                userDTO.getImageUrl());
+    }
 
     /**
-     * POST  /account/change-password : changes the current user's password.
+     * POST /account/change-password : changes the current user's password.
      *
      * @param password the new password
      * @throws InvalidPasswordException 400 (Bad Request) if the new password is incorrect
@@ -154,11 +145,11 @@ public class AccountResource {
     @Timed
     public void changePassword(@RequestBody String password) {
         log.info("REST request to change current authorized account password {}", password);
-        this.credentialService.changePassword(password);
-   }
+        this.userService.changePassword(password);
+    }
 
     /**
-     * POST   /account/reset-password/init : Send an email to reset the password of the user.
+     * POST /account/reset-password/init : Send an email to reset the password of the user.
      *
      * @param mail the mail of the user
      * @throws EmailNotFoundException 400 (Bad Request) if the email address is not registered
@@ -167,14 +158,11 @@ public class AccountResource {
     @Timed
     public void requestPasswordReset(@RequestBody String mail) {
         log.info("REST request to reset password of email {}", mail);
-       mailService.sendPasswordResetMail(
-           this.credentialService.requestPasswordReset(mail)
-               .orElseThrow(EmailNotFoundException::new)
-       );
+        this.credentialService.requestPasswordReset(mail).orElseThrow(EmailNotFoundException::new);
     }
 
     /**
-     * POST   /account/reset-password/finish : Finish to reset the password of the user.
+     * POST /account/reset-password/finish : Finish to reset the password of the user.
      *
      * @param keyAndPassword the generated key and the new password
      * @throws InvalidPasswordException 400 (Bad Request) if the password is incorrect
@@ -184,10 +172,10 @@ public class AccountResource {
     @Timed
     public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
         log.info("REST request to finish reset password by key: {}", keyAndPassword.getKey());
-        Optional<Credential> credential =
-                this.credentialService.completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
+        Optional<User> optUser = this.userService
+                .completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
 
-        if (!credential.isPresent()) {
+        if (!optUser.isPresent()) {
             throw new InternalServerErrorException("No user was found for this reset key");
         }
     }

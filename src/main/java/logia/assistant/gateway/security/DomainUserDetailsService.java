@@ -92,7 +92,7 @@ public class DomainUserDetailsService implements UserDetailsService {
             .map(authority -> new SimpleGrantedAuthority(authority.getName()))
             .collect(Collectors.toList());
         return new org.springframework.security.core.userdetails.User(credential.getLogin(),
-                credential.getPasswordHash(),
+                credential.getUser().getPassword(),
             grantedAuthorities);
     }
 }
