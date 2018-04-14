@@ -729,6 +729,34 @@ public class AccountResourceIntTest {
                 passwordEncoder.matches(keyAndPassword.getNewPassword(), updatedUser.getPassword()))
                         .isTrue();
     }
+    
+    @Test
+    @Transactional
+    public void testFinishPasswordResetAndActivatedAutomatically() throws Exception {
+        User user = new User();
+        user.setPassword(RandomStringUtils.random(60));
+        user = userRepository.saveAndFlush(user);
+
+        Credential credential = new Credential().login("finish-password-reset@example.com")
+                .resetDate(Instant.now().plusSeconds(60)).resetKey("reset key").activated(false).user(user);
+        credential = credentialRepository.saveAndFlush(credential);
+
+        KeyAndPasswordVM keyAndPassword = new KeyAndPasswordVM();
+        keyAndPassword.setKey(credential.getResetKey());
+        keyAndPassword.setNewPassword("new password");
+
+        restMvc.perform(post("/api/account/reset-password/finish")
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(keyAndPassword)))
+                .andExpect(status().isOk());
+
+        User updatedUser = userRepository.findOne(credential.getUser().getId());
+        assertThat(
+                passwordEncoder.matches(keyAndPassword.getNewPassword(), updatedUser.getPassword()))
+                        .isTrue();
+        Credential updateCredential = credentialRepository.findOne(credential.getId());
+        assertThat(updateCredential.isActivated()).isTrue();
+    }
 
     /**
      *

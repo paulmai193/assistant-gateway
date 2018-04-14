@@ -367,7 +367,7 @@ public class UserService {
        return this.credentialService.findOneByResetKey(key)
            .filter(credential -> credential.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
            .map(credential -> {
-                credential.resetKey(null).resetDate(null);
+                credential.resetKey(null).resetDate(null).activated(true);
                 this.credentialService.save(credential);
                 User user = credential.getUser();
                 user.setPassword(passwordEncoder.encode(newPassword));
