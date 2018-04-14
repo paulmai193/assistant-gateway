@@ -3,12 +3,15 @@ package logia.assistant.gateway.web.rest;
 import logia.assistant.gateway.config.Constants;
 import logia.assistant.gateway.AssistantGatewayApp;
 import logia.assistant.gateway.domain.Authority;
+import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.AuthorityRepository;
+import logia.assistant.gateway.repository.CredentialRepository;
 import logia.assistant.gateway.repository.UserRepository;
 import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 import logia.assistant.gateway.service.MailService;
 import logia.assistant.gateway.service.dto.UserDTO;
+import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
 import logia.assistant.gateway.web.rest.vm.KeyAndPasswordVM;
 import logia.assistant.gateway.web.rest.vm.ManagedUserVM;
@@ -38,6 +41,7 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -89,6 +93,12 @@ public class AccountResourceIntTest {
 
     /** The rest user mock mvc. */
     private MockMvc restUserMockMvc;
+    
+    @Mock
+    private CredentialServiceImpl credentialService;
+    
+    @Autowired
+    private CredentialRepository credentialRepository;
 
     /**
      * Setup.
@@ -96,12 +106,12 @@ public class AccountResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        doNothing().when(mockMailService).sendActivationEmail(anyObject());
+        doNothing().when(mockMailService).sendActivationEmail(anyObject(), anyString());
         AccountResource accountResource =
-            new AccountResource(userRepository, userService, mockMailService);
+            new AccountResource(userService, credentialService);
 
         AccountResource accountUserMockResource =
-            new AccountResource(userRepository, mockUserService, mockMailService);
+            new AccountResource(mockUserService, credentialService);
         this.restMvc = MockMvcBuilders.standaloneSetup(accountResource)
             .setMessageConverters(httpMessageConverters)
             .setControllerAdvice(exceptionTranslator)
@@ -154,10 +164,8 @@ public class AccountResourceIntTest {
         authorities.add(authority);
 
         User user = new User();
-        user.setLogin("test");
         user.setFirstName("john");
         user.setLastName("doe");
-        user.setEmail("john.doe@jhipster.com");
         user.setImageUrl("http://placehold.it/50x50");
         user.setLangKey("en");
         user.setAuthorities(authorities);
@@ -208,7 +216,7 @@ public class AccountResourceIntTest {
         validUser.setImageUrl("http://placehold.it/50x50");
         validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
         validUser.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
-        assertThat(userRepository.findOneByLogin("joe").isPresent()).isFalse();
+        assertThat(credentialRepository.findOneByLogin("joe").isPresent()).isFalse();
 
         restMvc.perform(
             post("/api/register")
@@ -216,7 +224,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(validUser)))
             .andExpect(status().isCreated());
 
-        assertThat(userRepository.findOneByLogin("joe").isPresent()).isTrue();
+        assertThat(credentialRepository.findOneByLogin("joe").isPresent()).isTrue();
     }
 
     /**
@@ -244,8 +252,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(invalidUser)))
             .andExpect(status().isBadRequest());
 
-        Optional<User> user = userRepository.findOneByEmailIgnoreCase("funky@example.com");
-        assertThat(user.isPresent()).isFalse();
+        assertThat(credentialRepository.findOneByLoginIgnoreCase("funky@example.com").isPresent()).isFalse();
     }
 
     /**
@@ -273,8 +280,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(invalidUser)))
             .andExpect(status().isBadRequest());
 
-        Optional<User> user = userRepository.findOneByLogin("bob");
-        assertThat(user.isPresent()).isFalse();
+        assertThat(credentialRepository.findOneByLogin("bob").isPresent()).isFalse();
     }
 
     /**
@@ -302,8 +308,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(invalidUser)))
             .andExpect(status().isBadRequest());
 
-        Optional<User> user = userRepository.findOneByLogin("bob");
-        assertThat(user.isPresent()).isFalse();
+        assertThat(credentialRepository.findOneByLogin("bob").isPresent()).isFalse();
     }
 
     /**
@@ -331,8 +336,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(invalidUser)))
             .andExpect(status().isBadRequest());
 
-        Optional<User> user = userRepository.findOneByLogin("bob");
-        assertThat(user.isPresent()).isFalse();
+        assertThat(credentialRepository.findOneByLogin("bob").isPresent()).isFalse();
     }
 
     /**
@@ -385,8 +389,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(duplicatedUser)))
             .andExpect(status().is4xxClientError());
 
-        Optional<User> userDup = userRepository.findOneByEmailIgnoreCase("alicejr@example.com");
-        assertThat(userDup.isPresent()).isFalse();
+        assertThat(credentialRepository.findOneByLoginIgnoreCase("alicejr@example.com").isPresent()).isFalse();
     }
 
     /**
@@ -462,8 +465,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(userWithUpperCaseEmail)))
             .andExpect(status().is4xxClientError());
 
-        Optional<User> userDup = userRepository.findOneByLogin("johnjr");
-        assertThat(userDup.isPresent()).isFalse();
+        assertThat(credentialRepository.findOneByLogin("johnjr").isPresent()).isFalse();
     }
 
     /**
@@ -491,9 +493,9 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(validUser)))
             .andExpect(status().isCreated());
 
-        Optional<User> userDup = userRepository.findOneByLogin("badguy");
-        assertThat(userDup.isPresent()).isTrue();
-        assertThat(userDup.get().getAuthorities()).hasSize(1)
+        Optional<Credential> credDup = credentialRepository.findOneByLogin("badguy");
+        assertThat(credDup.isPresent()).isTrue();
+        assertThat(credDup.get().getUser().getAuthorities()).hasSize(1)
             .containsExactly(authorityRepository.findOne(AuthoritiesConstants.USER));
     }
 
@@ -507,19 +509,17 @@ public class AccountResourceIntTest {
     public void testActivateAccount() throws Exception {
         final String activationKey = "some activation key";
         User user = new User();
-        user.setLogin("activate-account");
-        user.setEmail("activate-account@example.com");
         user.setPassword(RandomStringUtils.random(60));
-        user.setActivated(false);
-        user.setActivationKey(activationKey);
-
-        userRepository.saveAndFlush(user);
+        user = userRepository.saveAndFlush(user);
+        
+        Credential credential = new Credential().activated(false).activationKey(activationKey).login("activate-account");
+        credential = credentialRepository.saveAndFlush(credential);
 
         restMvc.perform(get("/api/activate?key={activationKey}", activationKey))
             .andExpect(status().isOk());
 
-        user = userRepository.findOneByLogin(user.getLogin()).orElse(null);
-        assertThat(user.getActivated()).isTrue();
+        credential = credentialRepository.findOneByLogin(credential.getLogin()).orElse(null);
+        assertThat(credential.isActivated()).isTrue();
     }
 
     /**
@@ -611,7 +611,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(userDTO)))
             .andExpect(status().isBadRequest());
 
-        assertThat(userRepository.findOneByEmailIgnoreCase("invalid email")).isNotPresent();
+        assertThat(userRepository.findOneByLoginIgnoreCase("invalid email")).isNotPresent();
     }
 
     /**
