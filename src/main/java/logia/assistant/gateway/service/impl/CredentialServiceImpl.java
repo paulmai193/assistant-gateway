@@ -268,5 +268,16 @@ public class CredentialServiceImpl implements CredentialService {
     public Optional<Credential> findOneByLogin(String userLogin) {
         return this.credentialRepository.findOneByLogin(userLogin);
     }
+    
+    /**
+     * Find by user id.
+     *
+     * @param userId the user id
+     * @return the list
+     */
+    @Transactional(readOnly = true)
+    public List<Credential> findByUserId(Long userId) {
+        return this.credentialRepository.findOneWithUserByUserId(userId);
+    }
 
 }

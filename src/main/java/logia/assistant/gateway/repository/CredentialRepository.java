@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -25,7 +26,7 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
      *
      * @return the list
      */
-    @Query("select credential from Credential credential where credential.user.login = ?#{principal.username}")
+    @Query("select credential from Credential credential where credential.login = ?#{principal.username}")
     List<Credential> findByUserIsCurrentUser();
     
     /**
@@ -34,6 +35,7 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
      * @param login the login
      * @return the optional
      */
+    @EntityGraph(attributePaths = "user")
     Optional<Credential> findOneWithUserBylogin(String login);
     
     /**
@@ -75,5 +77,14 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
      * @return the list
      */
     List<Credential> findAllByActivatedIsFalseAndCreatedDateBefore(Instant dateTime);
+    
+    /**
+     * Find one with user by user id.
+     *
+     * @param userId the user id
+     * @return the optional
+     */
+    @EntityGraph(attributePaths = "user")
+    List<Credential> findOneWithUserByUserId(Long userId);
     
 }
