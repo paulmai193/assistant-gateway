@@ -219,7 +219,9 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(validUser)))
                 .andExpect(status().isCreated());
 
-        assertThat(credentialRepository.findOneByLogin("joe").isPresent()).isTrue();
+        Credential testCredential = credentialRepository.findOneByLogin("joe").orElse(null);
+        assertThat(testCredential).isNotNull();
+        assertThat(testCredential.getUser().getUuid()).isNotBlank();
     }
 
     /**

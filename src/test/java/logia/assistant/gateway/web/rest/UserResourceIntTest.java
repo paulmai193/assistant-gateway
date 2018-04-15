@@ -243,6 +243,7 @@ public class UserResourceIntTest {
         assertThat(testUser.getLastName()).isEqualTo(DEFAULT_LASTNAME);
         assertThat(testUser.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
         assertThat(testUser.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
+        assertThat(testUser.getUuid()).isNotBlank();
         Optional<Credential> maybeCredential = credentialRepostitory.findOneByLogin(DEFAULT_LOGIN);
         assertThat(maybeCredential).isNotEmpty();
     }
