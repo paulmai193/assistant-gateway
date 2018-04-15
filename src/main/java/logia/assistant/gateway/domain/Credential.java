@@ -7,6 +7,9 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 
 import org.springframework.data.elasticsearch.annotations.Document;
+
+import logia.assistant.share.common.entity.AbstractAuditingEntity;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -19,7 +22,7 @@ import java.util.Objects;
 @Table(name = "credential")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @Document(indexName = "credential")
-public class Credential implements Serializable {
+public class Credential extends AbstractAuditingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

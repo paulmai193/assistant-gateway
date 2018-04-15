@@ -3,7 +3,6 @@ package logia.assistant.gateway.repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -40,16 +39,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @EntityGraph(attributePaths = "authorities")
     Optional<User> findOneWithAuthoritiesById(Long id);
-
-    /**
-     * Find one with authorities by email.
-     *
-     * @param email the email
-     * @return the optional
-     */
-    @EntityGraph(attributePaths = "authorities")
-    @Cacheable(cacheNames = USERS_BY_EMAIL_CACHE)
-    Optional<User> findOneWithAuthoritiesByEmail(String email);
 
     /**
      * Find all by login not.

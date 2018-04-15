@@ -1,9 +1,17 @@
 package logia.assistant.gateway.service;
-import logia.assistant.gateway.config.Constants;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
-import logia.assistant.gateway.AssistantGatewayApp;
-import logia.assistant.gateway.domain.User;
-import io.github.jhipster.config.JHipsterProperties;
+import java.io.ByteArrayOutputStream;
+
+import javax.mail.Multipart;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,15 +27,11 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 
-import javax.mail.Multipart;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import java.io.ByteArrayOutputStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import io.github.jhipster.config.JHipsterProperties;
+import logia.assistant.gateway.AssistantGatewayApp;
+import logia.assistant.gateway.config.Constants;
+import logia.assistant.gateway.domain.Credential;
+import logia.assistant.gateway.domain.User;
 
 /**
  * The Class MailServiceIntTest.
@@ -159,14 +163,13 @@ public class MailServiceIntTest {
     @Test
     public void testSendEmailFromTemplate() throws Exception {
         User user = new User();
-        user.setLogin("john");
-        user.setEmail("john.doe@example.com");
         user.setLangKey("en");
-        mailService.sendEmailFromTemplate(user, "testEmail", "email.test.title");
+        Credential credential = new Credential().login("john.doe@example.com").user(user);
+        mailService.sendEmailFromTemplate(user, credential.getLogin(), "testEmail", "email.test.title");
         verify(javaMailSender).send((MimeMessage) messageCaptor.capture());
         MimeMessage message = (MimeMessage) messageCaptor.getValue();
         assertThat(message.getSubject()).isEqualTo("test title");
-        assertThat(message.getAllRecipients()[0].toString()).isEqualTo(user.getEmail());
+        assertThat(message.getAllRecipients()[0].toString()).isEqualTo(credential.getLogin());
         assertThat(message.getFrom()[0].toString()).isEqualTo("test@localhost");
         assertThat(message.getContent().toString()).isEqualTo("<html>test title, http://127.0.0.1:8080, john</html>\n");
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
@@ -181,12 +184,11 @@ public class MailServiceIntTest {
     public void testSendActivationEmail() throws Exception {
         User user = new User();
         user.setLangKey(Constants.DEFAULT_LANGUAGE);
-        user.setLogin("john");
-        user.setEmail("john.doe@example.com");
-        mailService.sendActivationEmail(user);
+        Credential credential = new Credential().login("john.doe@example.com").user(user);
+        mailService.sendActivationEmail(user, credential.getLogin());
         verify(javaMailSender).send((MimeMessage) messageCaptor.capture());
         MimeMessage message = (MimeMessage) messageCaptor.getValue();
-        assertThat(message.getAllRecipients()[0].toString()).isEqualTo(user.getEmail());
+        assertThat(message.getAllRecipients()[0].toString()).isEqualTo(credential.getLogin());
         assertThat(message.getFrom()[0].toString()).isEqualTo("test@localhost");
         assertThat(message.getContent().toString()).isNotEmpty();
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
@@ -201,12 +203,11 @@ public class MailServiceIntTest {
     public void testCreationEmail() throws Exception {
         User user = new User();
         user.setLangKey(Constants.DEFAULT_LANGUAGE);
-        user.setLogin("john");
-        user.setEmail("john.doe@example.com");
-        mailService.sendCreationEmail(user);
+        Credential credential = new Credential().login("john.doe@example.com").user(user);
+        mailService.sendCreationEmail(user, credential.getLogin());
         verify(javaMailSender).send((MimeMessage) messageCaptor.capture());
         MimeMessage message = (MimeMessage) messageCaptor.getValue();
-        assertThat(message.getAllRecipients()[0].toString()).isEqualTo(user.getEmail());
+        assertThat(message.getAllRecipients()[0].toString()).isEqualTo(credential.getLogin());
         assertThat(message.getFrom()[0].toString()).isEqualTo("test@localhost");
         assertThat(message.getContent().toString()).isNotEmpty();
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
@@ -221,12 +222,11 @@ public class MailServiceIntTest {
     public void testSendPasswordResetMail() throws Exception {
         User user = new User();
         user.setLangKey(Constants.DEFAULT_LANGUAGE);
-        user.setLogin("john");
-        user.setEmail("john.doe@example.com");
-        mailService.sendPasswordResetMail(user);
+        Credential credential = new Credential().login("john.doe@example.com").user(user);
+        mailService.sendPasswordResetMail(user, credential.getLogin());
         verify(javaMailSender).send((MimeMessage) messageCaptor.capture());
         MimeMessage message = (MimeMessage) messageCaptor.getValue();
-        assertThat(message.getAllRecipients()[0].toString()).isEqualTo(user.getEmail());
+        assertThat(message.getAllRecipients()[0].toString()).isEqualTo(credential.getLogin());
         assertThat(message.getFrom()[0].toString()).isEqualTo("test@localhost");
         assertThat(message.getContent().toString()).isNotEmpty();
         assertThat(message.getDataHandler().getContentType()).isEqualTo("text/html;charset=UTF-8");
