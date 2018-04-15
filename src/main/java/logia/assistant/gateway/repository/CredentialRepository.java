@@ -85,6 +85,6 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
      * @return the optional
      */
     @EntityGraph(attributePaths = "user")
-    List<Credential> findOneWithUserByUserId(Long userId);
+    List<Credential> findWithUserByUserId(Long userId);
     
 }

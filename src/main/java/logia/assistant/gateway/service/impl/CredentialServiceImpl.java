@@ -167,7 +167,7 @@ public class CredentialServiceImpl implements CredentialService {
     @Override
     public void delete(Long id) {
         log.debug("Request to delete Credential ID : {}", id);
-        this.delete(id);
+        this.delete(id, null);
     }
 
     /**
@@ -299,7 +299,7 @@ public class CredentialServiceImpl implements CredentialService {
      */
     @Transactional(readOnly = true)
     public List<Credential> findByUserId(Long userId) {
-        return this.credentialRepository.findOneWithUserByUserId(userId);
+        return this.credentialRepository.findWithUserByUserId(userId);
     }
 
 }

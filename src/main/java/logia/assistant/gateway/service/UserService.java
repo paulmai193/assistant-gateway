@@ -255,13 +255,12 @@ public class UserService {
     /**
      * Delete user.
      *
-     * @param login the login
      */
-    public void deleteUser(String login) {
-        log.debug("Request to delete User login : {}", login);
-        Credential credential = this.credentialService.delete(login);
-        ;
-        this.delete(credential.getUser().getId());
+    public void deleteUser(Long id) {
+        log.debug("Request to delete User login : {}", id);
+        List<Credential> credentials = this.credentialService.findByUserId(id);
+        credentials.forEach(credential -> this.credentialService.delete(credential.getId()));
+        this.delete(id);
     }
 
     /**
