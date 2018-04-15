@@ -143,6 +143,7 @@ public class UserResource {
      */
     @GetMapping("/users")
     @Timed
+    @Secured({AuthoritiesConstants.ADMIN, AuthoritiesConstants.SYSTEM})
     public ResponseEntity<List<UserDTO>> getAllUsers(Pageable pageable) {
         final Page<UserDTO> page = userService.getAllManagedUsers(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/users");
@@ -177,18 +178,17 @@ public class UserResource {
     }
 
     /**
-     * DELETE /users/:id : delete the "id" User.
+     * DELETE /users/:uuid : delete the User by UUID.
      *
-     * @param id the id
      * @return the ResponseEntity with status 200 (OK)
      */
-    @DeleteMapping("/users/login/{id}")
+    @DeleteMapping("/users/{uuid}")
     @Timed
     @Secured(AuthoritiesConstants.ADMIN)
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        log.debug("REST request to delete User: {}", id);
-        userService.deleteUser(id);
-        return ResponseEntity.ok().headers(HeaderUtil.createAlert( "userManagement.deleted", id.toString())).build();
+    public ResponseEntity<Void> deleteUser(@PathVariable String uuid) {
+        log.debug("REST request to delete User: {}", uuid);
+        userService.deleteUser(uuid);
+        return ResponseEntity.ok().headers(HeaderUtil.createAlert( "userManagement.deleted", uuid)).build();
     }
 
     /**

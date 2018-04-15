@@ -1,5 +1,7 @@
 package logia.assistant.gateway.service;
 
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
+
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
@@ -7,6 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +37,7 @@ import logia.assistant.gateway.service.validator.ValidatorService;
 import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
 import logia.assistant.gateway.web.rest.errors.InternalServerErrorException;
 import logia.assistant.gateway.web.rest.errors.LoginAlreadyUsedException;
+import logia.assistant.share.common.service.UuidService;
 import logia.assistant.share.common.utils.UuidUtils;
 import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
@@ -44,7 +48,7 @@ import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
  */
 @Service
 @Transactional
-public class UserService {
+public class UserService implements UuidService<User> {
 
     /** The log. */
     private final Logger                log = LoggerFactory.getLogger(UserService.class);
@@ -68,10 +72,10 @@ public class UserService {
     private final CacheManager          cacheManager;
 
     /** The validator service. */
-    private final ValidatorService            validatorService;
-    
+    private final ValidatorService      validatorService;
+
     /** The mail service. */
-    private final MailService mailService;
+    private final MailService           mailService;
 
     /**
      * Instantiates a new user service.
@@ -100,6 +104,34 @@ public class UserService {
         this.mailService = mailService;
     }
 
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.UuidService#getByUuid(java.lang.String)
+     */
+    @Override
+    public User getByUuid(String uuid) {
+        List<User> results = StreamSupport.stream(
+                this.userSearchRepository.search(queryStringQuery("uuid=" + uuid)).spliterator(),
+                false).collect(Collectors.toList());
+        if (results.size() == 1) {
+            return results.get(0);
+        }
+        else if (results.size() == 0) {
+            // Maybe elastic search not persistent, try finding in DB
+            Optional<User> optUser = this.userRepository.findOneByUuid(uuid);
+            if (!optUser.isPresent()) {
+                // TODO define later
+                throw new IllegalArgumentException();
+            }
+            User user = optUser.get();
+            this.userSearchRepository.save(user);
+            return user;
+        }
+        else {
+            throw new InternalServerErrorException(
+                    MessageFormat.format("UUID {0} not unique", uuid));
+        }
+    }
+
     /**
      * Register user.
      *
@@ -121,12 +153,12 @@ public class UserService {
         // Create new credential, new user is not active, new user gets registration key
         this.credentialService.save(new CredentialDTO().login(userDTO.getLogin()).activated(false)
                 .activationKey(RandomUtil.generateActivationKey()));
-        
+
         // Send activation email
         try {
             String email = userDTO.getLogin();
             this.validatorService.validateEmail(email);
-            mailService.sendActivationEmail(newUser, email);            
+            mailService.sendActivationEmail(newUser, email);
         }
         catch (Exception e) {
             log.debug(MessageFormat.format("Cannot send activation email to user {0}", userDTO), e);
@@ -144,11 +176,14 @@ public class UserService {
     public User createUser(UserDTO userDTO) {
         log.debug("Admin created Information for User: {}", userDTO);
         if (userDTO.getId() != null) {
-            throw new BadRequestAlertException("A new user cannot already have an ID", "userManagement", "idexists");
+            throw new BadRequestAlertException("A new user cannot already have an ID",
+                    "userManagement", "idexists");
             // Lowercase the user login before comparing with database
-        } else if (this.credentialService.findOneByLogin(userDTO.getLogin().toLowerCase()).isPresent()) {
+        }
+        else if (this.credentialService.findOneByLogin(userDTO.getLogin().toLowerCase())
+                .isPresent()) {
             throw new LoginAlreadyUsedException();
-        } 
+        }
         if (userDTO.getLangKey() == null) {
             userDTO.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
         }
@@ -160,12 +195,12 @@ public class UserService {
         // Create new credential
         this.credentialService.save(new CredentialDTO().login(userDTO.getLogin()).activated(true)
                 .resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now()));
-        
+
         // Send creation email
         try {
             String email = userDTO.getLogin();
             this.validatorService.validateEmail(email);
-            mailService.sendCreationEmail(user, email);    
+            mailService.sendCreationEmail(user, email);
         }
         catch (Exception e) {
             log.debug(MessageFormat.format("Cannot send creation email to user {0}", userDTO), e);
@@ -205,8 +240,10 @@ public class UserService {
      */
     public Optional<UserDTO> updateUser(UserDTO userDTO) {
         log.debug("Admin change information of user {}", userDTO);
-        Optional<Credential> existingCredential = this.credentialService.findOneByLogin(userDTO.getLogin().toLowerCase());
-        if (existingCredential.isPresent() && (!existingCredential.get().getUser().getId().equals(userDTO.getId()))) {
+        Optional<Credential> existingCredential = this.credentialService
+                .findOneByLogin(userDTO.getLogin().toLowerCase());
+        if (existingCredential.isPresent()
+                && (!existingCredential.get().getUser().getId().equals(userDTO.getId()))) {
             throw new LoginAlreadyUsedException();
         }
         this.credentialService.updateByUserId(userDTO.getId(), userDTO.getLogin());
@@ -248,8 +285,10 @@ public class UserService {
         }
         userSearchRepository.save(user);
         this.cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).evict(user.getUuid());
-        this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).evict(user.getFirstName());
-        this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).evict(user.getLastName());
+        this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE)
+                .evict(user.getFirstName());
+        this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE)
+                .evict(user.getLastName());
         log.debug("Create user or change information for User: {}", user);
         return user;
     }
@@ -257,13 +296,14 @@ public class UserService {
     /**
      * Delete user.
      *
-     * @param id the id
+     * @param uuid the id
      */
-    public void deleteUser(Long id) {
-        log.debug("Request to delete User login : {}", id);
-        List<Credential> credentials = this.credentialService.findByUserId(id);
+    public void deleteUser(String uuid) {
+        log.debug("Request to delete User UUID : {}", uuid);
+        User deleteUser = this.getByUuid(uuid);
+        List<Credential> credentials = this.credentialService.findByUserId(deleteUser.getId());
         credentials.forEach(credential -> this.credentialService.delete(credential.getId()));
-        this.delete(this.userRepository.getOne(id));
+        this.delete(deleteUser);
     }
 
     /**
@@ -345,8 +385,10 @@ public class UserService {
         userRepository.delete(user.getId());
         userSearchRepository.delete(user.getId());
         this.cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).evict(user.getUuid());
-        this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).evict(user.getFirstName());
-        this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).evict(user.getLastName());
+        this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE)
+                .evict(user.getFirstName());
+        this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE)
+                .evict(user.getLastName());
         log.debug("Deleted User: {}", user);
     }
 
@@ -358,21 +400,21 @@ public class UserService {
      * @return the optional
      */
     public Optional<User> completePasswordReset(String newPassword, String key) {
-       log.debug("Reset user password for reset key {}", key);
-       this.validatorService.validatePassword(newPassword);
-       return this.credentialService.findOneByResetKey(key)
-           .filter(credential -> credential.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
-           .map(credential -> {
-                credential.resetKey(null).resetDate(null).activated(true);
-                this.credentialService.save(credential);
-                User user = credential.getUser();
-                user.setPassword(passwordEncoder.encode(newPassword));
-                user = this.userSearchRepository.save(user);
-                log.debug("Complete reset password for User: {}", credential);
-                return user;
-           });
+        log.debug("Reset user password for reset key {}", key);
+        this.validatorService.validatePassword(newPassword);
+        return this.credentialService.findOneByResetKey(key).filter(
+                credential -> credential.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
+                .map(credential -> {
+                    credential.resetKey(null).resetDate(null).activated(true);
+                    this.credentialService.save(credential);
+                    User user = credential.getUser();
+                    user.setPassword(passwordEncoder.encode(newPassword));
+                    user = this.userSearchRepository.save(user);
+                    log.debug("Complete reset password for User: {}", credential);
+                    return user;
+                });
     }
-    
+
     /**
      * Change password.
      *
@@ -380,16 +422,15 @@ public class UserService {
      */
     public void changePassword(String password) {
         this.validatorService.validatePassword(password);
-        SecurityUtils.getCurrentUserLogin()
-            .flatMap(this.credentialService::findOneByLogin)
-            .ifPresent(credential -> {
-                credential.resetKey(null).resetDate(null);
-                this.credentialService.save(credential);
-                User user = credential.getUser();
-                user.setPassword(passwordEncoder.encode(passwordEncoder.encode(password)));
-                user = this.userSearchRepository.save(user);
-                log.debug("Changed password for User: {}", credential);
-            });
+        SecurityUtils.getCurrentUserLogin().flatMap(this.credentialService::findOneByLogin)
+                .ifPresent(credential -> {
+                    credential.resetKey(null).resetDate(null);
+                    this.credentialService.save(credential);
+                    User user = credential.getUser();
+                    user.setPassword(passwordEncoder.encode(passwordEncoder.encode(password)));
+                    user = this.userSearchRepository.save(user);
+                    log.debug("Changed password for User: {}", credential);
+                });
     }
 
 }

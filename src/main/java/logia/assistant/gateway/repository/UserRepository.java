@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import logia.assistant.gateway.domain.User;
+import logia.assistant.share.common.repository.UuidRepository;
 
 /**
  * Spring Data JPA repository for the User entity.
@@ -16,7 +16,7 @@ import logia.assistant.gateway.domain.User;
  * @author Dai Mai
  */
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends UuidRepository<User, Long> {
 
     /** The users by email cache. */
     String USERS_BY_UUID_CACHE = "usersByUuid";
@@ -43,4 +43,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query(value = "select u from User u where u.id not in (select c.user.id from Credential c)")
     List<User> findAllNotHaveCredential();
+
 }
