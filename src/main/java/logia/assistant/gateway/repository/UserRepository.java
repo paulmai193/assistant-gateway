@@ -21,7 +21,7 @@ import logia.assistant.gateway.domain.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /** The users by email cache. */
-    String USERS_BY_ID_CACHE = "usersById";
+    String USERS_BY_UUID_CACHE = "usersByUuid";
     
     /** The users by first name cache. */
     String USERS_BY_FIRST_NAME_CACHE = "usersByFirstName";

@@ -169,7 +169,7 @@ public class UserResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).clear();
+        cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).clear();
         cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).clear();
         cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).clear();
         UserResource userResource = new UserResource(userService, userSearchRepository);
@@ -389,7 +389,7 @@ public class UserResourceIntTest {
         userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
 
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).get(user.getId())).isNull();
+        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNull();
         assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNull();
         assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNull();
 
@@ -404,7 +404,7 @@ public class UserResourceIntTest {
             .andExpect(jsonPath("$.imageUrl").value(DEFAULT_IMAGEURL))
             .andExpect(jsonPath("$.langKey").value(DEFAULT_LANGKEY));
 
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).get(user.getId())).isNotNull();
+        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNotNull();
         assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNotNull();
         assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNotNull();
     }
@@ -588,7 +588,7 @@ public class UserResourceIntTest {
             .accept(TestUtil.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk());
 
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).get(user.getId())).isNull();
+        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNull();
         assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNull();
         assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastName())).isNull();
 

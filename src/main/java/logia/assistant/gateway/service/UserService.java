@@ -34,6 +34,7 @@ import logia.assistant.gateway.service.validator.ValidatorService;
 import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
 import logia.assistant.gateway.web.rest.errors.InternalServerErrorException;
 import logia.assistant.gateway.web.rest.errors.LoginAlreadyUsedException;
+import logia.assistant.share.common.utils.UuidUtils;
 import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
@@ -242,10 +243,11 @@ public class UserService {
                     .forEach(managedAuthorities::add);
         }
         if (Objects.isNull(user.getId())) {
+            user.setUuid(UuidUtils.newSecureUUIDString());
             user = this.userRepository.save(user);
         }
         userSearchRepository.save(user);
-        this.cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
+        this.cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).evict(user.getUuid());
         this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).evict(user.getFirstName());
         this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).evict(user.getLastName());
         log.debug("Create user or change information for User: {}", user);
@@ -342,7 +344,7 @@ public class UserService {
     private void delete(User user) {
         userRepository.delete(user.getId());
         userSearchRepository.delete(user.getId());
-        this.cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
+        this.cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).evict(user.getUuid());
         this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).evict(user.getFirstName());
         this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).evict(user.getLastName());
         log.debug("Deleted User: {}", user);
