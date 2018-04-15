@@ -209,4 +209,14 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
             ", primary='" + isPrimary() + "'" +
             "}";
     }
+    
+    /**
+     * Clone to another object.
+     *
+     * @param credential the credential
+     * @return the credential
+     */
+    public static Credential clone(Credential credential) {
+        return new Credential().activated(credential.isActivated()).user(credential.getUser());
+    }
 }

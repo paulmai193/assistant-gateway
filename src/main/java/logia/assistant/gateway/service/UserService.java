@@ -208,6 +208,7 @@ public class UserService {
         if (existingCredential.isPresent() && (!existingCredential.get().getUser().getId().equals(userDTO.getId()))) {
             throw new LoginAlreadyUsedException();
         }
+        this.credentialService.updateByUserId(userDTO.getId(), userDTO.getLogin());
         return Optional.of(userRepository.findOne(userDTO.getId())).map(user -> {
             return this.updateOrCreateUser(user, userDTO);
         }).map(UserDTO::new);

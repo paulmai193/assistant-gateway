@@ -27,6 +27,7 @@ import logia.assistant.gateway.service.dto.CredentialDTO;
 import logia.assistant.gateway.service.mapper.CredentialMapper;
 import logia.assistant.gateway.service.util.RandomUtil;
 import logia.assistant.gateway.service.validator.ValidatorService;
+import logia.assistant.gateway.web.rest.errors.LoginAlreadyUsedException;
 
 /**
  * Service Implementation for managing Credential.
@@ -108,6 +109,27 @@ public class CredentialServiceImpl implements CredentialService {
         cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
                 .evict(savedCredential.getLogin());
         return savedCredential;
+    }
+    
+    /**
+     * Update by user id.
+     *
+     * @param userId the user id
+     * @param login the login
+     * @return the credential
+     */
+    public Credential updateByUserId(Long userId, String login) {
+        List<Credential> currentCredentials = this.findByUserId(userId);
+        if (currentCredentials.stream().anyMatch(currentCredential -> currentCredential.getLogin().equals(login))) {
+            throw new LoginAlreadyUsedException();
+        }
+        Credential newCredential = Credential.clone(currentCredentials.get(0));
+        newCredential.primary(false).login(login);
+        newCredential = this.save(newCredential);
+        
+        // TODO send validation email
+        
+        return newCredential;
     }
 
     /**
