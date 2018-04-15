@@ -24,7 +24,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import logia.assistant.share.common.entity.AbstractAuditingEntity;
+import logia.assistant.share.common.entity.AbstractUuidEntity;
 
 /**
  * A user.
@@ -35,7 +35,7 @@ import logia.assistant.share.common.entity.AbstractAuditingEntity;
 @Table(name = "jhi_user")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 @org.springframework.data.elasticsearch.annotations.Document(indexName = "user")
-public class User extends AbstractAuditingEntity implements Serializable {
+public class User extends AbstractUuidEntity implements Serializable {
 
     /** The Constant serialVersionUID. */
     private static final long serialVersionUID = 1L;
