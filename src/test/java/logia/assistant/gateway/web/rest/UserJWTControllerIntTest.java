@@ -21,7 +21,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import logia.assistant.gateway.AssistantGatewayApp;
+import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
+import logia.assistant.gateway.repository.CredentialRepository;
 import logia.assistant.gateway.repository.UserRepository;
 import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
 import logia.assistant.gateway.web.rest.vm.LoginVM;
@@ -47,6 +49,9 @@ public class UserJWTControllerIntTest {
     /** The user repository. */
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private CredentialRepository credentialRepository;
 
     /** The password encoder. */
     @Autowired
@@ -79,12 +84,10 @@ public class UserJWTControllerIntTest {
     @Transactional
     public void testAuthorize() throws Exception {
         User user = new User();
-        user.setLogin("user-jwt-controller");
-        user.setEmail("user-jwt-controller@example.com");
-        user.setActivated(true);
         user.setPassword(passwordEncoder.encode("test"));
-
-        userRepository.saveAndFlush(user);
+        user = userRepository.saveAndFlush(user);
+        Credential credential = new Credential().login("user-jwt-controller").activated(true);
+        credential = credentialRepository.saveAndFlush(credential);        
 
         LoginVM login = new LoginVM();
         login.setUsername("user-jwt-controller");
@@ -108,12 +111,12 @@ public class UserJWTControllerIntTest {
     @Transactional
     public void testAuthorizeWithRememberMe() throws Exception {
         User user = new User();
-        user.setLogin("user-jwt-controller-remember-me");
-        user.setEmail("user-jwt-controller-remember-me@example.com");
-        user.setActivated(true);
         user.setPassword(passwordEncoder.encode("test"));
+        user = userRepository.saveAndFlush(user);
 
-        userRepository.saveAndFlush(user);
+        Credential credential = new Credential().login("user-jwt-controller-remember-me").activated(true);
+        credential = credentialRepository.saveAndFlush(credential);
+
 
         LoginVM login = new LoginVM();
         login.setUsername("user-jwt-controller-remember-me");
