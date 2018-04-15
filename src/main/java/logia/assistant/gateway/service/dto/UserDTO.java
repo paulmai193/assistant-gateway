@@ -107,7 +107,6 @@ public class UserDTO {
         this.login = credential.getLogin();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
-//        this.email = credential.getEmail();
         this.activated = credential.isActivated();
         this.imageUrl = user.getImageUrl();
         this.langKey = user.getLangKey();

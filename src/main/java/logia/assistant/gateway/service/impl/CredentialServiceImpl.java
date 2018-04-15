@@ -14,6 +14,8 @@ import java.util.stream.StreamSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -301,6 +303,10 @@ public class CredentialServiceImpl implements CredentialService {
     @Transactional(readOnly = true)
     public List<Credential> findByUserId(Long userId) {
         return this.credentialRepository.findWithUserByUserId(userId);
+    }
+
+    public Page<Credential> findAllByLoginNot(Pageable pageable, String login) {
+        return this.credentialRepository.findAllByLoginNot(pageable, login);
     }
 
 }

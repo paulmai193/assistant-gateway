@@ -274,7 +274,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Page<UserDTO> getAllManagedUsers(Pageable pageable) {
-        return userRepository.findAllByLoginNot(pageable, Constants.ANONYMOUS_USER)
+        return this.credentialService.findAllByLoginNot(pageable, Constants.ANONYMOUS_USER)
                 .map(UserDTO::new);
     }
 

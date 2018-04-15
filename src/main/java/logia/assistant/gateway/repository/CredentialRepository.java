@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -87,5 +89,14 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
      */
     @EntityGraph(attributePaths = "user")
     List<Credential> findWithUserByUserId(Long userId);
+    
+    /**
+     * Find all by login not.
+     *
+     * @param pageable the pageable
+     * @param login the login
+     * @return the page
+     */
+    Page<Credential> findAllByLoginNot(Pageable pageable, String login);
     
 }
