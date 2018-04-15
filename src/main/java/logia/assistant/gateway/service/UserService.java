@@ -64,7 +64,6 @@ public class UserService {
     private final AuthorityRepository   authorityRepository;
 
     /** The cache manager. */
-    @SuppressWarnings("unused")
     private final CacheManager          cacheManager;
 
     /** The validator service. */
@@ -111,8 +110,6 @@ public class UserService {
         log.debug("User create new account: {}", userDTO);
         // Validate register information
         this.validatorService.validateNewCredential(userDTO.getLogin(), password);
-        // userRepository.findOneByEmailIgnoreCase(managedUserVM.getEmail()).ifPresent(u -> {throw
-        // new EmailAlreadyUsedException();});
 
         // new user gets initially a generated password
         userDTO.authority(AuthoritiesConstants.USER);
@@ -151,9 +148,6 @@ public class UserService {
         } else if (this.credentialService.findOneByLogin(userDTO.getLogin().toLowerCase()).isPresent()) {
             throw new LoginAlreadyUsedException();
         } 
-//        else if (userRepository.findOneByEmailIgnoreCase(userDTO.getEmail()).isPresent()) {
-//            throw new EmailAlreadyUsedException();
-//        } 
         if (userDTO.getLangKey() == null) {
             userDTO.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
         }
@@ -210,10 +204,6 @@ public class UserService {
      */
     public Optional<UserDTO> updateUser(UserDTO userDTO) {
         log.debug("Admin change information of user {}", userDTO);
-//        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-//        if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
-//            throw new EmailAlreadyUsedException();
-//        }
         Optional<Credential> existingCredential = this.credentialService.findOneByLogin(userDTO.getLogin().toLowerCase());
         if (existingCredential.isPresent() && (!existingCredential.get().getUser().getId().equals(userDTO.getId()))) {
             throw new LoginAlreadyUsedException();
@@ -237,9 +227,6 @@ public class UserService {
         if (Objects.nonNull(updateInformation.getLastName())) {
             user.setLastName(updateInformation.getLastName());
         }
-        // if (Objects.nonNull(updateInformation.getEmail())) {
-        // user.setEmail(updateInformation.setEmail());
-        // }
         if (Objects.nonNull(updateInformation.getImageUrl())) {
             user.setImageUrl(updateInformation.getImageUrl());
         }
@@ -257,6 +244,9 @@ public class UserService {
             user = this.userRepository.save(user);
         }
         userSearchRepository.save(user);
+        this.cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
+        this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).evict(user.getFirstName());
+        this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).evict(user.getLastName());
         log.debug("Create user or change information for User: {}", user);
         return user;
     }
