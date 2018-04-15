@@ -63,12 +63,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Column(name = "last_name", length = 50)
     private String lastName;
 
-//    /** The email. */
-//    @Email
-//    @Size(min = 5, max = 100)
-//    @Column(length = 100, unique = true)
-//    private String email;
-
     /** The lang key. */
     @Size(min = 2, max = 6)
     @Column(name = "lang_key", length = 6)
@@ -173,24 +167,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.lastName = lastName;
     }
 
-//    /**
-//     * Gets the email.
-//     *
-//     * @return the email
-//     */
-//    public String getEmail() {
-//        return email;
-//    }
-//
-//    /**
-//     * Sets the email.
-//     *
-//     * @param email the new email
-//     */
-//    public void setEmail(String email) {
-//        this.email = email;
-//    }
-
     /**
      * Gets the image url.
      *
@@ -277,7 +253,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
         return "User{" +
             "firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
-//            ", email='" + email + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
             ", langKey='" + langKey + '\'' +
             "}";

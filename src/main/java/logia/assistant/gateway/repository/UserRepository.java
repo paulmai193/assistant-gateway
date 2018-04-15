@@ -21,15 +21,13 @@ import logia.assistant.gateway.domain.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     /** The users by email cache. */
-    String USERS_BY_EMAIL_CACHE = "usersByEmail";
-
-//    /**
-//     * Find one by email ignore case.
-//     *
-//     * @param email the email
-//     * @return the optional
-//     */
-//    Optional<User> findOneByEmailIgnoreCase(String email);
+    String USERS_BY_ID_CACHE = "usersById";
+    
+    /** The users by first name cache. */
+    String USERS_BY_FIRST_NAME_CACHE = "usersByFirstName";
+    
+    /** The users by last name cache. */
+    String USERS_BY_LAST_NAME_CACHE = "usersByLastName";
 
     /**
      * Find one with authorities by id.
