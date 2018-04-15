@@ -49,55 +49,89 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = AssistantGatewayApp.class)
 public class CredentialResourceIntTest {
 
+    /** The Constant DEFAULT_LOGIN. */
     private static final String DEFAULT_LOGIN = "AAAAAAAAAA";
+    
+    /** The Constant UPDATED_LOGIN. */
     private static final String UPDATED_LOGIN = "BBBBBBBBBB";
 
+    /** The Constant DEFAULT_LAST_LOGIN_DATE. */
     private static final ZonedDateTime DEFAULT_LAST_LOGIN_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
+    
+    /** The Constant UPDATED_LAST_LOGIN_DATE. */
     private static final ZonedDateTime UPDATED_LAST_LOGIN_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
 
+    /** The Constant DEFAULT_ACTIVATION_KEY. */
     private static final String DEFAULT_ACTIVATION_KEY = "AAAAAAAAAA";
+    
+    /** The Constant UPDATED_ACTIVATION_KEY. */
     private static final String UPDATED_ACTIVATION_KEY = "BBBBBBBBBB";
 
+    /** The Constant DEFAULT_RESET_KEY. */
     private static final String DEFAULT_RESET_KEY = "AAAAAAAAAA";
+    
+    /** The Constant UPDATED_RESET_KEY. */
     private static final String UPDATED_RESET_KEY = "BBBBBBBBBB";
 
+    /** The Constant DEFAULT_RESET_DATE. */
     private static final Instant DEFAULT_RESET_DATE = Instant.ofEpochMilli(0L);
+    
+    /** The Constant UPDATED_RESET_DATE. */
     private static final Instant UPDATED_RESET_DATE = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
+    /** The Constant DEFAULT_ACTIVATED. */
     private static final Boolean DEFAULT_ACTIVATED = false;
+    
+    /** The Constant UPDATED_ACTIVATED. */
     private static final Boolean UPDATED_ACTIVATED = true;
 
+    /** The Constant DEFAULT_PRIMARY. */
     private static final Boolean DEFAULT_PRIMARY = false;
+    
+    /** The Constant UPDATED_PRIMARY. */
     private static final Boolean UPDATED_PRIMARY = true;
 
+    /** The credential repository. */
     @Autowired
     private CredentialRepository credentialRepository;
 
+    /** The credential mapper. */
     @Autowired
     private CredentialMapper credentialMapper;
 
+    /** The credential service. */
     @Autowired
     private CredentialService credentialService;
 
+    /** The credential search repository. */
     @Autowired
     private CredentialSearchRepository credentialSearchRepository;
 
+    /** The jackson message converter. */
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
+    /** The pageable argument resolver. */
     @Autowired
     private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
 
+    /** The exception translator. */
     @Autowired
     private ExceptionTranslator exceptionTranslator;
 
+    /** The em. */
     @Autowired
     private EntityManager em;
 
+    /** The rest credential mock mvc. */
     private MockMvc restCredentialMockMvc;
 
+    /** The credential. */
     private Credential credential;
 
+    /**
+     * Setup.
+     */
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -111,9 +145,12 @@ public class CredentialResourceIntTest {
 
     /**
      * Create an entity for this test.
-     *
+     * 
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
+     *
+     * @param em the em
+     * @return the credential
      */
     public static Credential createEntity(EntityManager em) {
         Credential credential = new Credential()
@@ -132,12 +169,20 @@ public class CredentialResourceIntTest {
         return credential;
     }
 
+    /**
+     * Inits the test.
+     */
     @Before
     public void initTest() {
         credentialSearchRepository.deleteAll();
         credential = createEntity(em);
     }
 
+    /**
+     * Creates the credential.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void createCredential() throws Exception {
@@ -168,6 +213,11 @@ public class CredentialResourceIntTest {
         assertThat(credentialEs).isEqualToIgnoringGivenFields(testCredential, "lastLoginDate");
     }
 
+    /**
+     * Creates the credential with existing id.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void createCredentialWithExistingId() throws Exception {
@@ -188,6 +238,11 @@ public class CredentialResourceIntTest {
         assertThat(credentialList).hasSize(databaseSizeBeforeCreate);
     }
 
+    /**
+     * Check login is required.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void checkLoginIsRequired() throws Exception {
@@ -207,6 +262,11 @@ public class CredentialResourceIntTest {
         assertThat(credentialList).hasSize(databaseSizeBeforeTest);
     }
 
+    /**
+     * Check activated is required.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void checkActivatedIsRequired() throws Exception {
@@ -226,6 +286,11 @@ public class CredentialResourceIntTest {
         assertThat(credentialList).hasSize(databaseSizeBeforeTest);
     }
 
+    /**
+     * Check primary is required.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void checkPrimaryIsRequired() throws Exception {
@@ -245,6 +310,12 @@ public class CredentialResourceIntTest {
         assertThat(credentialList).hasSize(databaseSizeBeforeTest);
     }
 
+    /**
+     * Gets the all credentials.
+     *
+     * @return the all credentials
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void getAllCredentials() throws Exception {
@@ -265,6 +336,12 @@ public class CredentialResourceIntTest {
             .andExpect(jsonPath("$.[*].primary").value(hasItem(DEFAULT_PRIMARY.booleanValue())));
     }
 
+    /**
+     * Gets the credential.
+     *
+     * @return the credential
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void getCredential() throws Exception {
@@ -285,6 +362,12 @@ public class CredentialResourceIntTest {
             .andExpect(jsonPath("$.primary").value(DEFAULT_PRIMARY.booleanValue()));
     }
 
+    /**
+     * Gets the non existing credential.
+     *
+     * @return the non existing credential
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void getNonExistingCredential() throws Exception {
@@ -293,6 +376,11 @@ public class CredentialResourceIntTest {
             .andExpect(status().isNotFound());
     }
 
+    /**
+     * Update credential.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void updateCredential() throws Exception {
@@ -338,6 +426,11 @@ public class CredentialResourceIntTest {
         assertThat(credentialEs).isEqualToIgnoringGivenFields(testCredential, "lastLoginDate");
     }
 
+    /**
+     * Update non existing credential.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void updateNonExistingCredential() throws Exception {
@@ -357,6 +450,11 @@ public class CredentialResourceIntTest {
         assertThat(credentialList).hasSize(databaseSizeBeforeUpdate + 1);
     }
 
+    /**
+     * Delete credential.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void deleteCredential() throws Exception {
@@ -379,6 +477,11 @@ public class CredentialResourceIntTest {
         assertThat(credentialList).hasSize(databaseSizeBeforeDelete - 1);
     }
 
+    /**
+     * Search credential.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void searchCredential() throws Exception {
@@ -400,6 +503,11 @@ public class CredentialResourceIntTest {
             .andExpect(jsonPath("$.[*].primary").value(hasItem(DEFAULT_PRIMARY.booleanValue())));
     }
 
+    /**
+     * Equals verifier.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void equalsVerifier() throws Exception {
@@ -415,6 +523,11 @@ public class CredentialResourceIntTest {
         assertThat(credential1).isNotEqualTo(credential2);
     }
 
+    /**
+     * Dto equals verifier.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void dtoEqualsVerifier() throws Exception {
@@ -431,6 +544,9 @@ public class CredentialResourceIntTest {
         assertThat(credentialDTO1).isNotEqualTo(credentialDTO2);
     }
 
+    /**
+     * Test entity from id.
+     */
     @Test
     @Transactional
     public void testEntityFromId() {

@@ -179,7 +179,7 @@ public class UserResource {
     /**
      * DELETE /users/:id : delete the "id" User.
      *
-     * @param login the login of the user to delete
+     * @param id the id
      * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping("/users/login/{id}")

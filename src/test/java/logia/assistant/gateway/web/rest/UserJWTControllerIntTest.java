@@ -50,6 +50,7 @@ public class UserJWTControllerIntTest {
     @Autowired
     private UserRepository userRepository;
     
+    /** The credential repository. */
     @Autowired
     private CredentialRepository credentialRepository;
 

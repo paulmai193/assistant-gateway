@@ -33,7 +33,8 @@ public class DomainUserDetailsService implements UserDetailsService {
 //    /** The user repository. */
 //    private final UserRepository userRepository;
     
-    @Inject
+    /** The credential repository. */
+@Inject
     private CredentialRepository credentialRepository;
 
 //    /**
@@ -84,7 +85,14 @@ public class DomainUserDetailsService implements UserDetailsService {
 //            grantedAuthorities);
 //    }
     
-    private org.springframework.security.core.userdetails.User createSpringSecurityUser(String lowercaseLogin, Credential credential) {
+    /**
+ * Creates the spring security user.
+ *
+ * @param lowercaseLogin the lowercase login
+ * @param credential the credential
+ * @return the org.springframework.security.core.userdetails. user
+ */
+private org.springframework.security.core.userdetails.User createSpringSecurityUser(String lowercaseLogin, Credential credential) {
         if (!credential.isActivated()) {
             throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");
         }

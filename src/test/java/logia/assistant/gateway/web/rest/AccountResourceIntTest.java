@@ -99,9 +99,11 @@ public class AccountResourceIntTest {
     /** The rest user mock mvc. */
     private MockMvc                restUserMockMvc;
 
+    /** The credential service. */
     @Mock
     private CredentialServiceImpl  credentialService;
 
+    /** The credential repository. */
     @Autowired
     private CredentialRepository   credentialRepository;
 
@@ -730,6 +732,11 @@ public class AccountResourceIntTest {
                         .isTrue();
     }
     
+    /**
+     * Test finish password reset and activated automatically.
+     *
+     * @throws Exception the exception
+     */
     @Test
     @Transactional
     public void testFinishPasswordResetAndActivatedAutomatically() throws Exception {
@@ -759,6 +766,7 @@ public class AccountResourceIntTest {
     }
 
     /**
+     * Test finish password reset too big.
      *
      * @throws Exception the exception
      */

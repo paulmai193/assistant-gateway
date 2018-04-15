@@ -99,7 +99,7 @@ public class UserDTO {
     /**
      * Instantiates a new user DTO.
      *
-     * @param user the user
+     * @param credential the credential
      */
     public UserDTO(Credential credential) {
         User user = credential.getUser();
@@ -420,6 +420,12 @@ public class UserDTO {
         return this;
     }
     
+    /**
+     * Authority.
+     *
+     * @param authority the authority
+     * @return the user DTO
+     */
     public UserDTO authority(String authority) {
         this.authorities.add(authority);
         return this;

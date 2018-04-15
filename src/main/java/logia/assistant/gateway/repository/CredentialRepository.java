@@ -19,6 +19,7 @@ import logia.assistant.gateway.domain.Credential;
 @Repository
 public interface CredentialRepository extends JpaRepository<Credential, Long> {
 
+    /** The credentials by login cache. */
     String CREDENTIALS_BY_LOGIN_CACHE = "credentialsByLogin";
     
     /**

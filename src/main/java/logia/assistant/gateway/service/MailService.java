@@ -103,9 +103,9 @@ public class MailService {
      * Send email from template.
      *
      * @param user the user
+     * @param email the email
      * @param templateName the template name
      * @param titleKey the title key
-     * @param string 
      */
     @Async
     public void sendEmailFromTemplate(User user, String email, String templateName, String titleKey) {
@@ -123,6 +123,7 @@ public class MailService {
      * Send activation email.
      *
      * @param user the user
+     * @param email the email
      */
     @Async
     public void sendActivationEmail(User user, String email) {
@@ -134,6 +135,7 @@ public class MailService {
      * Send creation email.
      *
      * @param user the user
+     * @param email the email
      */
     @Async
     public void sendCreationEmail(User user, String email) {
@@ -145,6 +147,7 @@ public class MailService {
      * Send password reset mail.
      *
      * @param user the user
+     * @param email the email
      */
     @Async
     public void sendPasswordResetMail(User user, String email) {

@@ -21,14 +21,23 @@ import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 
+/**
+ * The Class CredentialServiceIntTest.
+ *
+ * @author Dai Mai
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = AssistantGatewayApp.class)
 @Transactional
 public class CredentialServiceIntTest extends AbstractUserServiceInitTest {
 
+    /** The credential service. */
     @Autowired
     private CredentialServiceImpl credentialService; 
     
+    /**
+     * Inits the.
+     */
     @Before
     public void init() {
         user = new User();

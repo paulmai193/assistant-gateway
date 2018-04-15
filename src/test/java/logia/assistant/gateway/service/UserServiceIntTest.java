@@ -34,6 +34,7 @@ import logia.assistant.gateway.service.util.RandomUtil;
 @Transactional
 public class UserServiceIntTest extends AbstractUserServiceInitTest {
 
+    /** The user service. */
     @Autowired
     private UserService userService;
 

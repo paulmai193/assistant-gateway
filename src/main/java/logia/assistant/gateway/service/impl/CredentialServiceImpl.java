@@ -57,6 +57,7 @@ public class CredentialServiceImpl implements CredentialService {
     /** The validator service. */
     private final ValidatorService           validatorService;
 
+    /** The mail service. */
     private final MailService mailService;
 
     /**

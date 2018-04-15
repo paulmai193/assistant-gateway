@@ -114,6 +114,7 @@ public class UserResourceIntTest {
     @Autowired
     private UserSearchRepository userSearchRepository;
     
+    /** The credential repostitory. */
     @Autowired
     private CredentialRepository credentialRepostitory;
 
@@ -125,6 +126,7 @@ public class UserResourceIntTest {
     @Autowired
     private UserService userService;
     
+    /** The credential service. */
     @Autowired
     private CredentialServiceImpl credentialService;
 
@@ -158,6 +160,7 @@ public class UserResourceIntTest {
     /** The user. */
     private User user;
     
+    /** The credential. */
     private Credential credential;
 
     /**

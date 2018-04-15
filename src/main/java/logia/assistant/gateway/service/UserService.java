@@ -255,6 +255,7 @@ public class UserService {
     /**
      * Delete user.
      *
+     * @param id the id
      */
     public void deleteUser(Long id) {
         log.debug("Request to delete User login : {}", id);
@@ -336,7 +337,7 @@ public class UserService {
     /**
      * Delete.
      *
-     * @param userId the user id
+     * @param user the user
      */
     private void delete(User user) {
         userRepository.delete(user.getId());
