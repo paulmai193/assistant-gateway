@@ -260,7 +260,7 @@ public class UserService {
         log.debug("Request to delete User login : {}", id);
         List<Credential> credentials = this.credentialService.findByUserId(id);
         credentials.forEach(credential -> this.credentialService.delete(credential.getId()));
-        this.delete(id);
+        this.delete(this.userRepository.getOne(id));
     }
 
     /**
@@ -318,8 +318,8 @@ public class UserService {
     public void removeNonCredentialUsers() {
         List<User> users = userRepository.findAllNotHaveCredential();
         for (User user : users) {
-            log.debug("Deleting user {} not have credential", user.getId());
-            this.delete(user.getId());
+            log.debug("Deleting user {} not have credential", user);
+            this.delete(user);
         }
     }
 
@@ -338,10 +338,13 @@ public class UserService {
      *
      * @param userId the user id
      */
-    private void delete(Long userId) {
-        userRepository.delete(userId);
-        userSearchRepository.delete(userId);
-        log.debug("Deleted User: {}", userId);
+    private void delete(User user) {
+        userRepository.delete(user.getId());
+        userSearchRepository.delete(user.getId());
+        this.cacheManager.getCache(UserRepository.USERS_BY_ID_CACHE).evict(user.getId());
+        this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).evict(user.getFirstName());
+        this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).evict(user.getLastName());
+        log.debug("Deleted User: {}", user);
     }
 
     /**
