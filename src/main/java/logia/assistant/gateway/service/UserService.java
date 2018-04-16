@@ -108,27 +108,24 @@ public class UserService implements UuidService<User> {
      * @see logia.assistant.share.common.service.UuidService#getByUuid(java.lang.String)
      */
     @Override
-    public User getByUuid(String uuid) {
+    public Optional<User> findByUuid(String uuid) {
         List<User> results = StreamSupport.stream(
                 this.userSearchRepository.search(queryStringQuery("uuid=" + uuid)).spliterator(),
                 false).collect(Collectors.toList());
-        if (results.size() == 1) {
-            return results.get(0);
-        }
-        else if (results.size() == 0) {
-            // Maybe elastic search not persistent, try finding in DB
-            Optional<User> optUser = this.userRepository.findOneByUuid(uuid);
-            if (!optUser.isPresent()) {
-                // TODO define later
-                throw new IllegalArgumentException();
-            }
-            User user = optUser.get();
-            this.userSearchRepository.save(user);
-            return user;
-        }
-        else {
+        if (results.size() > 1) {
             throw new InternalServerErrorException(
                     MessageFormat.format("UUID {0} not unique", uuid));
+        }
+        if (results.size() == 1) {
+            return Optional.of(results.get(0));
+        }
+        else {
+            // Maybe elastic search not persistent, try finding in DB
+            Optional<User> optUser = this.userRepository.findOneByUuid(uuid);
+            if (optUser.isPresent()) {
+                this.userSearchRepository.save(optUser.get());
+            }
+            return optUser;
         }
     }
 
@@ -300,10 +297,11 @@ public class UserService implements UuidService<User> {
      */
     public void deleteUser(String uuid) {
         log.debug("Request to delete User UUID : {}", uuid);
-        User deleteUser = this.getByUuid(uuid);
-        List<Credential> credentials = this.credentialService.findByUserId(deleteUser.getId());
-        credentials.forEach(credential -> this.credentialService.delete(credential.getId()));
-        this.delete(deleteUser);
+        this.findByUuid(uuid).ifPresent(deleteUser -> {
+            List<Credential> credentials = this.credentialService.findByUserId(deleteUser.getId());
+            credentials.forEach(credential -> this.credentialService.delete(credential.getId()));
+            this.delete(deleteUser);
+        });
     }
 
     /**
