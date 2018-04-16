@@ -54,7 +54,7 @@ public class UserMapper {
             return null;
         } else {
             User user = new User();
-            user.setId(userDTO.getId());
+            user.setUuid(userDTO.getId());
             user.setFirstName(userDTO.getFirstName());
             user.setLastName(userDTO.getLastName());
             user.setImageUrl(userDTO.getImageUrl());
@@ -86,12 +86,12 @@ public class UserMapper {
      * @param id the id
      * @return the user
      */
-    public User userFromId(Long id) {
-        if (id == null) {
+    public User userFromUuid(String uuid) {
+        if (uuid == null) {
             return null;
         }
         User user = new User();
-        user.setId(id);
+        user.setUuid(uuid);
         return user;
     }
 

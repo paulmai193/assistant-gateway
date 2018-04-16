@@ -1,9 +1,10 @@
 package logia.assistant.gateway.service.mapper;
 
-import logia.assistant.gateway.domain.*;
-import logia.assistant.gateway.service.dto.CredentialDTO;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-import org.mapstruct.*;
+import logia.assistant.gateway.domain.Credential;
+import logia.assistant.gateway.service.dto.CredentialDTO;
 
 /**
  * Mapper for the entity Credential and its DTO CredentialDTO.
@@ -17,7 +18,6 @@ public interface CredentialMapper extends EntityMapper<CredentialDTO, Credential
      * @see logia.assistant.gateway.service.mapper.EntityMapper#toDto(java.lang.Object)
      */
     @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "user.login", target = "userLogin")
     CredentialDTO toDto(Credential credential);
 
     /* (non-Javadoc)

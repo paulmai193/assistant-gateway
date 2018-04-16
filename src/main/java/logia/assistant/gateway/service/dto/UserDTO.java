@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class UserDTO {
 
     /** The id. */
-    private Long id;
+    private String id;
 
     /** The login. */
     @NotBlank
@@ -82,7 +82,7 @@ public class UserDTO {
      * @param user the user
      */
     public UserDTO(User user) {
-        this.id = user.getId();
+        this.id = user.getUuid();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
         this.imageUrl = user.getImageUrl();
@@ -103,7 +103,7 @@ public class UserDTO {
      */
     public UserDTO(Credential credential) {
         User user = credential.getUser();
-        this.id = user.getId();
+        this.id = user.getUuid();
         this.login = credential.getLogin();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
@@ -124,7 +124,7 @@ public class UserDTO {
      *
      * @return the id
      */
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
@@ -133,7 +133,7 @@ public class UserDTO {
      *
      * @param id the new id
      */
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

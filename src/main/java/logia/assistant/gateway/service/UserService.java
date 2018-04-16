@@ -173,7 +173,7 @@ public class UserService implements UuidService<User> {
     public User createUser(UserDTO userDTO) {
         log.debug("Admin created Information for User: {}", userDTO);
         if (userDTO.getId() != null) {
-            throw new BadRequestAlertException("A new user cannot already have an ID",
+            throw new BadRequestAlertException("A new user cannot already have an UUID",
                     "userManagement", "idexists");
             // Lowercase the user login before comparing with database
         }
@@ -187,7 +187,7 @@ public class UserService implements UuidService<User> {
         String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
         User user = new User().password(encryptedPassword);
         user = this.updateOrCreateUser(null, userDTO);
-        userDTO.setId(user.getId());
+        userDTO.setId(user.getUuid());
 
         // Create new credential
         this.credentialService.save(new CredentialDTO().login(userDTO.getLogin()).activated(true)
@@ -237,16 +237,16 @@ public class UserService implements UuidService<User> {
      */
     public Optional<UserDTO> updateUser(UserDTO userDTO) {
         log.debug("Admin change information of user {}", userDTO);
-        Optional<Credential> existingCredential = this.credentialService
-                .findOneByLogin(userDTO.getLogin().toLowerCase());
-        if (existingCredential.isPresent()
-                && (!existingCredential.get().getUser().getId().equals(userDTO.getId()))) {
-            throw new LoginAlreadyUsedException();
+        Optional<User> optUser = this.userRepository.findOneByUuid(userDTO.getId());
+        if (optUser.isPresent()) {
+            this.credentialService.updateByUserId(optUser.get().getId(), userDTO.getLogin());
+            return Optional.of(this.userRepository.findOneByUuid(userDTO.getId())).map(user -> {
+                return this.updateOrCreateUser(user.get(), userDTO);
+            }).map(UserDTO::new); 
         }
-        this.credentialService.updateByUserId(userDTO.getId(), userDTO.getLogin());
-        return Optional.of(userRepository.findOne(userDTO.getId())).map(user -> {
-            return this.updateOrCreateUser(user, userDTO);
-        }).map(UserDTO::new);
+        else {
+            return Optional.empty();
+        }
     }
 
     /**

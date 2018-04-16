@@ -69,6 +69,8 @@ public class UserResourceIntTest {
 
     /** The Constant DEFAULT_ID. */
     private static final Long DEFAULT_ID = 1L;
+    
+    private static final String DEFAULT_UUID = "1";
 
     /** The Constant DEFAULT_PASSWORD. */
     private static final String DEFAULT_PASSWORD = "passjohndoe";
@@ -191,6 +193,7 @@ public class UserResourceIntTest {
      */
     public static User createEntity(EntityManager em) {
         User user = new User();
+        user.setUuid(DEFAULT_UUID);
         user.setPassword(RandomStringUtils.random(60));
         user.setFirstName(DEFAULT_FIRSTNAME);
         user.setLastName(DEFAULT_LASTNAME);
@@ -255,11 +258,11 @@ public class UserResourceIntTest {
      */
     @Test
     @Transactional
-    public void createUserWithExistingId() throws Exception {
+    public void createUserWithExistingUuid() throws Exception {
         int databaseSizeBeforeCreate = userRepository.findAll().size();
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        managedUserVM.setId(1L);
+        managedUserVM.setId(DEFAULT_UUID); // exist UUID
         managedUserVM.setLogin(DEFAULT_LOGIN);
         managedUserVM.setPassword(DEFAULT_PASSWORD);
         managedUserVM.setFirstName(DEFAULT_FIRSTNAME);
@@ -440,7 +443,7 @@ public class UserResourceIntTest {
         User updatedUser = userRepository.findOne(user.getId());
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        managedUserVM.setId(updatedUser.getId());
+        managedUserVM.setId(updatedUser.getUuid());
         managedUserVM.setLogin(DEFAULT_LOGIN);
         managedUserVM.setPassword(UPDATED_PASSWORD);
         managedUserVM.setFirstName(UPDATED_FIRSTNAME);
@@ -487,7 +490,7 @@ public class UserResourceIntTest {
         User updatedUser = userRepository.findOne(user.getId());
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        managedUserVM.setId(updatedUser.getId());
+        managedUserVM.setId(updatedUser.getUuid());
         managedUserVM.setLogin(UPDATED_LOGIN);
         managedUserVM.setPassword(UPDATED_PASSWORD);
         managedUserVM.setFirstName(UPDATED_FIRSTNAME);
@@ -551,7 +554,7 @@ public class UserResourceIntTest {
         User updatedUser = userRepository.findOne(user.getId());
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        managedUserVM.setId(updatedUser.getId());
+        managedUserVM.setId(updatedUser.getUuid());
         managedUserVM.setLogin("jhipster");// this login should already be used by anotherUser
         managedUserVM.setPassword(updatedUser.getPassword());
         managedUserVM.setFirstName(updatedUser.getFirstName());
@@ -641,8 +644,8 @@ public class UserResourceIntTest {
      */
     @Test
     public void testUserFromId() {
-        assertThat(userMapper.userFromId(DEFAULT_ID).getId()).isEqualTo(DEFAULT_ID);
-        assertThat(userMapper.userFromId(null)).isNull();
+        assertThat(userMapper.userFromUuid(DEFAULT_UUID).getUuid()).isEqualTo(DEFAULT_UUID);
+        assertThat(userMapper.userFromUuid(null)).isNull();
     }
 
     /**
@@ -651,7 +654,7 @@ public class UserResourceIntTest {
     @Test
     public void testUserDTOtoUser() {
         UserDTO userDTO = new UserDTO();
-        userDTO.setId(DEFAULT_ID);
+        userDTO.setId(DEFAULT_UUID);
         userDTO.setLogin(DEFAULT_LOGIN);
         userDTO.setFirstName(DEFAULT_FIRSTNAME);
         userDTO.setLastName(DEFAULT_LASTNAME);

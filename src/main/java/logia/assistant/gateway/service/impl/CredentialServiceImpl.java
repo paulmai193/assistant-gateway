@@ -122,17 +122,26 @@ public class CredentialServiceImpl implements CredentialService {
      * @return the credential
      */
     public Credential updateByUserId(Long userId, String login) {
-        List<Credential> currentCredentials = this.findByUserId(userId);
-        if (currentCredentials.stream().anyMatch(currentCredential -> currentCredential.getLogin().equals(login))) {
+        Credential credential;
+        Optional<Credential> existingCredential = this.findOneByLogin(login.toLowerCase());
+        if (existingCredential.isPresent()
+                && (!existingCredential.get().getUser().getId().equals(userId))) {
+            // another user already have this credential
             throw new LoginAlreadyUsedException();
         }
-        Credential newCredential = Credential.clone(currentCredentials.get(0));
-        newCredential.primary(false).login(login);
-        newCredential = this.save(newCredential);
-        
-        // TODO send validation email
-        
-        return newCredential;
+        List<Credential> currentCredentials = this.findByUserId(userId);
+        Optional<Credential> optCredential = currentCredentials.stream().filter(currentCredential -> currentCredential.getLogin().equals(login)).findFirst();
+        if (!optCredential.isPresent()) {
+            credential = Credential.clone(currentCredentials.get(0));
+            credential.primary(false).login(login);
+            credential = this.save(credential);
+            
+            // TODO send validation email
+        }
+        else {
+            credential = optCredential.get();
+        }
+        return credential;
     }
 
     /**
