@@ -23,7 +23,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="uuid" type="varchar(50)">
-                <constraints unique="true" nullable="false" uniqueConstraintName="ux_user_uuid"/>
+                <constraints unique="true" nullable="true"/>
             </column>
             <column name="password_hash" type="varchar(60)"/>
             <column name="first_name" type="varchar(50)"/>

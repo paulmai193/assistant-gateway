@@ -38,7 +38,6 @@ import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
 import logia.assistant.gateway.web.rest.errors.InternalServerErrorException;
 import logia.assistant.gateway.web.rest.errors.LoginAlreadyUsedException;
 import logia.assistant.share.common.service.UuidService;
-import logia.assistant.share.common.utils.UuidUtils;
 import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
@@ -277,7 +276,6 @@ public class UserService implements UuidService<User> {
                     .forEach(managedAuthorities::add);
         }
         if (Objects.isNull(user.getId())) {
-            user.setUuid(UuidUtils.newSecureUUIDString());
             user = this.userRepository.save(user);
         }
         userSearchRepository.save(user);
