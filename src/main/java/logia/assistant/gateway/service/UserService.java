@@ -103,7 +103,9 @@ public class UserService implements UuidService<User> {
         this.mailService = mailService;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see logia.assistant.share.common.service.UuidService#getByUuid(java.lang.String)
      */
     @Override
@@ -140,7 +142,7 @@ public class UserService implements UuidService<User> {
         if (this.validatorService.isEmail(userDTO.getLogin())) {
             userDTO.setLogin(userDTO.getLogin().toLowerCase());
         }
-        
+
         log.debug("User create new account: {}", userDTO);
         // Validate register information
         this.validatorService.validateNewCredential(userDTO.getLogin(), password);
@@ -180,13 +182,12 @@ public class UserService implements UuidService<User> {
         if (this.validatorService.isEmail(userDTO.getLogin())) {
             userDTO.setLogin(userDTO.getLogin());
         }
-        
+
         if (userDTO.getId() != null) {
             throw new BadRequestAlertException("A new user cannot already have an UUID",
                     "userManagement", "idexists");
         }
-        else if (this.credentialService.findOneByLogin(userDTO.getLogin())
-                .isPresent()) {
+        else if (this.credentialService.findOneByLogin(userDTO.getLogin()).isPresent()) {
             throw new LoginAlreadyUsedException();
         }
         if (userDTO.getLangKey() == null) {
@@ -198,8 +199,8 @@ public class UserService implements UuidService<User> {
         userDTO.setId(user.getUuid());
 
         // Create new credential
-        this.credentialService.save(new CredentialDTO().login(userDTO.getLogin()).activated(true)
-                .resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now()));
+        this.credentialService.save(new CredentialDTO().userId(user.getId()).login(userDTO.getLogin()).activated(true)
+                .primary(true).resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now()));
 
         // Send creation email
         try {
@@ -250,7 +251,7 @@ public class UserService implements UuidService<User> {
             this.credentialService.updateByUserId(optUser.get().getId(), userDTO.getLogin());
             return Optional.of(this.userRepository.findOneByUuid(userDTO.getId())).map(user -> {
                 return this.updateOrCreateUser(user.get(), userDTO);
-            }).map(UserDTO::new); 
+            }).map(UserDTO::new);
         }
         else {
             return Optional.empty();

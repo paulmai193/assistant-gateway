@@ -62,77 +62,77 @@ import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 public class UserResourceIntTest {
 
     /** The Constant DEFAULT_LOGIN. */
-    public static final String DEFAULT_LOGIN = "johndoe";
-    
+    public static final String                    DEFAULT_LOGIN     = "johndoe";
+
     /** The Constant UPDATED_LOGIN. */
-    public static final String UPDATED_LOGIN = "jhipster";
+    public static final String                    UPDATED_LOGIN     = "jhipster";
 
     /** The Constant DEFAULT_ID. */
-    public static final Long DEFAULT_ID = 1L;
-    
-    public static final String DEFAULT_UUID = "1";
+    public static final Long                      DEFAULT_ID        = 1L;
+
+    public static final String                    DEFAULT_UUID      = "1";
 
     /** The Constant DEFAULT_PASSWORD. */
-    public static final String DEFAULT_PASSWORD = "passjohndoe";
-    
+    public static final String                    DEFAULT_PASSWORD  = "passjohndoe";
+
     /** The Constant UPDATED_PASSWORD. */
-    public static final String UPDATED_PASSWORD = "passjhipster";
+    public static final String                    UPDATED_PASSWORD  = "passjhipster";
 
     /** The Constant DEFAULT_FIRSTNAME. */
-    public static final String DEFAULT_FIRSTNAME = "john";
-    
+    public static final String                    DEFAULT_FIRSTNAME = "john";
+
     /** The Constant UPDATED_FIRSTNAME. */
-    public static final String UPDATED_FIRSTNAME = "jhipsterFirstName";
+    public static final String                    UPDATED_FIRSTNAME = "jhipsterFirstName";
 
     /** The Constant DEFAULT_LASTNAME. */
-    public static final String DEFAULT_LASTNAME = "doe";
-    
+    public static final String                    DEFAULT_LASTNAME  = "doe";
+
     /** The Constant UPDATED_LASTNAME. */
-    public static final String UPDATED_LASTNAME = "jhipsterLastName";
+    public static final String                    UPDATED_LASTNAME  = "jhipsterLastName";
 
     /** The Constant DEFAULT_IMAGEURL. */
-    public static final String DEFAULT_IMAGEURL = "http://placehold.it/50x50";
-    
+    public static final String                    DEFAULT_IMAGEURL  = "http://placehold.it/50x50";
+
     /** The Constant UPDATED_IMAGEURL. */
-    public static final String UPDATED_IMAGEURL = "http://placehold.it/40x40";
+    public static final String                    UPDATED_IMAGEURL  = "http://placehold.it/40x40";
 
     /** The Constant DEFAULT_LANGKEY. */
-    public static final String DEFAULT_LANGKEY = "en";
-    
+    public static final String                    DEFAULT_LANGKEY   = "en";
+
     /** The Constant UPDATED_LANGKEY. */
-    public static final String UPDATED_LANGKEY = "fr";
+    public static final String                    UPDATED_LANGKEY   = "fr";
 
     /** The user repository. */
     @Autowired
-    private UserRepository userRepository;
+    private UserRepository                        userRepository;
 
     /** The user search repository. */
     @Autowired
-    private UserSearchRepository userSearchRepository;
-    
+    private UserSearchRepository                  userSearchRepository;
+
     /** The credential repostitory. */
     @Autowired
-    private CredentialRepository credentialRepostitory;
+    private CredentialRepository                  credentialRepostitory;
 
     /** The mail service. */
     @Autowired
-    private MailService mailService;
+    private MailService                           mailService;
 
     /** The user service. */
     @Autowired
-    private UserService userService;
-    
+    private UserService                           userService;
+
     /** The credential service. */
     @Autowired
-    private CredentialServiceImpl credentialService;
+    private CredentialServiceImpl                 credentialService;
 
     /** The user mapper. */
     @Autowired
-    private UserMapper userMapper;
+    private UserMapper                            userMapper;
 
     /** The jackson message converter. */
     @Autowired
-    private MappingJackson2HttpMessageConverter jacksonMessageConverter;
+    private MappingJackson2HttpMessageConverter   jacksonMessageConverter;
 
     /** The pageable argument resolver. */
     @Autowired
@@ -140,24 +140,24 @@ public class UserResourceIntTest {
 
     /** The exception translator. */
     @Autowired
-    private ExceptionTranslator exceptionTranslator;
+    private ExceptionTranslator                   exceptionTranslator;
 
     /** The em. */
     @Autowired
-    private EntityManager em;
+    private EntityManager                         em;
 
     /** The cache manager. */
     @Autowired
-    private CacheManager cacheManager;
+    private CacheManager                          cacheManager;
 
     /** The rest user mock mvc. */
-    private MockMvc restUserMockMvc;
+    private MockMvc                               restUserMockMvc;
 
     /** The user. */
-    private User user;
-    
+    private User                                  user;
+
     /** The credential. */
-    private Credential credential;
+    private Credential                            credential;
 
     /**
      * Setup.
@@ -170,10 +170,9 @@ public class UserResourceIntTest {
         cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).clear();
         UserResource userResource = new UserResource(userService, userSearchRepository);
         this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource)
-            .setCustomArgumentResolvers(pageableArgumentResolver)
-            .setControllerAdvice(exceptionTranslator)
-            .setMessageConverters(jacksonMessageConverter)
-            .build();
+                .setCustomArgumentResolvers(pageableArgumentResolver)
+                .setControllerAdvice(exceptionTranslator)
+                .setMessageConverters(jacksonMessageConverter).build();
     }
 
     /**
@@ -202,7 +201,7 @@ public class UserResourceIntTest {
     public void initTest() {
         user = createEntity(em);
     }
-    
+
     public void clearTest() {
         userRepository.deleteAll();
     }
@@ -228,10 +227,10 @@ public class UserResourceIntTest {
         managedUserVM.setLangKey(DEFAULT_LANGKEY);
         managedUserVM.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
 
-        restUserMockMvc.perform(post("/api/users")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
-            .andExpect(status().isCreated());
+        restUserMockMvc
+                .perform(post("/api/users").contentType(TestUtil.APPLICATION_JSON_UTF8)
+                        .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
+                .andExpect(status().isCreated());
 
         // Validate the User in the database
         List<User> userList = userRepository.findAll();
@@ -268,10 +267,10 @@ public class UserResourceIntTest {
         managedUserVM.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
 
         // An entity with an existing ID cannot be created, so this API call must fail
-        restUserMockMvc.perform(post("/api/users")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
-            .andExpect(status().isBadRequest());
+        restUserMockMvc
+                .perform(post("/api/users").contentType(TestUtil.APPLICATION_JSON_UTF8)
+                        .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
+                .andExpect(status().isBadRequest());
 
         // Validate the User in the database
         List<User> userList = userRepository.findAll();
@@ -292,7 +291,8 @@ public class UserResourceIntTest {
         int databaseSizeBeforeCreate = userRepository.findAll().size();
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        managedUserVM.setLogin(CredentialResourceIntTest.DEFAULT_LOGIN);// this login should already be used
+        managedUserVM.setLogin(CredentialResourceIntTest.DEFAULT_LOGIN);// this login should already
+                                                                        // be used
         managedUserVM.setPassword(DEFAULT_PASSWORD);
         managedUserVM.setFirstName(DEFAULT_FIRSTNAME);
         managedUserVM.setLastName(DEFAULT_LASTNAME);
@@ -302,15 +302,15 @@ public class UserResourceIntTest {
         managedUserVM.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
 
         // Create the User
-        restUserMockMvc.perform(post("/api/users")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
-            .andExpect(status().isBadRequest());
+        restUserMockMvc
+                .perform(post("/api/users").contentType(TestUtil.APPLICATION_JSON_UTF8)
+                        .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
+                .andExpect(status().isBadRequest());
 
         // Validate the User in the database
         List<User> userList = userRepository.findAll();
         assertThat(userList).hasSize(databaseSizeBeforeCreate);
-        
+
         clearTest();
     }
 
@@ -328,16 +328,16 @@ public class UserResourceIntTest {
         userSearchRepository.save(user);
 
         // Get all the users
-        restUserMockMvc.perform(get("/api/users?sort=id,desc")
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.[*].login").value(hasItem(CredentialResourceIntTest.DEFAULT_LOGIN)))
-            .andExpect(jsonPath("$.[*].firstName").value(hasItem(DEFAULT_FIRSTNAME)))
-            .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LASTNAME)))
-            .andExpect(jsonPath("$.[*].imageUrl").value(hasItem(DEFAULT_IMAGEURL)))
-            .andExpect(jsonPath("$.[*].langKey").value(hasItem(DEFAULT_LANGKEY)));
-        
+        restUserMockMvc.perform(get("/api/users?sort=id,desc").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.[*].login")
+                        .value(hasItem(CredentialResourceIntTest.DEFAULT_LOGIN)))
+                .andExpect(jsonPath("$.[*].firstName").value(hasItem(DEFAULT_FIRSTNAME)))
+                .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LASTNAME)))
+                .andExpect(jsonPath("$.[*].imageUrl").value(hasItem(DEFAULT_IMAGEURL)))
+                .andExpect(jsonPath("$.[*].langKey").value(hasItem(DEFAULT_LANGKEY)));
+
         clearTest();
     }
 
@@ -354,25 +354,27 @@ public class UserResourceIntTest {
         CredentialResourceIntTest.createEntity(em, user);
         userSearchRepository.save(user);
 
-//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNull();
-//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNull();
-//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNull();
-        assertThat(cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).get(CredentialResourceIntTest.DEFAULT_LOGIN)).isNull();
+        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNull();
+        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNull();
+        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNull();
+        assertThat(cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
+                .get(CredentialResourceIntTest.DEFAULT_LOGIN)).isNull();
 
         // Get the user
         restUserMockMvc.perform(get("/api/users/{login}", CredentialResourceIntTest.DEFAULT_LOGIN))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.firstName").value(DEFAULT_FIRSTNAME))
-            .andExpect(jsonPath("$.lastName").value(DEFAULT_LASTNAME))
-            .andExpect(jsonPath("$.imageUrl").value(DEFAULT_IMAGEURL))
-            .andExpect(jsonPath("$.langKey").value(DEFAULT_LANGKEY));
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.firstName").value(DEFAULT_FIRSTNAME))
+                .andExpect(jsonPath("$.lastName").value(DEFAULT_LASTNAME))
+                .andExpect(jsonPath("$.imageUrl").value(DEFAULT_IMAGEURL))
+                .andExpect(jsonPath("$.langKey").value(DEFAULT_LANGKEY));
 
-//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNotNull();
-//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNotNull();
-//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNotNull();
-        assertThat(cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).get(CredentialResourceIntTest.DEFAULT_LOGIN)).isNotNull();
-        
+        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNotNull();
+        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNotNull();
+        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNotNull();
+        assertThat(cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
+                .get(CredentialResourceIntTest.DEFAULT_LOGIN)).isNotNull();
+
         clearTest();
     }
 
@@ -385,8 +387,7 @@ public class UserResourceIntTest {
     @Test
     @Transactional
     public void getNonExistingUser() throws Exception {
-        restUserMockMvc.perform(get("/api/users/unknown"))
-            .andExpect(status().isNotFound());
+        restUserMockMvc.perform(get("/api/users/unknown")).andExpect(status().isNotFound());
     }
 
     /**
@@ -420,10 +421,10 @@ public class UserResourceIntTest {
         managedUserVM.setLastModifiedDate(updatedUser.getLastModifiedDate());
         managedUserVM.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
 
-        restUserMockMvc.perform(put("/api/users")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
-            .andExpect(status().isOk());
+        restUserMockMvc
+                .perform(put("/api/users").contentType(TestUtil.APPLICATION_JSON_UTF8)
+                        .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
+                .andExpect(status().isOk());
 
         // Validate the User in the database
         List<User> userList = userRepository.findAll();
@@ -433,7 +434,7 @@ public class UserResourceIntTest {
         assertThat(testUser.getLastName()).isEqualTo(UPDATED_LASTNAME);
         assertThat(testUser.getImageUrl()).isEqualTo(UPDATED_IMAGEURL);
         assertThat(testUser.getLangKey()).isEqualTo(UPDATED_LANGKEY);
-        
+
         clearTest();
     }
 
@@ -468,10 +469,10 @@ public class UserResourceIntTest {
         managedUserVM.setLastModifiedDate(updatedUser.getLastModifiedDate());
         managedUserVM.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
 
-        restUserMockMvc.perform(put("/api/users")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
-            .andExpect(status().isOk());
+        restUserMockMvc
+                .perform(put("/api/users").contentType(TestUtil.APPLICATION_JSON_UTF8)
+                        .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
+                .andExpect(status().isOk());
 
         // Validate the User in the database
         List<User> userList = userRepository.findAll();
@@ -481,12 +482,14 @@ public class UserResourceIntTest {
         assertThat(testUser.getLastName()).isEqualTo(UPDATED_LASTNAME);
         assertThat(testUser.getImageUrl()).isEqualTo(UPDATED_IMAGEURL);
         assertThat(testUser.getLangKey()).isEqualTo(UPDATED_LANGKEY);
-        
-        Optional<Credential> testCredential = credentialRepostitory.findOneWithUserBylogin(UPDATED_LOGIN);
+
+        Optional<Credential> testCredential = credentialRepostitory
+                .findOneWithUserBylogin(UPDATED_LOGIN);
         assertThat(testCredential).isNotEmpty();
-        Optional<Credential> emtpyCredential = credentialRepostitory.findOneWithUserBylogin(DEFAULT_LOGIN);
+        Optional<Credential> emtpyCredential = credentialRepostitory
+                .findOneWithUserBylogin(DEFAULT_LOGIN);
         assertThat(emtpyCredential).isEmpty();
-        
+
         clearTest();
     }
 
@@ -510,8 +513,9 @@ public class UserResourceIntTest {
         anotherUser.setLangKey("en");
         anotherUser = userRepository.saveAndFlush(anotherUser);
         userSearchRepository.save(anotherUser);
-        
-        Credential anotherCredential = new Credential().login("jhipster").activated(true).user(anotherUser);
+
+        Credential anotherCredential = new Credential().login("jhipster").activated(true)
+                .primary(true).user(anotherUser);
         credentialRepostitory.saveAndFlush(anotherCredential);
 
         // Update the user
@@ -532,11 +536,11 @@ public class UserResourceIntTest {
         managedUserVM.setLastModifiedDate(updatedUser.getLastModifiedDate());
         managedUserVM.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
 
-        restUserMockMvc.perform(put("/api/users")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
-            .andExpect(status().isBadRequest());
-        
+        restUserMockMvc
+                .perform(put("/api/users").contentType(TestUtil.APPLICATION_JSON_UTF8)
+                        .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
+                .andExpect(status().isBadRequest());
+
         clearTest();
     }
 
@@ -554,18 +558,21 @@ public class UserResourceIntTest {
         int databaseSizeBeforeDelete = userRepository.findAll().size();
 
         // Delete the user
-        restUserMockMvc.perform(delete("/api/users/{uuid}", user.getUuid())
-            .accept(TestUtil.APPLICATION_JSON_UTF8))
-            .andExpect(status().isOk());
+        restUserMockMvc.perform(
+                delete("/api/users/{uuid}", user.getUuid()).accept(TestUtil.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk());
 
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNull();
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNull();
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastName())).isNull();
+        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid()))
+                .isNull();
+        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE)
+                .get(user.getFirstName())).isNull();
+        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE)
+                .get(user.getLastName())).isNull();
 
         // Validate the database is empty
         List<User> userList = userRepository.findAll();
         assertThat(userList).hasSize(databaseSizeBeforeDelete - 1);
-        
+
         clearTest();
     }
 
@@ -578,13 +585,14 @@ public class UserResourceIntTest {
     @Test
     @Transactional
     public void getAllAuthorities() throws Exception {
-        restUserMockMvc.perform(get("/api/users/authorities")
-            .accept(TestUtil.APPLICATION_JSON_UTF8)
-            .contentType(TestUtil.APPLICATION_JSON_UTF8))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$").value(containsInAnyOrder(AuthoritiesConstants.USER, AuthoritiesConstants.SYSTEM, AuthoritiesConstants.ADMIN)));
+        restUserMockMvc
+                .perform(get("/api/users/authorities").accept(TestUtil.APPLICATION_JSON_UTF8)
+                        .contentType(TestUtil.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").value(containsInAnyOrder(AuthoritiesConstants.USER,
+                        AuthoritiesConstants.SYSTEM, AuthoritiesConstants.ADMIN)));
     }
 
     /**
@@ -643,7 +651,8 @@ public class UserResourceIntTest {
         assertThat(user.getCreatedDate()).isNotNull();
         assertThat(user.getLastModifiedBy()).isNull();
         assertThat(user.getLastModifiedDate()).isNotNull();
-        assertThat(user.getAuthorities()).extracting("name").containsExactly(AuthoritiesConstants.USER);
+        assertThat(user.getAuthorities()).extracting("name")
+                .containsExactly(AuthoritiesConstants.USER);
     }
 
     /**

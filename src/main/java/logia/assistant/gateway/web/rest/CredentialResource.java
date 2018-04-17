@@ -1,25 +1,32 @@
 package logia.assistant.gateway.web.rest;
 
-import com.codahale.metrics.annotation.Timed;
-import logia.assistant.gateway.service.CredentialService;
-import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
-import logia.assistant.gateway.web.rest.util.HeaderUtil;
-import logia.assistant.gateway.service.dto.CredentialDTO;
-import io.github.jhipster.web.util.ResponseUtil;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
+
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
-import java.net.URI;
-import java.net.URISyntaxException;
+import com.codahale.metrics.annotation.Timed;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.StreamSupport;
-
-import static org.elasticsearch.index.query.QueryBuilders.*;
+import io.github.jhipster.web.util.ResponseUtil;
+import logia.assistant.gateway.service.CredentialService;
+import logia.assistant.gateway.service.dto.CredentialDTO;
+import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
+import logia.assistant.gateway.web.rest.util.HeaderUtil;
 
 /**
  * REST controller for managing Credential.

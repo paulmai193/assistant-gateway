@@ -11,7 +11,7 @@ import logia.assistant.gateway.service.dto.CredentialDTO;
  *
  * @author Dai Mai
  */
-@Mapper(componentModel = "spring", uses = {UserMapper.class})
+@Mapper(componentModel = "spring", uses = {UserMapper.class, CredentialMapperProcessor.class})
 public interface CredentialMapper extends EntityMapper<CredentialDTO, Credential> {
 
     /* (non-Javadoc)
@@ -23,7 +23,7 @@ public interface CredentialMapper extends EntityMapper<CredentialDTO, Credential
     /* (non-Javadoc)
      * @see logia.assistant.gateway.service.mapper.EntityMapper#toEntity(java.lang.Object)
      */
-    @Mapping(source = "userId", target = "user")
+    @Mapping(target = "user", ignore = true)
     Credential toEntity(CredentialDTO credentialDTO);
 
     /**

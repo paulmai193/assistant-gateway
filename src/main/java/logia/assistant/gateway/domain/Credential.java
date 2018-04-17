@@ -366,6 +366,7 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
             ", resetDate='" + getResetDate() + "'" +
             ", activated='" + isActivated() + "'" +
             ", primary='" + isPrimary() + "'" +
+            ", user='" + getUser() + "'" +
             "}";
     }
     
