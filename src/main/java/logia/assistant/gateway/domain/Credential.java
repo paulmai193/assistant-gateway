@@ -37,8 +37,8 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
 
     /** The login. */
     @NotNull
-    @Size(min = 1, max = 50)
-    @Column(name = "login", length = 50, nullable = false)
+    @Size(min = 5, max = 100)
+    @Column(name = "login", length = 100, nullable = false)
     private String login;
 
     /** The last login date. */
@@ -109,7 +109,7 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
      * @return the credential
      */
     public Credential login(String login) {
-        this.login = login;
+        this.setLogin(login);;
         return this;
     }
 

@@ -85,6 +85,13 @@ public class User extends AbstractUuidEntity implements Serializable {
     private Set<Authority> authorities = new HashSet<>();
 
     /**
+     * Instantiates a new user.
+     */
+    public User() {
+        super();
+    }
+
+    /**
      * Gets the id.
      *
      * @return the id
@@ -255,6 +262,8 @@ public class User extends AbstractUuidEntity implements Serializable {
             ", lastName='" + lastName + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
             ", langKey='" + langKey + '\'' +
+            ", uuid='" + getUuid() + '\'' +
+            ", id='" + id + '\'' +
             "}";
     }
 }

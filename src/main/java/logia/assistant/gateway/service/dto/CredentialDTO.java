@@ -24,7 +24,7 @@ public class CredentialDTO implements Serializable {
 
     /** The login. */
     @NotNull
-    @Size(min = 1, max = 50)
+    @Size(min = 5, max = 100)
     private String login;
 
     /** The last login date. */
@@ -88,7 +88,7 @@ public class CredentialDTO implements Serializable {
      * @param login the new login
      */
     public void setLogin(String login) {
-        this.login = login;
+        this.login = login.toLowerCase();
     }
     
     /**
