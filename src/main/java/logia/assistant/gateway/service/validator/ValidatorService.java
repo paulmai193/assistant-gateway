@@ -1,6 +1,7 @@
 package logia.assistant.gateway.service.validator;
 
 import javax.inject.Inject;
+import javax.validation.ValidationException;
 import javax.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +36,22 @@ public final class ValidatorService {
      */
     public void validateEmail(String email) {
         this.validator.validate(new EmailValidatorWrapper(email));
+    }
+    
+    /**
+     * Checks if given string is email.
+     *
+     * @param string the string
+     * @return true, if string is email
+     */
+    public boolean isEmail(String string) {
+        try {
+            this.validateEmail(string);
+            return true;
+        }
+        catch (IllegalArgumentException | ValidationException e) {
+            return false;
+        }
     }
 
     /**

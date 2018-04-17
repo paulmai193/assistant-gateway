@@ -1,18 +1,18 @@
 package logia.assistant.gateway.service.dto;
 
-import logia.assistant.gateway.config.Constants;
-
-import logia.assistant.gateway.domain.Authority;
-import logia.assistant.gateway.domain.Credential;
-import logia.assistant.gateway.domain.User;
-
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
-
-import javax.validation.constraints.*;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
+import org.hibernate.validator.constraints.NotBlank;
+
+import logia.assistant.gateway.config.Constants;
+import logia.assistant.gateway.domain.Authority;
+import logia.assistant.gateway.domain.Credential;
+import logia.assistant.gateway.domain.User;
 
 /**
  * A DTO representing a user, with his authorities.
@@ -37,11 +37,6 @@ public class UserDTO {
     /** The last name. */
     @Size(max = 50)
     private String lastName;
-
-    /** The email. */
-    @Email
-    @Size(min = 5, max = 100)
-    private String email;
 
     /** The image url. */
     @Size(max = 256)
@@ -210,35 +205,6 @@ public class UserDTO {
      */
     public UserDTO lastName(String lastName) {
         this.setLastName(lastName);
-        return this;
-    }
-
-    /**
-     * Gets the email.
-     *
-     * @return the email
-     */
-    public String getEmail() {
-        return email;
-    }
-
-    /**
-     * Sets the email.
-     *
-     * @param email the new email
-     */
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    
-    /**
-     * Email.
-     *
-     * @param email the email
-     * @return the user DTO
-     */
-    public UserDTO email(String email) {
-        this.setEmail(email);
         return this;
     }
 
@@ -439,7 +405,6 @@ public class UserDTO {
             "login='" + login + '\'' +
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
-            ", email='" + email + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
             ", activated=" + activated +
             ", langKey='" + langKey + '\'' +

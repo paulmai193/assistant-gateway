@@ -300,7 +300,9 @@ public class CredentialServiceImpl implements CredentialService {
      */
     @Transactional(readOnly = true)
     public Optional<Credential> findOneByLogin(String userLogin) {
-        return this.credentialRepository.findOneByLogin(userLogin);
+        Optional<Credential> credential = this.credentialRepository.findOneByLogin(userLogin);
+//        cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).putIfAbsent(userLogin, credential);
+        return credential;
     }
     
     /**

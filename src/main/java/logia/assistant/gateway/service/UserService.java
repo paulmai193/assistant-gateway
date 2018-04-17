@@ -136,6 +136,11 @@ public class UserService implements UuidService<User> {
      * @return the user
      */
     public User registerUser(UserDTO userDTO, String password) {
+        // Low case login if is email
+        if (this.validatorService.isEmail(userDTO.getLogin())) {
+            userDTO.setLogin(userDTO.getLogin().toLowerCase());
+        }
+        
         log.debug("User create new account: {}", userDTO);
         // Validate register information
         this.validatorService.validateNewCredential(userDTO.getLogin(), password);
@@ -171,12 +176,16 @@ public class UserService implements UuidService<User> {
      */
     public User createUser(UserDTO userDTO) {
         log.debug("Admin created Information for User: {}", userDTO);
+        // Low case login if is email
+        if (this.validatorService.isEmail(userDTO.getLogin())) {
+            userDTO.setLogin(userDTO.getLogin());
+        }
+        
         if (userDTO.getId() != null) {
             throw new BadRequestAlertException("A new user cannot already have an UUID",
                     "userManagement", "idexists");
-            // Lowercase the user login before comparing with database
         }
-        else if (this.credentialService.findOneByLogin(userDTO.getLogin().toLowerCase())
+        else if (this.credentialService.findOneByLogin(userDTO.getLogin())
                 .isPresent()) {
             throw new LoginAlreadyUsedException();
         }
@@ -185,7 +194,7 @@ public class UserService implements UuidService<User> {
         }
         String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
         User user = new User().password(encryptedPassword);
-        user = this.updateOrCreateUser(null, userDTO);
+        user = this.updateOrCreateUser(user, userDTO);
         userDTO.setId(user.getUuid());
 
         // Create new credential

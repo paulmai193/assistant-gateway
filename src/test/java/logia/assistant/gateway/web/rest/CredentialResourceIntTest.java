@@ -50,46 +50,46 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CredentialResourceIntTest {
 
     /** The Constant DEFAULT_LOGIN. */
-    private static final String DEFAULT_LOGIN = "AAAAAAAAAA";
+    public static final String DEFAULT_LOGIN = "AAAAAAAAAA";
     
     /** The Constant UPDATED_LOGIN. */
-    private static final String UPDATED_LOGIN = "BBBBBBBBBB";
+    public static final String UPDATED_LOGIN = "BBBBBBBBBB";
 
     /** The Constant DEFAULT_LAST_LOGIN_DATE. */
-    private static final ZonedDateTime DEFAULT_LAST_LOGIN_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
+    public static final ZonedDateTime DEFAULT_LAST_LOGIN_DATE = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     
     /** The Constant UPDATED_LAST_LOGIN_DATE. */
-    private static final ZonedDateTime UPDATED_LAST_LOGIN_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
+    public static final ZonedDateTime UPDATED_LAST_LOGIN_DATE = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
 
     /** The Constant DEFAULT_ACTIVATION_KEY. */
-    private static final String DEFAULT_ACTIVATION_KEY = "AAAAAAAAAA";
+    public static final String DEFAULT_ACTIVATION_KEY = "AAAAAAAAAA";
     
     /** The Constant UPDATED_ACTIVATION_KEY. */
-    private static final String UPDATED_ACTIVATION_KEY = "BBBBBBBBBB";
+    public static final String UPDATED_ACTIVATION_KEY = "BBBBBBBBBB";
 
     /** The Constant DEFAULT_RESET_KEY. */
-    private static final String DEFAULT_RESET_KEY = "AAAAAAAAAA";
+    public static final String DEFAULT_RESET_KEY = "AAAAAAAAAA";
     
     /** The Constant UPDATED_RESET_KEY. */
-    private static final String UPDATED_RESET_KEY = "BBBBBBBBBB";
+    public static final String UPDATED_RESET_KEY = "BBBBBBBBBB";
 
     /** The Constant DEFAULT_RESET_DATE. */
-    private static final Instant DEFAULT_RESET_DATE = Instant.ofEpochMilli(0L);
+    public static final Instant DEFAULT_RESET_DATE = Instant.ofEpochMilli(0L);
     
     /** The Constant UPDATED_RESET_DATE. */
-    private static final Instant UPDATED_RESET_DATE = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+    public static final Instant UPDATED_RESET_DATE = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
     /** The Constant DEFAULT_ACTIVATED. */
-    private static final Boolean DEFAULT_ACTIVATED = false;
+    public static final Boolean DEFAULT_ACTIVATED = false;
     
     /** The Constant UPDATED_ACTIVATED. */
-    private static final Boolean UPDATED_ACTIVATED = true;
+    public static final Boolean UPDATED_ACTIVATED = true;
 
     /** The Constant DEFAULT_PRIMARY. */
-    private static final Boolean DEFAULT_PRIMARY = false;
+    public static final Boolean DEFAULT_PRIMARY = false;
     
     /** The Constant UPDATED_PRIMARY. */
-    private static final Boolean UPDATED_PRIMARY = true;
+    public static final Boolean UPDATED_PRIMARY = true;
 
     /** The credential repository. */
     @Autowired
@@ -166,6 +166,30 @@ public class CredentialResourceIntTest {
         em.persist(user);
         em.flush();
         credential.setUser(user);
+        return credential;
+    }
+    
+    /**
+     * Creates the entity.
+     *
+     * @param em the em
+     * @param user the user
+     * @return the credential
+     */
+    public static Credential createEntity(EntityManager em, User user) {
+        Credential credential = new Credential()
+            .login(DEFAULT_LOGIN)
+            .lastLoginDate(DEFAULT_LAST_LOGIN_DATE)
+            .activationKey(DEFAULT_ACTIVATION_KEY)
+            .resetKey(DEFAULT_RESET_KEY)
+            .resetDate(DEFAULT_RESET_DATE)
+            .activated(DEFAULT_ACTIVATED)
+            .primary(DEFAULT_PRIMARY);
+        // Add required entity
+        em.persist(user);
+        credential.setUser(user);
+        em.persist(credential);
+        em.flush();
         return credential;
     }
 

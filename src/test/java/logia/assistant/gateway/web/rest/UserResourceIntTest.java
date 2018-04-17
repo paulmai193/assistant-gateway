@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,51 +63,45 @@ import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 public class UserResourceIntTest {
 
     /** The Constant DEFAULT_LOGIN. */
-    private static final String DEFAULT_LOGIN = "johndoe";
+    public static final String DEFAULT_LOGIN = "johndoe";
     
     /** The Constant UPDATED_LOGIN. */
-    private static final String UPDATED_LOGIN = "jhipster";
+    public static final String UPDATED_LOGIN = "jhipster";
 
     /** The Constant DEFAULT_ID. */
-    private static final Long DEFAULT_ID = 1L;
+    public static final Long DEFAULT_ID = 1L;
     
-    private static final String DEFAULT_UUID = "1";
+    public static final String DEFAULT_UUID = "1";
 
     /** The Constant DEFAULT_PASSWORD. */
-    private static final String DEFAULT_PASSWORD = "passjohndoe";
+    public static final String DEFAULT_PASSWORD = "passjohndoe";
     
     /** The Constant UPDATED_PASSWORD. */
-    private static final String UPDATED_PASSWORD = "passjhipster";
-
-    /** The Constant DEFAULT_EMAIL. */
-    private static final String DEFAULT_EMAIL = "johndoe@localhost";
-    
-    /** The Constant UPDATED_EMAIL. */
-    private static final String UPDATED_EMAIL = "jhipster@localhost";
+    public static final String UPDATED_PASSWORD = "passjhipster";
 
     /** The Constant DEFAULT_FIRSTNAME. */
-    private static final String DEFAULT_FIRSTNAME = "john";
+    public static final String DEFAULT_FIRSTNAME = "john";
     
     /** The Constant UPDATED_FIRSTNAME. */
-    private static final String UPDATED_FIRSTNAME = "jhipsterFirstName";
+    public static final String UPDATED_FIRSTNAME = "jhipsterFirstName";
 
     /** The Constant DEFAULT_LASTNAME. */
-    private static final String DEFAULT_LASTNAME = "doe";
+    public static final String DEFAULT_LASTNAME = "doe";
     
     /** The Constant UPDATED_LASTNAME. */
-    private static final String UPDATED_LASTNAME = "jhipsterLastName";
+    public static final String UPDATED_LASTNAME = "jhipsterLastName";
 
     /** The Constant DEFAULT_IMAGEURL. */
-    private static final String DEFAULT_IMAGEURL = "http://placehold.it/50x50";
+    public static final String DEFAULT_IMAGEURL = "http://placehold.it/50x50";
     
     /** The Constant UPDATED_IMAGEURL. */
-    private static final String UPDATED_IMAGEURL = "http://placehold.it/40x40";
+    public static final String UPDATED_IMAGEURL = "http://placehold.it/40x40";
 
     /** The Constant DEFAULT_LANGKEY. */
-    private static final String DEFAULT_LANGKEY = "en";
+    public static final String DEFAULT_LANGKEY = "en";
     
     /** The Constant UPDATED_LANGKEY. */
-    private static final String UPDATED_LANGKEY = "fr";
+    public static final String UPDATED_LANGKEY = "fr";
 
     /** The user repository. */
     @Autowired
@@ -193,7 +188,6 @@ public class UserResourceIntTest {
      */
     public static User createEntity(EntityManager em) {
         User user = new User();
-        user.setUuid(DEFAULT_UUID);
         user.setPassword(RandomStringUtils.random(60));
         user.setFirstName(DEFAULT_FIRSTNAME);
         user.setLastName(DEFAULT_LASTNAME);
@@ -208,7 +202,11 @@ public class UserResourceIntTest {
     @Before
     public void initTest() {
         user = createEntity(em);
-        credential = CredentialResourceIntTest.createEntity(em);
+    }
+    
+    @After
+    public void clearTest() {
+        userRepository.deleteAll();
     }
 
     /**
@@ -227,7 +225,6 @@ public class UserResourceIntTest {
         managedUserVM.setPassword(DEFAULT_PASSWORD);
         managedUserVM.setFirstName(DEFAULT_FIRSTNAME);
         managedUserVM.setLastName(DEFAULT_LASTNAME);
-        managedUserVM.setEmail(DEFAULT_EMAIL);
         managedUserVM.setActivated(true);
         managedUserVM.setImageUrl(DEFAULT_IMAGEURL);
         managedUserVM.setLangKey(DEFAULT_LANGKEY);
@@ -267,7 +264,6 @@ public class UserResourceIntTest {
         managedUserVM.setPassword(DEFAULT_PASSWORD);
         managedUserVM.setFirstName(DEFAULT_FIRSTNAME);
         managedUserVM.setLastName(DEFAULT_LASTNAME);
-        managedUserVM.setEmail(DEFAULT_EMAIL);
         managedUserVM.setActivated(true);
         managedUserVM.setImageUrl(DEFAULT_IMAGEURL);
         managedUserVM.setLangKey(DEFAULT_LANGKEY);
@@ -293,51 +289,16 @@ public class UserResourceIntTest {
     @Transactional
     public void createUserWithExistingLogin() throws Exception {
         // Initialize the database
-        userRepository.saveAndFlush(user);
+        CredentialResourceIntTest.createEntity(em, user);
+//        userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
         int databaseSizeBeforeCreate = userRepository.findAll().size();
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
-        managedUserVM.setLogin(DEFAULT_LOGIN);// this login should already be used
+        managedUserVM.setLogin(CredentialResourceIntTest.DEFAULT_LOGIN);// this login should already be used
         managedUserVM.setPassword(DEFAULT_PASSWORD);
         managedUserVM.setFirstName(DEFAULT_FIRSTNAME);
         managedUserVM.setLastName(DEFAULT_LASTNAME);
-        managedUserVM.setEmail("anothermail@localhost");
-        managedUserVM.setActivated(true);
-        managedUserVM.setImageUrl(DEFAULT_IMAGEURL);
-        managedUserVM.setLangKey(DEFAULT_LANGKEY);
-        managedUserVM.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
-
-        // Create the User
-        restUserMockMvc.perform(post("/api/users")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
-            .andExpect(status().isBadRequest());
-
-        // Validate the User in the database
-        List<User> userList = userRepository.findAll();
-        assertThat(userList).hasSize(databaseSizeBeforeCreate);
-    }
-
-    /**
-     * Creates the user with existing email.
-     *
-     * @throws Exception the exception
-     */
-    @Test
-    @Transactional
-    public void createUserWithExistingEmail() throws Exception {
-        // Initialize the database
-        userRepository.saveAndFlush(user);
-        userSearchRepository.save(user);
-        int databaseSizeBeforeCreate = userRepository.findAll().size();
-
-        ManagedUserVM managedUserVM = new ManagedUserVM();
-        managedUserVM.setLogin("anotherlogin");
-        managedUserVM.setPassword(DEFAULT_PASSWORD);
-        managedUserVM.setFirstName(DEFAULT_FIRSTNAME);
-        managedUserVM.setLastName(DEFAULT_LASTNAME);
-        managedUserVM.setEmail(DEFAULT_EMAIL);// this email should already be used
         managedUserVM.setActivated(true);
         managedUserVM.setImageUrl(DEFAULT_IMAGEURL);
         managedUserVM.setLangKey(DEFAULT_LANGKEY);
@@ -364,7 +325,8 @@ public class UserResourceIntTest {
     @Transactional
     public void getAllUsers() throws Exception {
         // Initialize the database
-        userRepository.saveAndFlush(user);
+        CredentialResourceIntTest.createEntity(em, user);
+//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
 
         // Get all the users
@@ -372,10 +334,9 @@ public class UserResourceIntTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN)))
+            .andExpect(jsonPath("$.[*].login").value(hasItem(CredentialResourceIntTest.DEFAULT_LOGIN)))
             .andExpect(jsonPath("$.[*].firstName").value(hasItem(DEFAULT_FIRSTNAME)))
             .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LASTNAME)))
-            .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)))
             .andExpect(jsonPath("$.[*].imageUrl").value(hasItem(DEFAULT_IMAGEURL)))
             .andExpect(jsonPath("$.[*].langKey").value(hasItem(DEFAULT_LANGKEY)));
     }
@@ -390,27 +351,28 @@ public class UserResourceIntTest {
     @Transactional
     public void getUser() throws Exception {
         // Initialize the database
-        userRepository.saveAndFlush(user);
+        CredentialResourceIntTest.createEntity(em, user);
+//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
 
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNull();
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNull();
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNull();
+//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNull();
+//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNull();
+//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNull();
+        assertThat(cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).get(CredentialResourceIntTest.DEFAULT_LOGIN)).isNull();
 
         // Get the user
-        restUserMockMvc.perform(get("/api/users/{login}", DEFAULT_LOGIN))
+        restUserMockMvc.perform(get("/api/users/{login}", CredentialResourceIntTest.DEFAULT_LOGIN))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.login").value(DEFAULT_LOGIN))
             .andExpect(jsonPath("$.firstName").value(DEFAULT_FIRSTNAME))
             .andExpect(jsonPath("$.lastName").value(DEFAULT_LASTNAME))
-            .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
             .andExpect(jsonPath("$.imageUrl").value(DEFAULT_IMAGEURL))
             .andExpect(jsonPath("$.langKey").value(DEFAULT_LANGKEY));
 
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNotNull();
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNotNull();
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNotNull();
+//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNotNull();
+//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNotNull();
+//        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNotNull();
+        assertThat(cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).get(CredentialResourceIntTest.DEFAULT_LOGIN)).isNotNull();
     }
 
     /**
@@ -435,7 +397,8 @@ public class UserResourceIntTest {
     @Transactional
     public void updateUser() throws Exception {
         // Initialize the database
-        userRepository.saveAndFlush(user);
+        CredentialResourceIntTest.createEntity(em, user);
+//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
         int databaseSizeBeforeUpdate = userRepository.findAll().size();
 
@@ -448,7 +411,6 @@ public class UserResourceIntTest {
         managedUserVM.setPassword(UPDATED_PASSWORD);
         managedUserVM.setFirstName(UPDATED_FIRSTNAME);
         managedUserVM.setLastName(UPDATED_LASTNAME);
-        managedUserVM.setEmail(UPDATED_EMAIL);
         managedUserVM.setActivated(true);
         managedUserVM.setImageUrl(UPDATED_IMAGEURL);
         managedUserVM.setLangKey(UPDATED_LANGKEY);
@@ -482,7 +444,8 @@ public class UserResourceIntTest {
     @Transactional
     public void updateUserLogin() throws Exception {
         // Initialize the database
-        userRepository.saveAndFlush(user);
+        CredentialResourceIntTest.createEntity(em, user);
+//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
         int databaseSizeBeforeUpdate = userRepository.findAll().size();
 
@@ -495,7 +458,6 @@ public class UserResourceIntTest {
         managedUserVM.setPassword(UPDATED_PASSWORD);
         managedUserVM.setFirstName(UPDATED_FIRSTNAME);
         managedUserVM.setLastName(UPDATED_LASTNAME);
-        managedUserVM.setEmail(UPDATED_EMAIL);
         managedUserVM.setActivated(true);
         managedUserVM.setImageUrl(UPDATED_IMAGEURL);
         managedUserVM.setLangKey(UPDATED_LANGKEY);
@@ -534,7 +496,8 @@ public class UserResourceIntTest {
     @Transactional
     public void updateUserExistingLogin() throws Exception {
         // Initialize the database
-        userRepository.saveAndFlush(user);
+        CredentialResourceIntTest.createEntity(em, user);
+//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
 
         User anotherUser = new User();
@@ -583,7 +546,8 @@ public class UserResourceIntTest {
     @Transactional
     public void deleteUser() throws Exception {
         // Initialize the database
-        userRepository.saveAndFlush(user);
+        CredentialResourceIntTest.createEntity(em, user);
+//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
         int databaseSizeBeforeDelete = userRepository.findAll().size();
 
@@ -658,7 +622,6 @@ public class UserResourceIntTest {
         userDTO.setLogin(DEFAULT_LOGIN);
         userDTO.setFirstName(DEFAULT_FIRSTNAME);
         userDTO.setLastName(DEFAULT_LASTNAME);
-        userDTO.setEmail(DEFAULT_EMAIL);
         userDTO.setActivated(true);
         userDTO.setImageUrl(DEFAULT_IMAGEURL);
         userDTO.setLangKey(DEFAULT_LANGKEY);
@@ -667,7 +630,7 @@ public class UserResourceIntTest {
         userDTO.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
 
         User user = userMapper.userDTOToUser(userDTO);
-        assertThat(user.getId()).isEqualTo(DEFAULT_ID);
+        assertThat(user.getId()).isEqualTo(DEFAULT_UUID);
         assertThat(user.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
         assertThat(user.getLastName()).isEqualTo(DEFAULT_LASTNAME);
         assertThat(user.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
@@ -698,10 +661,8 @@ public class UserResourceIntTest {
         UserDTO userDTO = userMapper.userToUserDTO(user);
 
         assertThat(userDTO.getId()).isEqualTo(DEFAULT_ID);
-        assertThat(userDTO.getLogin()).isEqualTo(DEFAULT_LOGIN);
         assertThat(userDTO.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
         assertThat(userDTO.getLastName()).isEqualTo(DEFAULT_LASTNAME);
-        assertThat(userDTO.getEmail()).isEqualTo(DEFAULT_EMAIL);
         assertThat(userDTO.isActivated()).isEqualTo(true);
         assertThat(userDTO.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
         assertThat(userDTO.getLangKey()).isEqualTo(DEFAULT_LANGKEY);

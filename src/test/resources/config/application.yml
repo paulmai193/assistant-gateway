@@ -119,7 +119,15 @@ jhipster:
         logs: # Reports Dropwizard metrics in the logs
             enabled: true
             report-frequency: 60 # in seconds
-
+            
+    cache: # Cache configuration
+        hazelcast: # Hazelcast distributed cache
+            time-to-live-seconds: 3600
+            backup-count: 1
+            management-center: # Full reference is available at: http://docs.hazelcast.org/docs/management-center/3.9/manual/html/Deploying_and_Starting.html
+                enabled: false
+                update-interval: 3
+                url: http://localhost:8180/mancenter
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class

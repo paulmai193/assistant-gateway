@@ -208,7 +208,6 @@ public class AccountResourceIntTest {
         validUser.setPassword("password");
         validUser.setFirstName("Joe");
         validUser.setLastName("Shmoe");
-        validUser.setEmail("joe@example.com");
         validUser.setActivated(true);
         validUser.setImageUrl("http://placehold.it/50x50");
         validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
@@ -237,7 +236,6 @@ public class AccountResourceIntTest {
         invalidUser.setPassword("password");
         invalidUser.setFirstName("Funky");
         invalidUser.setLastName("One");
-        invalidUser.setEmail("funky@example.com");
         invalidUser.setActivated(true);
         invalidUser.setImageUrl("http://placehold.it/50x50");
         invalidUser.setLangKey(Constants.DEFAULT_LANGUAGE);
@@ -253,33 +251,6 @@ public class AccountResourceIntTest {
     }
 
     /**
-     * Test register invalid email.
-     *
-     * @throws Exception the exception
-     */
-    @Test
-    @Transactional
-    public void testRegisterInvalidEmail() throws Exception {
-        ManagedUserVM invalidUser = new ManagedUserVM();
-        invalidUser.setLogin("bob");
-        invalidUser.setPassword("password");
-        invalidUser.setFirstName("Bob");
-        invalidUser.setLastName("Green");
-        invalidUser.setEmail("invalid");// <-- invalid
-        invalidUser.setActivated(true);
-        invalidUser.setImageUrl("http://placehold.it/50x50");
-        invalidUser.setLangKey(Constants.DEFAULT_LANGUAGE);
-        invalidUser.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
-
-        restUserMockMvc
-                .perform(post("/api/register").contentType(TestUtil.APPLICATION_JSON_UTF8)
-                        .content(TestUtil.convertObjectToJsonBytes(invalidUser)))
-                .andExpect(status().isBadRequest());
-
-        assertThat(credentialRepository.findOneByLogin("bob").isPresent()).isFalse();
-    }
-
-    /**
      * Test register invalid password.
      *
      * @throws Exception the exception
@@ -292,7 +263,6 @@ public class AccountResourceIntTest {
         invalidUser.setPassword("123");// password with only 3 digits
         invalidUser.setFirstName("Bob");
         invalidUser.setLastName("Green");
-        invalidUser.setEmail("bob@example.com");
         invalidUser.setActivated(true);
         invalidUser.setImageUrl("http://placehold.it/50x50");
         invalidUser.setLangKey(Constants.DEFAULT_LANGUAGE);
@@ -319,7 +289,6 @@ public class AccountResourceIntTest {
         invalidUser.setPassword(null);// invalid null password
         invalidUser.setFirstName("Bob");
         invalidUser.setLastName("Green");
-        invalidUser.setEmail("bob@example.com");
         invalidUser.setActivated(true);
         invalidUser.setImageUrl("http://placehold.it/50x50");
         invalidUser.setLangKey(Constants.DEFAULT_LANGUAGE);
@@ -347,7 +316,6 @@ public class AccountResourceIntTest {
         validUser.setPassword("password");
         validUser.setFirstName("Alice");
         validUser.setLastName("Something");
-        validUser.setEmail("alice@example.com");
         validUser.setActivated(true);
         validUser.setImageUrl("http://placehold.it/50x50");
         validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
@@ -359,7 +327,6 @@ public class AccountResourceIntTest {
         duplicatedUser.setPassword(validUser.getPassword());
         duplicatedUser.setFirstName(validUser.getFirstName());
         duplicatedUser.setLastName(validUser.getLastName());
-        duplicatedUser.setEmail("alicejr@example.com");
         duplicatedUser.setActivated(validUser.isActivated());
         duplicatedUser.setImageUrl(validUser.getImageUrl());
         duplicatedUser.setLangKey(validUser.getLangKey());
@@ -384,76 +351,6 @@ public class AccountResourceIntTest {
     }
 
     /**
-     * Test register duplicate email.
-     *
-     * @throws Exception the exception
-     */
-    @Test
-    @Transactional
-    public void testRegisterDuplicateEmail() throws Exception {
-        // Good
-        ManagedUserVM validUser = new ManagedUserVM();
-        validUser.setLogin("john");
-        validUser.setPassword("password");
-        validUser.setFirstName("John");
-        validUser.setLastName("Doe");
-        validUser.setEmail("john@example.com");
-        validUser.setActivated(true);
-        validUser.setImageUrl("http://placehold.it/50x50");
-        validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
-        validUser.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
-
-        // Duplicate email, different login
-        ManagedUserVM duplicatedUser = new ManagedUserVM();
-        duplicatedUser.setLogin("johnjr");
-        duplicatedUser.setPassword(validUser.getPassword());
-        duplicatedUser.setFirstName(validUser.getFirstName());
-        duplicatedUser.setLastName(validUser.getLastName());
-        duplicatedUser.setEmail(validUser.getEmail());
-        duplicatedUser.setActivated(validUser.isActivated());
-        duplicatedUser.setImageUrl(validUser.getImageUrl());
-        duplicatedUser.setLangKey(validUser.getLangKey());
-        duplicatedUser.setCreatedBy(validUser.getCreatedBy());
-        duplicatedUser.setCreatedDate(validUser.getCreatedDate());
-        duplicatedUser.setLastModifiedBy(validUser.getLastModifiedBy());
-        duplicatedUser.setLastModifiedDate(validUser.getLastModifiedDate());
-        duplicatedUser.setAuthorities(new HashSet<>(validUser.getAuthorities()));
-
-        // Good user
-        restMvc.perform(post("/api/register").contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(validUser)))
-                .andExpect(status().isCreated());
-
-        // Duplicate email
-        restMvc.perform(post("/api/register").contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(duplicatedUser)))
-                .andExpect(status().is4xxClientError());
-
-        // Duplicate email - with uppercase email address
-        ManagedUserVM userWithUpperCaseEmail = new ManagedUserVM();
-        userWithUpperCaseEmail.setId(validUser.getId());
-        userWithUpperCaseEmail.setLogin("johnjr");
-        userWithUpperCaseEmail.setPassword(validUser.getPassword());
-        userWithUpperCaseEmail.setFirstName(validUser.getFirstName());
-        userWithUpperCaseEmail.setLastName(validUser.getLastName());
-        userWithUpperCaseEmail.setEmail(validUser.getEmail().toUpperCase());
-        userWithUpperCaseEmail.setActivated(validUser.isActivated());
-        userWithUpperCaseEmail.setImageUrl(validUser.getImageUrl());
-        userWithUpperCaseEmail.setLangKey(validUser.getLangKey());
-        userWithUpperCaseEmail.setCreatedBy(validUser.getCreatedBy());
-        userWithUpperCaseEmail.setCreatedDate(validUser.getCreatedDate());
-        userWithUpperCaseEmail.setLastModifiedBy(validUser.getLastModifiedBy());
-        userWithUpperCaseEmail.setLastModifiedDate(validUser.getLastModifiedDate());
-        userWithUpperCaseEmail.setAuthorities(new HashSet<>(validUser.getAuthorities()));
-
-        restMvc.perform(post("/api/register").contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(TestUtil.convertObjectToJsonBytes(userWithUpperCaseEmail)))
-                .andExpect(status().is4xxClientError());
-
-        assertThat(credentialRepository.findOneByLogin("johnjr").isPresent()).isFalse();
-    }
-
-    /**
      * Test register admin is ignored.
      *
      * @throws Exception the exception
@@ -466,7 +363,6 @@ public class AccountResourceIntTest {
         validUser.setPassword("password");
         validUser.setFirstName("Bad");
         validUser.setLastName("Guy");
-        validUser.setEmail("badguy@example.com");
         validUser.setActivated(true);
         validUser.setImageUrl("http://placehold.it/50x50");
         validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
