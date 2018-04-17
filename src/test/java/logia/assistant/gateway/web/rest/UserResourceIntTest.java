@@ -21,7 +21,6 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -204,7 +203,6 @@ public class UserResourceIntTest {
         user = createEntity(em);
     }
     
-    @After
     public void clearTest() {
         userRepository.deleteAll();
     }
@@ -290,7 +288,6 @@ public class UserResourceIntTest {
     public void createUserWithExistingLogin() throws Exception {
         // Initialize the database
         CredentialResourceIntTest.createEntity(em, user);
-//        userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
         int databaseSizeBeforeCreate = userRepository.findAll().size();
 
@@ -313,6 +310,8 @@ public class UserResourceIntTest {
         // Validate the User in the database
         List<User> userList = userRepository.findAll();
         assertThat(userList).hasSize(databaseSizeBeforeCreate);
+        
+        clearTest();
     }
 
     /**
@@ -326,7 +325,6 @@ public class UserResourceIntTest {
     public void getAllUsers() throws Exception {
         // Initialize the database
         CredentialResourceIntTest.createEntity(em, user);
-//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
 
         // Get all the users
@@ -339,6 +337,8 @@ public class UserResourceIntTest {
             .andExpect(jsonPath("$.[*].lastName").value(hasItem(DEFAULT_LASTNAME)))
             .andExpect(jsonPath("$.[*].imageUrl").value(hasItem(DEFAULT_IMAGEURL)))
             .andExpect(jsonPath("$.[*].langKey").value(hasItem(DEFAULT_LANGKEY)));
+        
+        clearTest();
     }
 
     /**
@@ -352,7 +352,6 @@ public class UserResourceIntTest {
     public void getUser() throws Exception {
         // Initialize the database
         CredentialResourceIntTest.createEntity(em, user);
-//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
 
 //        assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNull();
@@ -373,6 +372,8 @@ public class UserResourceIntTest {
 //        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNotNull();
 //        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNotNull();
         assertThat(cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).get(CredentialResourceIntTest.DEFAULT_LOGIN)).isNotNull();
+        
+        clearTest();
     }
 
     /**
@@ -398,7 +399,6 @@ public class UserResourceIntTest {
     public void updateUser() throws Exception {
         // Initialize the database
         CredentialResourceIntTest.createEntity(em, user);
-//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
         int databaseSizeBeforeUpdate = userRepository.findAll().size();
 
@@ -433,6 +433,8 @@ public class UserResourceIntTest {
         assertThat(testUser.getLastName()).isEqualTo(UPDATED_LASTNAME);
         assertThat(testUser.getImageUrl()).isEqualTo(UPDATED_IMAGEURL);
         assertThat(testUser.getLangKey()).isEqualTo(UPDATED_LANGKEY);
+        
+        clearTest();
     }
 
     /**
@@ -445,7 +447,6 @@ public class UserResourceIntTest {
     public void updateUserLogin() throws Exception {
         // Initialize the database
         CredentialResourceIntTest.createEntity(em, user);
-//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
         int databaseSizeBeforeUpdate = userRepository.findAll().size();
 
@@ -485,6 +486,8 @@ public class UserResourceIntTest {
         assertThat(testCredential).isNotEmpty();
         Optional<Credential> emtpyCredential = credentialRepostitory.findOneWithUserBylogin(DEFAULT_LOGIN);
         assertThat(emtpyCredential).isEmpty();
+        
+        clearTest();
     }
 
     /**
@@ -497,7 +500,6 @@ public class UserResourceIntTest {
     public void updateUserExistingLogin() throws Exception {
         // Initialize the database
         CredentialResourceIntTest.createEntity(em, user);
-//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
 
         User anotherUser = new User();
@@ -513,7 +515,6 @@ public class UserResourceIntTest {
         credentialRepostitory.saveAndFlush(anotherCredential);
 
         // Update the user
-//        List<Credential> currentCredential = credentialRepostitory.findWithUserByUserId(user.getId());
         User updatedUser = userRepository.findOne(user.getId());
 
         ManagedUserVM managedUserVM = new ManagedUserVM();
@@ -535,6 +536,8 @@ public class UserResourceIntTest {
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(managedUserVM)))
             .andExpect(status().isBadRequest());
+        
+        clearTest();
     }
 
     /**
@@ -547,12 +550,11 @@ public class UserResourceIntTest {
     public void deleteUser() throws Exception {
         // Initialize the database
         CredentialResourceIntTest.createEntity(em, user);
-//      userRepository.saveAndFlush(user);
         userSearchRepository.save(user);
         int databaseSizeBeforeDelete = userRepository.findAll().size();
 
         // Delete the user
-        restUserMockMvc.perform(delete("/api/users/{login}", credential.getLogin())
+        restUserMockMvc.perform(delete("/api/users/{uuid}", user.getUuid())
             .accept(TestUtil.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk());
 
@@ -563,6 +565,8 @@ public class UserResourceIntTest {
         // Validate the database is empty
         List<User> userList = userRepository.findAll();
         assertThat(userList).hasSize(databaseSizeBeforeDelete - 1);
+        
+        clearTest();
     }
 
     /**
@@ -630,7 +634,7 @@ public class UserResourceIntTest {
         userDTO.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
 
         User user = userMapper.userDTOToUser(userDTO);
-        assertThat(user.getId()).isEqualTo(DEFAULT_UUID);
+        assertThat(user.getUuid()).isEqualTo(DEFAULT_UUID);
         assertThat(user.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
         assertThat(user.getLastName()).isEqualTo(DEFAULT_LASTNAME);
         assertThat(user.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
@@ -648,6 +652,7 @@ public class UserResourceIntTest {
     @Test
     public void testUserToUserDTO() {
         user.setId(DEFAULT_ID);
+        user.setUuid(DEFAULT_UUID);
         user.setCreatedBy(DEFAULT_LOGIN);
         user.setCreatedDate(Instant.now());
         user.setLastModifiedBy(DEFAULT_LOGIN);
@@ -660,7 +665,7 @@ public class UserResourceIntTest {
 
         UserDTO userDTO = userMapper.userToUserDTO(user);
 
-        assertThat(userDTO.getId()).isEqualTo(DEFAULT_ID);
+        assertThat(userDTO.getId()).isEqualTo(DEFAULT_UUID);
         assertThat(userDTO.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
         assertThat(userDTO.getLastName()).isEqualTo(DEFAULT_LASTNAME);
         assertThat(userDTO.isActivated()).isEqualTo(true);
