@@ -151,7 +151,7 @@ public class UserService implements UuidService<User> {
         userDTO.authority(AuthoritiesConstants.USER);
         String encryptedPassword = passwordEncoder.encode(password);
         User newUser = new User().password(encryptedPassword);
-        newUser = this.updateOrCreateUser(newUser, userDTO);
+        newUser = this.updateOrCreateUser(newUser, userDTO, true);
 
         // Create new credential, new user is not active, new user gets registration key
         this.credentialService.save(new CredentialDTO().login(userDTO.getLogin()).activated(false)
@@ -195,7 +195,7 @@ public class UserService implements UuidService<User> {
         }
         String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
         User user = new User().password(encryptedPassword);
-        user = this.updateOrCreateUser(user, userDTO);
+        user = this.updateOrCreateUser(user, userDTO, true);
         userDTO.setId(user.getUuid());
 
         // Create new credential
@@ -235,7 +235,7 @@ public class UserService implements UuidService<User> {
         UserDTO userDTO = new UserDTO().firstName(firstName).lastName(lastName).langKey(langKey)
                 .imageUrl(imageUrl);
         log.debug("User {} change information to {}", user.getId(), userDTO);
-        this.updateOrCreateUser(user, userDTO);
+        this.updateOrCreateUser(user, userDTO, false);
     }
 
     /**
@@ -250,7 +250,7 @@ public class UserService implements UuidService<User> {
         if (optUser.isPresent()) {
             this.credentialService.updateByUserId(optUser.get().getId(), userDTO.getLogin());
             return Optional.of(this.userRepository.findOneByUuid(userDTO.getId())).map(user -> {
-                return this.updateOrCreateUser(user.get(), userDTO);
+                return this.updateOrCreateUser(user.get(), userDTO, false);
             }).map(UserDTO::new);
         }
         else {
@@ -265,7 +265,7 @@ public class UserService implements UuidService<User> {
      * @param updateInformation the update information
      * @return the user
      */
-    private User updateOrCreateUser(User user, UserDTO updateInformation) {
+    private User updateOrCreateUser(User user, UserDTO updateInformation, boolean persistent) {
         if (Objects.nonNull(updateInformation.getFirstName())) {
             user.setFirstName(updateInformation.getFirstName());
         }
@@ -286,7 +286,11 @@ public class UserService implements UuidService<User> {
                     .forEach(managedAuthorities::add);
         }
         if (Objects.isNull(user.getId())) {
-            user = this.userRepository.save(user);
+            if (persistent) {
+                user = this.userRepository.saveAndFlush(user);
+            } else {
+                user = this.userRepository.save(user);
+            }
         }
         userSearchRepository.save(user);
         this.cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).evict(user.getUuid());

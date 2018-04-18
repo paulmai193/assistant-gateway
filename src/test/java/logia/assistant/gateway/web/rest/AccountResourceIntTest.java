@@ -212,13 +212,13 @@ public class AccountResourceIntTest {
         validUser.setImageUrl("http://placehold.it/50x50");
         validUser.setLangKey(Constants.DEFAULT_LANGUAGE);
         validUser.setAuthorities(Collections.singleton(AuthoritiesConstants.USER));
-        assertThat(credentialRepository.findOneByLogin("joe").isPresent()).isFalse();
+        assertThat(credentialRepository.findOneWithUserByLogin("joe").isPresent()).isFalse();
 
         restMvc.perform(post("/api/register").contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(TestUtil.convertObjectToJsonBytes(validUser)))
                 .andExpect(status().isCreated());
 
-        Credential testCredential = credentialRepository.findOneByLogin("joe").orElse(null);
+        Credential testCredential = credentialRepository.findOneWithUserByLogin("joe").orElse(null);
         assertThat(testCredential).isNotNull();
         assertThat(testCredential.getUser().getUuid()).isNotBlank();
     }
@@ -273,7 +273,7 @@ public class AccountResourceIntTest {
                         .content(TestUtil.convertObjectToJsonBytes(invalidUser)))
                 .andExpect(status().isBadRequest());
 
-        assertThat(credentialRepository.findOneByLogin("bob").isPresent()).isFalse();
+        assertThat(credentialRepository.findOneWithUserByLogin("bob").isPresent()).isFalse();
     }
 
     /**
@@ -299,7 +299,7 @@ public class AccountResourceIntTest {
                         .content(TestUtil.convertObjectToJsonBytes(invalidUser)))
                 .andExpect(status().isBadRequest());
 
-        assertThat(credentialRepository.findOneByLogin("bob").isPresent()).isFalse();
+        assertThat(credentialRepository.findOneWithUserByLogin("bob").isPresent()).isFalse();
     }
 
     /**
@@ -372,7 +372,7 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(validUser)))
                 .andExpect(status().isCreated());
 
-        Optional<Credential> credDup = credentialRepository.findOneByLogin("badguy");
+        Optional<Credential> credDup = credentialRepository.findOneWithUserByLogin("badguy");
         assertThat(credDup.isPresent()).isTrue();
         assertThat(credDup.get().getUser().getAuthorities()).hasSize(1)
                 .containsExactly(authorityRepository.findOne(AuthoritiesConstants.USER));
@@ -398,7 +398,7 @@ public class AccountResourceIntTest {
         restMvc.perform(get("/api/activate?key={activationKey}", activationKey))
                 .andExpect(status().isOk());
 
-        credential = credentialRepository.findOneByLogin(credential.getLogin()).orElse(null);
+        credential = credentialRepository.findOneWithUserByLogin(credential.getLogin()).orElse(null);
         assertThat(credential.isActivated()).isTrue();
     }
 

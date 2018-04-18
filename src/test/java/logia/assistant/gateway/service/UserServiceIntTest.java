@@ -101,7 +101,7 @@ public class UserServiceIntTest extends AbstractUserServiceInitTest {
         assertThat(maybeUser).isPresent();
         assertThat(maybeUser.orElse(null).getPassword()).isNotEqualTo(oldPassword);
         
-        Optional<Credential> maybeCredential = credentialRepository.findOneByLogin(credential.getLogin());
+        Optional<Credential> maybeCredential = credentialRepository.findOneWithUserByLogin(credential.getLogin());
         assertThat(maybeCredential.orElse(null).getResetDate()).isNull();
         assertThat(maybeCredential.orElse(null).getResetKey()).isNull();
 
@@ -115,7 +115,7 @@ public class UserServiceIntTest extends AbstractUserServiceInitTest {
     @Transactional
     public void assertThatAnonymousUserIsNotGet() {
         credential.setLogin(Constants.ANONYMOUS_USER);
-        if (!credentialRepository.findOneByLogin(Constants.ANONYMOUS_USER).isPresent()) {
+        if (!credentialRepository.findOneWithUserByLogin(Constants.ANONYMOUS_USER).isPresent()) {
             credential = credentialRepository.saveAndFlush(credential);
         }
         final PageRequest pageable = new PageRequest(0, (int) userRepository.count());

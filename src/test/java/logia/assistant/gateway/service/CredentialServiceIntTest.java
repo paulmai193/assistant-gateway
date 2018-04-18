@@ -112,9 +112,9 @@ public class CredentialServiceIntTest extends AbstractUserServiceInitTest {
         credential.setCreatedDate(Instant.now().minus(30, ChronoUnit.DAYS));
         credentialRepository.saveAndFlush(credential);
 
-        assertThat(credentialRepository.findOneByLogin("johndoe")).isPresent();
+        assertThat(credentialRepository.findOneWithUserByLogin("johndoe")).isPresent();
         credentialService.removeNotActivatedUsers();
-        assertThat(credentialRepository.findOneByLogin("johndoe")).isNotPresent();
+        assertThat(credentialRepository.findOneWithUserByLogin("johndoe")).isNotPresent();
     }
 
 }

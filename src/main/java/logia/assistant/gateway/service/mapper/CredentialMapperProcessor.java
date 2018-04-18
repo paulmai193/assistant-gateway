@@ -2,6 +2,8 @@ package logia.assistant.gateway.service.mapper;
 
 import java.util.Objects;
 
+import javax.inject.Inject;
+
 import org.mapstruct.AfterMapping;
 import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import logia.assistant.gateway.service.dto.CredentialDTO;
 @Component
 public class CredentialMapperProcessor {
     
+    @Inject
     private UserRepository userRepository;
     
     @AfterMapping()

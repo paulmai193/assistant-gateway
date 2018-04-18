@@ -403,6 +403,7 @@ public class UserDTO {
     public String toString() {
         return "UserDTO{" +
             "login='" + login + '\'' +
+            ", id='" + id + '\'' +
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
             ", imageUrl='" + imageUrl + '\'' +

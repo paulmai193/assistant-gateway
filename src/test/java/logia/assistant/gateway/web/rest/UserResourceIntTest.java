@@ -204,6 +204,7 @@ public class UserResourceIntTest {
 
     public void clearTest() {
         userRepository.deleteAll();
+        cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).clear();
     }
 
     /**
@@ -241,7 +242,7 @@ public class UserResourceIntTest {
         assertThat(testUser.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
         assertThat(testUser.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
         assertThat(testUser.getUuid()).isNotBlank();
-        Optional<Credential> maybeCredential = credentialRepostitory.findOneByLogin(DEFAULT_LOGIN);
+        Optional<Credential> maybeCredential = credentialRepostitory.findOneWithUserByLogin(DEFAULT_LOGIN);
         assertThat(maybeCredential).isNotEmpty();
     }
 
@@ -354,9 +355,6 @@ public class UserResourceIntTest {
         CredentialResourceIntTest.createEntity(em, user);
         userSearchRepository.save(user);
 
-        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNull();
-        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNull();
-        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNull();
         assertThat(cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
                 .get(CredentialResourceIntTest.DEFAULT_LOGIN)).isNull();
 
@@ -369,9 +367,6 @@ public class UserResourceIntTest {
                 .andExpect(jsonPath("$.imageUrl").value(DEFAULT_IMAGEURL))
                 .andExpect(jsonPath("$.langKey").value(DEFAULT_LANGKEY));
 
-        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid())).isNotNull();
-        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).get(user.getFirstName())).isNotNull();
-        // assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).get(user.getLastModifiedBy())).isNotNull();
         assertThat(cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
                 .get(CredentialResourceIntTest.DEFAULT_LOGIN)).isNotNull();
 

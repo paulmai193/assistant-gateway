@@ -60,7 +60,7 @@ public class CredentialServiceImpl implements CredentialService {
     private final ValidatorService           validatorService;
 
     /** The mail service. */
-    private final MailService mailService;
+    private final MailService                mailService;
 
     /**
      * Instantiates a new credential service impl.
@@ -107,13 +107,10 @@ public class CredentialServiceImpl implements CredentialService {
      * @return the credential
      */
     public Credential save(Credential credential) {
-        Credential savedCredential = this.credentialRepository.save(credential);
-        credentialSearchRepository.save(savedCredential);
-        cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
-                .evict(savedCredential.getLogin());
+        Credential savedCredential = this.saveOrUpdate(credential);
         return savedCredential;
     }
-    
+
     /**
      * Update by user id.
      *
@@ -123,19 +120,21 @@ public class CredentialServiceImpl implements CredentialService {
      */
     public Credential updateByUserId(Long userId, String login) {
         Credential credential;
-        Optional<Credential> existingCredential = this.findOneByLogin(login.toLowerCase());
+        Optional<Credential> existingCredential = this.findOneByLogin(login);
         if (existingCredential.isPresent()
                 && (!existingCredential.get().getUser().getId().equals(userId))) {
             // another user already have this credential
             throw new LoginAlreadyUsedException();
         }
         List<Credential> currentCredentials = this.findByUserId(userId);
-        Optional<Credential> optCredential = currentCredentials.stream().filter(currentCredential -> currentCredential.getLogin().equals(login)).findFirst();
+        Optional<Credential> optCredential = currentCredentials.stream()
+                .filter(currentCredential -> currentCredential.getLogin().equals(login))
+                .findFirst();
         if (!optCredential.isPresent()) {
             credential = Credential.clone(currentCredentials.get(0));
             credential.primary(false).login(login);
-            credential = this.save(credential);
-            
+            credential = this.saveOrUpdate(credential);
+
             // TODO send validation email
         }
         else {
@@ -190,7 +189,7 @@ public class CredentialServiceImpl implements CredentialService {
      */
     public Credential delete(String login) {
         log.debug("Request to delete Credential login : {}", login);
-        return this.credentialRepository.findOneByLogin(login).map(credential -> {
+        return this.credentialRepository.findOneWithUserByLogin(login).map(credential -> {
             this.delete(credential.getId(), credential.getLogin());
             return credential;
         }).get();
@@ -223,9 +222,7 @@ public class CredentialServiceImpl implements CredentialService {
         return this.credentialRepository.findOneByActivationKey(key).map(credential -> {
             // activate given credential for the registration key.
             credential.activated(true).activationKey(null);
-            this.credentialSearchRepository.save(credential);
-            cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
-                    .evict(credential.getLogin());
+            this.saveOrUpdate(credential);
             log.debug("Activated user: {}", credential);
             return credential;
         });
@@ -242,12 +239,10 @@ public class CredentialServiceImpl implements CredentialService {
         return this.credentialRepository.findOneByLoginIgnoreCase(mail)
                 .filter(Credential::isActivated).map(credential -> {
                     credential.resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now());
-                    this.credentialSearchRepository.save(credential);
-                    cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
-                            .evict(credential.getLogin());
-                    
+                    this.saveOrUpdate(credential);
+
                     // Send reset password email
-                    mailService.sendPasswordResetMail(credential.getUser(), mail);   
+                    mailService.sendPasswordResetMail(credential.getUser(), mail);
                     return credential;
                 });
     }
@@ -300,11 +295,11 @@ public class CredentialServiceImpl implements CredentialService {
      */
     @Transactional(readOnly = true)
     public Optional<Credential> findOneByLogin(String userLogin) {
-        Optional<Credential> credential = this.credentialRepository.findOneByLogin(userLogin);
-//        cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).putIfAbsent(userLogin, credential);
+        Optional<Credential> credential = this.credentialRepository
+                .findOneWithUserByLogin(userLogin);
         return credential;
     }
-    
+
     /**
      * Find by user id.
      *
@@ -316,8 +311,31 @@ public class CredentialServiceImpl implements CredentialService {
         return this.credentialRepository.findWithUserByUserId(userId);
     }
 
+    /**
+     * Find all by login not.
+     *
+     * @param pageable the pageable
+     * @param login the login
+     * @return the page
+     */
     public Page<Credential> findAllByLoginNot(Pageable pageable, String login) {
         return this.credentialRepository.findAllByLoginNot(pageable, login);
+    }
+
+    /**
+     * Save or update.
+     *
+     * @param credential the credential
+     * @return the credential
+     */
+    private Credential saveOrUpdate(Credential credential) {
+        if (Objects.isNull(credential.getId())) {
+            credential = this.credentialRepository.save(credential);
+        }
+        this.credentialSearchRepository.save(credential);
+        cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
+                .evict(credential.getLogin());
+        return credential;
     }
 
 }

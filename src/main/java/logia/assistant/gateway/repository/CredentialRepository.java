@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -71,7 +72,8 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
      * @param login the login
      * @return the optional
      */
-    Optional<Credential> findOneByLogin(String login);
+    @Cacheable(cacheNames = CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
+    Optional<Credential> findOneWithUserByLogin(String login);
     
     /**
      * Find all by activated is false and created date before.

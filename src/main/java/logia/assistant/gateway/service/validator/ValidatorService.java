@@ -71,7 +71,7 @@ public final class ValidatorService {
      * @param login the login
      */
     public void validateNewCredential(String login) {
-        this.credentialRepository.findOneByLogin(login.toLowerCase()).ifPresent(u -> {
+        this.credentialRepository.findOneWithUserByLogin(login.toLowerCase()).ifPresent(u -> {
             throw new LoginAlreadyUsedException();
         });
     }
