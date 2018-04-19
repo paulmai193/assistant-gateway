@@ -70,6 +70,7 @@ public class UserResourceIntTest {
     /** The Constant DEFAULT_ID. */
     public static final Long                      DEFAULT_ID        = 1L;
 
+    /** The Constant DEFAULT_UUID. */
     public static final String                    DEFAULT_UUID      = "1";
 
     /** The Constant DEFAULT_PASSWORD. */
@@ -202,6 +203,9 @@ public class UserResourceIntTest {
         user = createEntity(em);
     }
 
+    /**
+     * Clear test.
+     */
     public void clearTest() {
         userRepository.deleteAll();
         cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE).clear();
