@@ -154,8 +154,9 @@ public class UserService implements UuidService<User> {
         newUser = this.updateOrCreateUser(newUser, userDTO, true);
 
         // Create new credential, new user is not active, new user gets registration key
-        this.credentialService.save(new CredentialDTO().login(userDTO.getLogin()).activated(false)
-                .activationKey(RandomUtil.generateActivationKey()));
+        this.credentialService
+                .save(new CredentialDTO().userId(newUser.getId()).login(userDTO.getLogin())
+                        .activated(false).primary(true).activationKey(RandomUtil.generateActivationKey()));
 
         // Send activation email
         try {
@@ -199,8 +200,9 @@ public class UserService implements UuidService<User> {
         userDTO.setId(user.getUuid());
 
         // Create new credential
-        this.credentialService.save(new CredentialDTO().userId(user.getId()).login(userDTO.getLogin()).activated(true)
-                .primary(true).resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now()));
+        this.credentialService.save(new CredentialDTO().userId(user.getId())
+                .login(userDTO.getLogin()).activated(true).primary(true)
+                .resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now()));
 
         // Send creation email
         try {
@@ -288,7 +290,8 @@ public class UserService implements UuidService<User> {
         if (Objects.isNull(user.getId())) {
             if (persistent) {
                 user = this.userRepository.saveAndFlush(user);
-            } else {
+            }
+            else {
                 user = this.userRepository.save(user);
             }
         }
@@ -437,7 +440,7 @@ public class UserService implements UuidService<User> {
                     credential.resetKey(null).resetDate(null);
                     this.credentialService.save(credential);
                     User user = credential.getUser();
-                    user.setPassword(passwordEncoder.encode(passwordEncoder.encode(password)));
+                    user.setPassword(passwordEncoder.encode(password));
                     user = this.userSearchRepository.save(user);
                     log.debug("Changed password for User: {}", credential);
                 });
