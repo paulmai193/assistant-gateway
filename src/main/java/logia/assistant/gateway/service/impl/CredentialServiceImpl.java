@@ -120,7 +120,7 @@ public class CredentialServiceImpl implements CredentialService {
      */
     public Credential updateByUserId(Long userId, String login) {
         Credential credential;
-        Optional<Credential> existingCredential = this.findOneByLogin(login);
+        Optional<Credential> existingCredential = this.findOneWithUserByLogin(login);
         if (existingCredential.isPresent()
                 && (!existingCredential.get().getUser().getId().equals(userId))) {
             // another user already have this credential
@@ -134,6 +134,8 @@ public class CredentialServiceImpl implements CredentialService {
             credential = Credential.clone(currentCredentials.get(0));
             credential.primary(false).login(login);
             credential = this.saveOrUpdate(credential, true);
+            this.cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
+                    .evict(currentCredentials.get(0).getLogin());
 
             // TODO send validation email
         }
@@ -288,13 +290,13 @@ public class CredentialServiceImpl implements CredentialService {
     }
 
     /**
-     * Find one by login.
+     * Find one with user by login.
      *
      * @param userLogin the user login
      * @return the optional
      */
     @Transactional(readOnly = true)
-    public Optional<Credential> findOneByLogin(String userLogin) {
+    public Optional<Credential> findOneWithUserByLogin(String userLogin) {
         Optional<Credential> credential = this.credentialRepository
                 .findOneWithUserByLogin(userLogin);
         return credential;
@@ -330,11 +332,11 @@ public class CredentialServiceImpl implements CredentialService {
      */
     private Credential saveOrUpdate(Credential credential, boolean persistent) {
         if (persistent) {
-            credential = this.credentialRepository.saveAndFlush(credential);   
-        } 
+            credential = this.credentialRepository.saveAndFlush(credential);
+        }
         else {
-            credential = this.credentialRepository.save(credential);    
-        }        
+            credential = this.credentialRepository.save(credential);
+        }
         this.credentialSearchRepository.save(credential);
         cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
                 .evict(credential.getLogin());

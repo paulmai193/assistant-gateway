@@ -61,7 +61,7 @@ public class DomainUserDetailsService implements UserDetailsService {
 //                .orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseLogin + " was not found in the " +
 //                    "database"));
 //        });
-        return this.credentialRepository.findOneWithUserBylogin(login)
+        return this.credentialRepository.findOneWithUserByLogin(login)
                 .map(credential -> createSpringSecurityUser(lowercaseLogin, credential))
                 .orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseLogin + " was not found in the " + "database"));
     }

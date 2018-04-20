@@ -34,15 +34,6 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
     List<Credential> findByUserIsCurrentUser();
     
     /**
-     * Find one with user bylogin.
-     *
-     * @param login the login
-     * @return the optional
-     */
-    @EntityGraph(attributePaths = "user")
-    Optional<Credential> findOneWithUserBylogin(String login);
-    
-    /**
      * Find one by activation key.
      *
      * @param activationKey the activation key
@@ -73,6 +64,7 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
      * @return the optional
      */
     @Cacheable(cacheNames = CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
+    @EntityGraph(attributePaths = "user")
     Optional<Credential> findOneWithUserByLogin(String login);
     
     /**

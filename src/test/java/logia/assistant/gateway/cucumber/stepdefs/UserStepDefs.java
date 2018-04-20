@@ -5,11 +5,16 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import logia.assistant.gateway.repository.search.UserSearchRepository;
+import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.web.rest.UserResource;
+import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -21,19 +26,43 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class UserStepDefs extends StepDefs {
 
+    /** The rest user mock mvc. */
+    private MockMvc              restUserMockMvc;
+
     /** The user resource. */
     @Autowired
-    private UserResource userResource;
+    private UserResource         userResource;
 
-    /** The rest user mock mvc. */
-    private MockMvc restUserMockMvc;
+    /** The user service. */
+    @Autowired
+    private UserService          userService;
+
+    /** The user search repository. */
+    @Autowired
+    private UserSearchRepository userSearchRepository;
+    
+    /** The jackson message converter. */
+    @Autowired
+    private MappingJackson2HttpMessageConverter   jacksonMessageConverter;
+
+    /** The pageable argument resolver. */
+    @Autowired
+    private PageableHandlerMethodArgumentResolver pageableArgumentResolver;
+
+    /** The exception translator. */
+    @Autowired
+    private ExceptionTranslator                   exceptionTranslator;
 
     /**
      * Setup.
      */
     @Before
     public void setup() {
-        this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource).build();
+        userResource = new UserResource(userService, userSearchRepository);
+        this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource)
+                .setCustomArgumentResolvers(pageableArgumentResolver)
+                .setControllerAdvice(exceptionTranslator)
+                .setMessageConverters(jacksonMessageConverter).build();
     }
 
     /**
@@ -44,8 +73,8 @@ public class UserStepDefs extends StepDefs {
      */
     @When("^I search user '(.*)'$")
     public void i_search_user_admin(String userId) throws Throwable {
-        actions = restUserMockMvc.perform(get("/api/users/" + userId)
-                .accept(MediaType.APPLICATION_JSON));
+        actions = restUserMockMvc
+                .perform(get("/api/users/" + userId).accept(MediaType.APPLICATION_JSON));
     }
 
     /**
@@ -55,9 +84,8 @@ public class UserStepDefs extends StepDefs {
      */
     @Then("^the user is found$")
     public void the_user_is_found() throws Throwable {
-        actions
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+        actions.andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
     }
 
     /**

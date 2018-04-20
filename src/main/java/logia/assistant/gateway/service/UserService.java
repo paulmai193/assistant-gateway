@@ -187,7 +187,7 @@ public class UserService implements UuidService<User> {
             throw new BadRequestAlertException("A new user cannot already have an UUID",
                     "userManagement", "idexists");
         }
-        else if (this.credentialService.findOneByLogin(userDTO.getLogin()).isPresent()) {
+        else if (this.credentialService.findOneWithUserByLogin(userDTO.getLogin()).isPresent()) {
             throw new LoginAlreadyUsedException();
         }
         if (userDTO.getLangKey() == null) {
@@ -228,7 +228,7 @@ public class UserService implements UuidService<User> {
     public void updateUser(String firstName, String lastName, String langKey, String imageUrl) {
         final String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(
                 () -> new InternalServerErrorException("Current user login not found"));
-        Optional<Credential> credential = this.credentialService.findOneByLogin(userLogin);
+        Optional<Credential> credential = this.credentialService.findOneWithUserByLogin(userLogin);
         if (!credential.isPresent()) {
             throw new InternalServerErrorException(
                     MessageFormat.format("User {0} could not be found", userLogin));
@@ -337,8 +337,10 @@ public class UserService implements UuidService<User> {
      */
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
-        return this.credentialService.findOneByLogin(login)
-                .flatMap(credential -> Optional.of(credential.getUser()));
+        return this.credentialService.findOneWithUserByLogin(login).flatMap(credential -> {
+            User user = credential.getUser(); // This will fetch authorities inside user entity
+            return Optional.ofNullable(user);
+        });
     }
 
     /**
@@ -359,8 +361,9 @@ public class UserService implements UuidService<User> {
      */
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities() {
-        return SecurityUtils.getCurrentUserLogin().flatMap(login -> this.credentialService
-                .findOneByLogin(login).flatMap(credential -> Optional.of(credential.getUser())));
+        return SecurityUtils.getCurrentUserLogin()
+                .flatMap(login -> this.credentialService.findOneWithUserByLogin(login)
+                        .flatMap(credential -> Optional.of(credential.getUser())));
     }
 
     /**
@@ -433,7 +436,7 @@ public class UserService implements UuidService<User> {
      */
     public void changePassword(String password) {
         this.validatorService.validatePassword(password);
-        SecurityUtils.getCurrentUserLogin().flatMap(this.credentialService::findOneByLogin)
+        SecurityUtils.getCurrentUserLogin().flatMap(this.credentialService::findOneWithUserByLogin)
                 .ifPresent(credential -> {
                     credential.resetKey(null).resetDate(null);
                     this.credentialService.save(credential);

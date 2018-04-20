@@ -456,12 +456,12 @@ public class UserResourceIntTest {
         ManagedUserVM managedUserVM = new ManagedUserVM();
         managedUserVM.setId(updatedUser.getUuid());
         managedUserVM.setLogin(UPDATED_LOGIN);
-        managedUserVM.setPassword(UPDATED_PASSWORD);
-        managedUserVM.setFirstName(UPDATED_FIRSTNAME);
-        managedUserVM.setLastName(UPDATED_LASTNAME);
+        managedUserVM.setPassword(DEFAULT_PASSWORD);
+        managedUserVM.setFirstName(DEFAULT_FIRSTNAME);
+        managedUserVM.setLastName(DEFAULT_LASTNAME);
         managedUserVM.setActivated(true);
-        managedUserVM.setImageUrl(UPDATED_IMAGEURL);
-        managedUserVM.setLangKey(UPDATED_LANGKEY);
+        managedUserVM.setImageUrl(DEFAULT_IMAGEURL);
+        managedUserVM.setLangKey(DEFAULT_LANGKEY);
         managedUserVM.setCreatedBy(updatedUser.getCreatedBy());
         managedUserVM.setCreatedDate(updatedUser.getCreatedDate());
         managedUserVM.setLastModifiedBy(updatedUser.getLastModifiedBy());
@@ -477,17 +477,17 @@ public class UserResourceIntTest {
         List<User> userList = userRepository.findAll();
         assertThat(userList).hasSize(databaseSizeBeforeUpdate);
         User testUser = userList.get(userList.size() - 1);
-        assertThat(testUser.getFirstName()).isEqualTo(UPDATED_FIRSTNAME);
-        assertThat(testUser.getLastName()).isEqualTo(UPDATED_LASTNAME);
-        assertThat(testUser.getImageUrl()).isEqualTo(UPDATED_IMAGEURL);
-        assertThat(testUser.getLangKey()).isEqualTo(UPDATED_LANGKEY);
+        assertThat(testUser.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
+        assertThat(testUser.getLastName()).isEqualTo(DEFAULT_LASTNAME);
+        assertThat(testUser.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
+        assertThat(testUser.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
 
         Optional<Credential> testCredential = credentialRepostitory
-                .findOneWithUserBylogin(UPDATED_LOGIN);
+                .findOneWithUserByLogin(UPDATED_LOGIN);
         assertThat(testCredential).isNotEmpty();
         Optional<Credential> emtpyCredential = credentialRepostitory
-                .findOneWithUserBylogin(DEFAULT_LOGIN);
-        assertThat(emtpyCredential).isEmpty();
+                .findOneWithUserByLogin(DEFAULT_LOGIN);
+        assertThat(emtpyCredential).isNotEmpty(); // This test add more credential, so old one still 
 
         clearTest();
     }
