@@ -46,7 +46,7 @@ public class CredentialServiceIntTest extends AbstractUserServiceInitTest {
         user.setLastName("doe");
         user.setImageUrl("http://placehold.it/50x50");
         user.setLangKey("en");
-        credential = new Credential().login("johndoe@localhost").activated(true).user(user);
+        credential = new Credential().login("johndoe@localhost").activated(true).primary(true).user(user);
     }
     
     /**
@@ -74,6 +74,7 @@ public class CredentialServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void assertThatOnlyActivatedUserCanRequestPasswordReset() {
+        user = userRepository.saveAndFlush(user);
         credential.setActivated(false);
         credentialRepository.saveAndFlush(credential);
 
@@ -88,6 +89,7 @@ public class CredentialServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void testFindNotActivatedUsersByCreationDateBefore() {
+        user = userRepository.saveAndFlush(user);
         Instant now = Instant.now();
         credential.setActivated(false);
         Credential dbCredential = credentialRepository.saveAndFlush(credential);
@@ -106,15 +108,16 @@ public class CredentialServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void testRemoveNotActivatedUsers() {
-        credential.setActivated(false);
+        user = userRepository.saveAndFlush(user);
+        credential.activated(false).user(user);
         credentialRepository.saveAndFlush(credential);
         // Let the audit first set the creation date but then update it
         credential.setCreatedDate(Instant.now().minus(30, ChronoUnit.DAYS));
         credentialRepository.saveAndFlush(credential);
 
-        assertThat(credentialRepository.findOneWithUserByLogin("johndoe")).isPresent();
+        assertThat(credentialRepository.findOneWithUserByLogin("johndoe@localhost")).isPresent();
         credentialService.removeNotActivatedUsers();
-        assertThat(credentialRepository.findOneWithUserByLogin("johndoe")).isNotPresent();
+        assertThat(credentialRepository.findOneWithUserByLogin("johndoe@localhost")).isNotPresent();
     }
 
 }
