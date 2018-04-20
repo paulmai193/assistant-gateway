@@ -88,7 +88,7 @@ public class CredentialDTO implements Serializable {
      * @param login the new login
      */
     public void setLogin(String login) {
-        this.login = login.toLowerCase();
+        this.login = login;
     }
     
     /**
