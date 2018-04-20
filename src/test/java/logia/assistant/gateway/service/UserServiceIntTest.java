@@ -58,9 +58,11 @@ public class UserServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void assertThatResetKeyMustNotBeOlderThan24Hours() {
+        userRepository.saveAndFlush(user);
+        
         Instant daysAgo = Instant.now().minus(25, ChronoUnit.HOURS);
         String resetKey = RandomUtil.generateResetKey();
-        credential.activated(true).resetDate(daysAgo).resetKey(resetKey);
+        credential.activated(true).resetDate(daysAgo).resetKey(resetKey).primary(true).user(user);
         credentialRepository.saveAndFlush(credential);
 
         Optional<User> maybeUser = userService.completePasswordReset("johndoe2", credential.getResetKey());
@@ -75,8 +77,10 @@ public class UserServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void assertThatResetKeyMustBeValid() {
+        userRepository.saveAndFlush(user);
+        
         Instant daysAgo = Instant.now().minus(25, ChronoUnit.HOURS);
-        credential.activated(true).resetDate(daysAgo).resetKey("1234");
+        credential.activated(true).resetDate(daysAgo).resetKey("1234").primary(true).user(user);
         credentialRepository.saveAndFlush(credential);
 
         Optional<User> maybeUser = userService.completePasswordReset("johndoe2", credential.getResetKey());
@@ -91,10 +95,12 @@ public class UserServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void assertThatUserCanResetPassword() {
+        userRepository.saveAndFlush(user);
+        
         String oldPassword = user.getPassword();
         Instant daysAgo = Instant.now().minus(2, ChronoUnit.HOURS);
         String resetKey = RandomUtil.generateResetKey();
-        credential.activated(true).resetDate(daysAgo).resetKey(resetKey);
+        credential.activated(true).resetDate(daysAgo).resetKey(resetKey).primary(true).user(user);
         credentialRepository.saveAndFlush(credential);
 
         Optional<User> maybeUser = userService.completePasswordReset("johndoe2", credential.getResetKey());

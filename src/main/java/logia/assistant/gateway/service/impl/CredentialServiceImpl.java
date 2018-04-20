@@ -107,7 +107,7 @@ public class CredentialServiceImpl implements CredentialService {
      * @return the credential
      */
     public Credential save(Credential credential) {
-        Credential savedCredential = this.saveOrUpdate(credential);
+        Credential savedCredential = this.saveOrUpdate(credential, false);
         return savedCredential;
     }
 
@@ -133,7 +133,7 @@ public class CredentialServiceImpl implements CredentialService {
         if (!optCredential.isPresent()) {
             credential = Credential.clone(currentCredentials.get(0));
             credential.primary(false).login(login);
-            credential = this.saveOrUpdate(credential);
+            credential = this.saveOrUpdate(credential, true);
 
             // TODO send validation email
         }
@@ -222,7 +222,7 @@ public class CredentialServiceImpl implements CredentialService {
         return this.credentialRepository.findOneByActivationKey(key).map(credential -> {
             // activate given credential for the registration key.
             credential.activated(true).activationKey(null);
-            this.saveOrUpdate(credential);
+            this.saveOrUpdate(credential, false);
             log.debug("Activated user: {}", credential);
             return credential;
         });
@@ -239,10 +239,10 @@ public class CredentialServiceImpl implements CredentialService {
         return this.credentialRepository.findOneByLoginIgnoreCase(mail)
                 .filter(Credential::isActivated).map(credential -> {
                     credential.resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now());
-                    this.saveOrUpdate(credential);
+                    this.saveOrUpdate(credential, true);
 
                     // Send reset password email
-                    mailService.sendPasswordResetMail(credential.getUser(), mail);
+                    mailService.sendPasswordResetMail(credential);
                     return credential;
                 });
     }
@@ -328,10 +328,13 @@ public class CredentialServiceImpl implements CredentialService {
      * @param credential the credential
      * @return the credential
      */
-    private Credential saveOrUpdate(Credential credential) {
-        if (Objects.isNull(credential.getId())) {
-            credential = this.credentialRepository.save(credential);
-        }
+    private Credential saveOrUpdate(Credential credential, boolean persistent) {
+        if (persistent) {
+            credential = this.credentialRepository.saveAndFlush(credential);   
+        } 
+        else {
+            credential = this.credentialRepository.save(credential);    
+        }        
         this.credentialSearchRepository.save(credential);
         cacheManager.getCache(CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
                 .evict(credential.getLogin());

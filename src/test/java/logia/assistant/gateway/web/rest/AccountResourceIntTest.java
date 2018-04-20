@@ -2,7 +2,6 @@ package logia.assistant.gateway.web.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -119,7 +118,7 @@ public class AccountResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        doNothing().when(mockMailService).sendActivationEmail(anyObject(), anyString());
+        doNothing().when(mockMailService).sendActivationEmail(anyObject());
         AccountResource accountResource = new AccountResource(userService, credentialService);
 
         AccountResource accountUserMockResource = new AccountResource(mockUserService,

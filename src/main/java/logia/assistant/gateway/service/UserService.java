@@ -29,7 +29,6 @@ import logia.assistant.gateway.repository.AuthorityRepository;
 import logia.assistant.gateway.repository.UserRepository;
 import logia.assistant.gateway.repository.search.UserSearchRepository;
 import logia.assistant.gateway.security.SecurityUtils;
-import logia.assistant.gateway.service.dto.CredentialDTO;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.gateway.service.util.RandomUtil;
@@ -154,15 +153,15 @@ public class UserService implements UuidService<User> {
         newUser = this.updateOrCreateUser(newUser, userDTO, true);
 
         // Create new credential, new user is not active, new user gets registration key
-        this.credentialService
-                .save(new CredentialDTO().userId(newUser.getId()).login(userDTO.getLogin())
-                        .activated(false).primary(true).activationKey(RandomUtil.generateActivationKey()));
+        Credential credential = new Credential().user(newUser).login(userDTO.getLogin())
+                .activated(false).primary(true).activationKey(RandomUtil.generateActivationKey());
+        credential = this.credentialService.save(credential);
 
         // Send activation email
         try {
             String email = userDTO.getLogin();
             this.validatorService.validateEmail(email);
-            mailService.sendActivationEmail(newUser, email);
+            mailService.sendActivationEmail(credential);
         }
         catch (Exception e) {
             log.debug(MessageFormat.format("Cannot send activation email to user {0}", userDTO), e);
@@ -200,15 +199,16 @@ public class UserService implements UuidService<User> {
         userDTO.setId(user.getUuid());
 
         // Create new credential
-        this.credentialService.save(new CredentialDTO().userId(user.getId())
-                .login(userDTO.getLogin()).activated(true).primary(true)
-                .resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now()));
+        Credential credential = new Credential().user(user).login(userDTO.getLogin())
+                .activated(true).primary(true).resetKey(RandomUtil.generateResetKey())
+                .resetDate(Instant.now());
+        credential = this.credentialService.save(credential);
 
         // Send creation email
         try {
             String email = userDTO.getLogin();
             this.validatorService.validateEmail(email);
-            mailService.sendCreationEmail(user, email);
+            mailService.sendCreationEmail(credential);
         }
         catch (Exception e) {
             log.debug(MessageFormat.format("Cannot send creation email to user {0}", userDTO), e);
@@ -287,13 +287,11 @@ public class UserService implements UuidService<User> {
             updateInformation.getAuthorities().stream().map(authorityRepository::findOne)
                     .forEach(managedAuthorities::add);
         }
-        if (Objects.isNull(user.getId())) {
-            if (persistent) {
-                user = this.userRepository.saveAndFlush(user);
-            }
-            else {
-                user = this.userRepository.save(user);
-            }
+        if (persistent) {
+            user = this.userRepository.saveAndFlush(user);
+        }
+        else {
+            user = this.userRepository.save(user);
         }
         userSearchRepository.save(user);
         this.cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).evict(user.getUuid());

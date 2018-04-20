@@ -40,7 +40,7 @@ public class UserJWTControllerIntTest {
 
     /** The token provider. */
     @Autowired
-    private TokenProvider tokenProvider;
+    private TokenProvider         tokenProvider;
 
     /** The authentication manager. */
     @Autowired
@@ -48,32 +48,32 @@ public class UserJWTControllerIntTest {
 
     /** The user repository. */
     @Autowired
-    private UserRepository userRepository;
-    
+    private UserRepository        userRepository;
+
     /** The credential repository. */
     @Autowired
-    private CredentialRepository credentialRepository;
+    private CredentialRepository  credentialRepository;
 
     /** The password encoder. */
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private PasswordEncoder       passwordEncoder;
 
     /** The exception translator. */
     @Autowired
-    private ExceptionTranslator exceptionTranslator;
+    private ExceptionTranslator   exceptionTranslator;
 
     /** The mock mvc. */
-    private MockMvc mockMvc;
+    private MockMvc               mockMvc;
 
     /**
      * Setup.
      */
     @Before
     public void setup() {
-        UserJWTController userJWTController = new UserJWTController(tokenProvider, authenticationManager);
+        UserJWTController userJWTController = new UserJWTController(tokenProvider,
+                authenticationManager);
         this.mockMvc = MockMvcBuilders.standaloneSetup(userJWTController)
-            .setControllerAdvice(exceptionTranslator)
-            .build();
+                .setControllerAdvice(exceptionTranslator).build();
     }
 
     /**
@@ -87,20 +87,19 @@ public class UserJWTControllerIntTest {
         User user = new User();
         user.setPassword(passwordEncoder.encode("test"));
         user = userRepository.saveAndFlush(user);
-        Credential credential = new Credential().login("user-jwt-controller").activated(true);
-        credential = credentialRepository.saveAndFlush(credential);        
+        Credential credential = new Credential().login("user-jwt-controller").activated(true)
+                .primary(true).user(user);
+        credential = credentialRepository.saveAndFlush(credential);
 
         LoginVM login = new LoginVM();
         login.setUsername("user-jwt-controller");
         login.setPassword("test");
-        mockMvc.perform(post("/api/authenticate")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(login)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id_token").isString())
-            .andExpect(jsonPath("$.id_token").isNotEmpty())
-            .andExpect(header().string("Authorization", not(nullValue())))
-            .andExpect(header().string("Authorization", not(isEmptyString())));
+        mockMvc.perform(post("/api/authenticate").contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(login))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id_token").isString())
+                .andExpect(jsonPath("$.id_token").isNotEmpty())
+                .andExpect(header().string("Authorization", not(nullValue())))
+                .andExpect(header().string("Authorization", not(isEmptyString())));
     }
 
     /**
@@ -115,22 +114,20 @@ public class UserJWTControllerIntTest {
         user.setPassword(passwordEncoder.encode("test"));
         user = userRepository.saveAndFlush(user);
 
-        Credential credential = new Credential().login("user-jwt-controller-remember-me").activated(true);
+        Credential credential = new Credential().login("user-jwt-controller-remember-me")
+                .activated(true).primary(true).user(user);
         credential = credentialRepository.saveAndFlush(credential);
-
 
         LoginVM login = new LoginVM();
         login.setUsername("user-jwt-controller-remember-me");
         login.setPassword("test");
         login.setRememberMe(true);
-        mockMvc.perform(post("/api/authenticate")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(login)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id_token").isString())
-            .andExpect(jsonPath("$.id_token").isNotEmpty())
-            .andExpect(header().string("Authorization", not(nullValue())))
-            .andExpect(header().string("Authorization", not(isEmptyString())));
+        mockMvc.perform(post("/api/authenticate").contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(login))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id_token").isString())
+                .andExpect(jsonPath("$.id_token").isNotEmpty())
+                .andExpect(header().string("Authorization", not(nullValue())))
+                .andExpect(header().string("Authorization", not(isEmptyString())));
     }
 
     /**
@@ -144,11 +141,10 @@ public class UserJWTControllerIntTest {
         LoginVM login = new LoginVM();
         login.setUsername("wrong-user");
         login.setPassword("wrong password");
-        mockMvc.perform(post("/api/authenticate")
-            .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(login)))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.id_token").doesNotExist())
-            .andExpect(header().doesNotExist("Authorization"));
+        mockMvc.perform(post("/api/authenticate").contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(TestUtil.convertObjectToJsonBytes(login)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.id_token").doesNotExist())
+                .andExpect(header().doesNotExist("Authorization"));
     }
 }
