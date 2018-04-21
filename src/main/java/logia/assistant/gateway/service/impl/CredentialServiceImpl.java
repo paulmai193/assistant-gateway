@@ -85,28 +85,27 @@ public class CredentialServiceImpl implements CredentialService {
         this.mailService = mailService;
     }
 
-    /**
-     * Save a credential.
-     *
-     * @param credentialDTO the entity to save
-     * @return the persisted entity
+    /*
+     * (non-Javadoc)
+     * 
+     * @see logia.assistant.share.common.service.EntityService#saveDto(java.lang.Object)
      */
     @Override
-    public CredentialDTO save(CredentialDTO credentialDTO) {
+    public CredentialDTO saveDto(CredentialDTO credentialDTO) {
         log.debug("Request to save Credential : {}", credentialDTO);
         Credential credential = credentialMapper.toEntity(credentialDTO);
-        credential = this.save(credential);
+        credential = this.saveEntity(credential);
         CredentialDTO result = credentialMapper.toDto(credential);
         return result;
     }
 
-    /**
-     * Save.
-     *
-     * @param credential the credential
-     * @return the credential
+    /*
+     * (non-Javadoc)
+     * 
+     * @see logia.assistant.share.common.service.EntityService#saveEntity(java.lang.Object)
      */
-    public Credential save(Credential credential) {
+    @Override
+    public Credential saveEntity(Credential credential) {
         Credential savedCredential = this.saveOrUpdate(credential, false);
         return savedCredential;
     }
@@ -145,37 +144,39 @@ public class CredentialServiceImpl implements CredentialService {
         return credential;
     }
 
-    /**
-     * Get all the credentials.
-     *
-     * @return the list of entities
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.EntityService#findAllDtos()
      */
     @Override
     @Transactional(readOnly = true)
-    public List<CredentialDTO> findAll() {
+    public List<CredentialDTO> findAllDtos() {
         log.debug("Request to get all Credentials");
         return credentialRepository.findAll().stream().map(credentialMapper::toDto)
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    /**
-     * Get one credential by id.
-     *
-     * @param id the id of the entity
-     * @return the entity
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.EntityService#findAllEntities()
+     */
+    @Override
+    public List<Credential> findAllEntities() {
+        log.debug("Request to get all Credentials");
+        return credentialRepository.findAll().stream().collect(Collectors.toList());
+    }
+
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.EntityService#findOneEntity(java.io.Serializable)
      */
     @Override
     @Transactional(readOnly = true)
-    public CredentialDTO findOne(Long id) {
+    public CredentialDTO findOneDto(Long id) {
         log.debug("Request to get Credential : {}", id);
         Credential credential = credentialRepository.findOne(id);
         return credentialMapper.toDto(credential);
     }
 
-    /**
-     * Delete the credential by id.
-     *
-     * @param id the id of the entity
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.EntityService#delete(java.io.Serializable)
      */
     @Override
     public void delete(Long id) {
@@ -197,11 +198,8 @@ public class CredentialServiceImpl implements CredentialService {
         }).get();
     }
 
-    /**
-     * Search for the credential corresponding to the query.
-     *
-     * @param query the query of the search
-     * @return the list of entities
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.EntityService#search(java.lang.String)
      */
     @Override
     @Transactional(readOnly = true)
@@ -322,6 +320,46 @@ public class CredentialServiceImpl implements CredentialService {
      */
     public Page<Credential> findAllByLoginNot(Pageable pageable, String login) {
         return this.credentialRepository.findAllByLoginNot(pageable, login);
+    }
+    
+    
+
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.EntityService#findOneEntity(java.io.Serializable)
+     */
+    @Override
+    public Credential findOneEntity(Long id) {
+        log.debug("Request to get Credential : {}", id);
+        return credentialRepository.findOne(id);
+    }
+
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.EntityService#mapToDto(java.lang.Object)
+     */
+    @Override
+    public CredentialDTO mapToDto(Credential entity) {
+        return this.credentialMapper.toDto(entity);
+    }
+    
+    @Override
+    public List<CredentialDTO> mapToDtos(List<Credential> entities) {
+        return this.credentialMapper.toDto(entities);
+    }
+
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.EntityService#mapToEntity(java.lang.Object)
+     */
+    @Override
+    public Credential mapToEntity(CredentialDTO dto) {
+        return this.credentialMapper.toEntity(dto);
+    }
+    
+    /* (non-Javadoc)
+     * @see logia.assistant.share.common.service.EntityService#mapToEntities(java.util.List)
+     */
+    @Override
+    public List<Credential> mapToEntities(List<CredentialDTO> dtos) {
+        return this.credentialMapper.toEntity(dtos);
     }
 
     /**

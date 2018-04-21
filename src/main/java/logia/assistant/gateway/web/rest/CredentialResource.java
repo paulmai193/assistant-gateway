@@ -69,7 +69,7 @@ public class CredentialResource {
         if (credentialDTO.getId() != null) {
             throw new BadRequestAlertException("A new credential cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        CredentialDTO result = credentialService.save(credentialDTO);
+        CredentialDTO result = credentialService.saveDto(credentialDTO);
         return ResponseEntity.created(new URI("/api/credentials/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -91,7 +91,7 @@ public class CredentialResource {
         if (credentialDTO.getId() == null) {
             return createCredential(credentialDTO);
         }
-        CredentialDTO result = credentialService.save(credentialDTO);
+        CredentialDTO result = credentialService.saveDto(credentialDTO);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, credentialDTO.getId().toString()))
             .body(result);
@@ -106,7 +106,7 @@ public class CredentialResource {
     @Timed
     public List<CredentialDTO> getAllCredentials() {
         log.debug("REST request to get all Credentials");
-        return credentialService.findAll();
+        return credentialService.findAllDtos();
         }
 
     /**
@@ -119,7 +119,7 @@ public class CredentialResource {
     @Timed
     public ResponseEntity<CredentialDTO> getCredential(@PathVariable Long id) {
         log.debug("REST request to get Credential : {}", id);
-        CredentialDTO credentialDTO = credentialService.findOne(id);
+        CredentialDTO credentialDTO = credentialService.findOneDto(id);
         return ResponseUtil.wrapOrNotFound(Optional.ofNullable(credentialDTO));
     }
 

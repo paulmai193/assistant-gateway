@@ -155,7 +155,7 @@ public class UserService implements UuidService<User> {
         // Create new credential, new user is not active, new user gets registration key
         Credential credential = new Credential().user(newUser).login(userDTO.getLogin())
                 .activated(false).primary(true).activationKey(RandomUtil.generateActivationKey());
-        credential = this.credentialService.save(credential);
+        credential = this.credentialService.saveEntity(credential);
 
         // Send activation email
         try {
@@ -202,7 +202,7 @@ public class UserService implements UuidService<User> {
         Credential credential = new Credential().user(user).login(userDTO.getLogin())
                 .activated(true).primary(true).resetKey(RandomUtil.generateResetKey())
                 .resetDate(Instant.now());
-        credential = this.credentialService.save(credential);
+        credential = this.credentialService.saveEntity(credential);
 
         // Send creation email
         try {
@@ -419,7 +419,7 @@ public class UserService implements UuidService<User> {
                 credential -> credential.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
                 .map(credential -> {
                     credential.resetKey(null).resetDate(null).activated(true);
-                    this.credentialService.save(credential);
+                    this.credentialService.saveEntity(credential);
                     User user = credential.getUser();
                     user.setPassword(passwordEncoder.encode(newPassword));
                     user = this.userSearchRepository.save(user);
@@ -438,7 +438,7 @@ public class UserService implements UuidService<User> {
         SecurityUtils.getCurrentUserLogin().flatMap(this.credentialService::findOneWithUserByLogin)
                 .ifPresent(credential -> {
                     credential.resetKey(null).resetDate(null);
-                    this.credentialService.save(credential);
+                    this.credentialService.saveEntity(credential);
                     User user = credential.getUser();
                     user.setPassword(passwordEncoder.encode(password));
                     user = this.userSearchRepository.save(user);
