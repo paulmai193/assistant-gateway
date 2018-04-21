@@ -43,10 +43,9 @@ import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.CredentialRepository;
 import logia.assistant.gateway.repository.UserRepository;
 import logia.assistant.gateway.repository.search.UserSearchRepository;
-import logia.assistant.gateway.service.MailService;
+import logia.assistant.gateway.service.AccountBusinessService;
 import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.service.dto.UserDTO;
-import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.gateway.service.mapper.UserMapper;
 import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
 import logia.assistant.gateway.web.rest.vm.ManagedUserVM;
@@ -115,17 +114,9 @@ public class UserResourceIntTest {
     @Autowired
     private CredentialRepository                  credentialRepostitory;
 
-    /** The mail service. */
-    @Autowired
-    private MailService                           mailService;
-
     /** The user service. */
     @Autowired
     private UserService                           userService;
-
-    /** The credential service. */
-    @Autowired
-    private CredentialServiceImpl                 credentialService;
 
     /** The user mapper. */
     @Autowired
@@ -157,8 +148,8 @@ public class UserResourceIntTest {
     /** The user. */
     private User                                  user;
 
-    /** The credential. */
-    private Credential                            credential;
+    @Autowired
+    private AccountBusinessService accountBusinessService;
 
     /**
      * Setup.
@@ -167,9 +158,7 @@ public class UserResourceIntTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).clear();
-        cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE).clear();
-        cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE).clear();
-        UserResource userResource = new UserResource(userService, userSearchRepository);
+        UserResource userResource = new UserResource(accountBusinessService, userService, userSearchRepository);
         this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setControllerAdvice(exceptionTranslator)
@@ -563,10 +552,6 @@ public class UserResourceIntTest {
 
         assertThat(cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).get(user.getUuid()))
                 .isNull();
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE)
-                .get(user.getFirstName())).isNull();
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE)
-                .get(user.getLastName())).isNull();
 
         // Validate the database is empty
         List<User> userList = userRepository.findAll();

@@ -34,6 +34,7 @@ import io.github.jhipster.web.util.ResponseUtil;
 import logia.assistant.gateway.config.Constants;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.search.UserSearchRepository;
+import logia.assistant.gateway.service.AccountBusinessService;
 import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
@@ -75,6 +76,9 @@ public class UserResource {
 
     /** The log. */
     private final Logger log = LoggerFactory.getLogger(UserResource.class);
+    
+    /** The account business service. */
+    private final AccountBusinessService accountBusinessService;
 
     /** The user service. */
     private final UserService userService;
@@ -82,14 +86,10 @@ public class UserResource {
     /** The user search repository. */
     private final UserSearchRepository userSearchRepository;
 
-    /**
-     * Instantiates a new user resource.
-     *
-     * @param userService the user service
-     * @param userSearchRepository the user search repository
-     */
-    public UserResource(UserService userService, UserSearchRepository userSearchRepository) {
+    public UserResource(AccountBusinessService accountBusinessService, UserService userService,
+            UserSearchRepository userSearchRepository) {
         super();
+        this.accountBusinessService = accountBusinessService;
         this.userService = userService;
         this.userSearchRepository = userSearchRepository;
     }
@@ -111,7 +111,7 @@ public class UserResource {
     @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<User> createUser(@Valid @RequestBody UserDTO userDTO) throws URISyntaxException {
         log.info("REST request to save User : {}", userDTO);
-        User newUser = userService.createUser(userDTO);
+        User newUser = this.accountBusinessService.createUser(userDTO);
         return ResponseEntity.created(new URI("/api/users/" + userDTO.getLogin()))
             .headers(HeaderUtil.createAlert( "userManagement.created", userDTO.getLogin()))
             .body(newUser);
@@ -130,7 +130,7 @@ public class UserResource {
     @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<UserDTO> updateUser(@Valid @RequestBody UserDTO userDTO) {
         log.info("REST request to update User : {}", userDTO);
-        Optional<UserDTO> updatedUser = userService.updateUser(userDTO);
+        Optional<UserDTO> updatedUser = this.accountBusinessService.updateUser(userDTO);
         return ResponseUtil.wrapOrNotFound(updatedUser,
             HeaderUtil.createAlert("userManagement.updated", userDTO.getLogin()));
     }
@@ -187,7 +187,7 @@ public class UserResource {
     @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<Void> deleteUser(@PathVariable String uuid) {
         log.debug("REST request to delete User: {}", uuid);
-        userService.deleteUser(uuid);
+        this.accountBusinessService.deleteUser(uuid);
         return ResponseEntity.ok().headers(HeaderUtil.createAlert( "userManagement.deleted", uuid)).build();
     }
 

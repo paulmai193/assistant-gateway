@@ -48,40 +48,6 @@ public class CredentialServiceIntTest extends AbstractUserServiceInitTest {
         user.setLangKey("en");
         credential = new Credential().login("johndoe@localhost").activated(true).primary(true).user(user);
     }
-    
-    /**
-     * Assert that user must exist to reset password.
-     */
-    @Test
-    @Transactional
-    public void assertThatUserMustExistToResetPassword() {
-        user = userRepository.saveAndFlush(user);
-        credentialRepository.saveAndFlush(credential);
-        
-        Optional<Credential> maybeCredential = credentialService.requestPasswordReset("invalid.login@localhost");
-        assertThat(maybeCredential).isNotPresent();
-
-        maybeCredential = credentialService.requestPasswordReset(credential.getLogin());
-        assertThat(maybeCredential).isPresent();
-        assertThat(maybeCredential.orElse(null).getLogin()).isEqualTo(credential.getLogin());
-        assertThat(maybeCredential.orElse(null).getResetDate()).isNotNull();
-        assertThat(maybeCredential.orElse(null).getResetKey()).isNotNull();
-    }
-    
-    /**
-     * Assert that only activated user can request password reset.
-     */
-    @Test
-    @Transactional
-    public void assertThatOnlyActivatedUserCanRequestPasswordReset() {
-        user = userRepository.saveAndFlush(user);
-        credential.setActivated(false);
-        credentialRepository.saveAndFlush(credential);
-
-        Optional<Credential> maybeCredential = credentialService.requestPasswordReset(credential.getLogin());
-        assertThat(maybeCredential).isNotPresent();
-        credentialRepository.delete(credential);
-    }
 
     /**
      * Test find not activated users by creation date before.

@@ -17,8 +17,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,10 +42,10 @@ import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.AuthorityRepository;
 import logia.assistant.gateway.repository.CredentialRepository;
 import logia.assistant.gateway.repository.UserRepository;
+import logia.assistant.gateway.service.AccountBusinessService;
 import logia.assistant.gateway.service.MailService;
 import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.service.dto.UserDTO;
-import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
 import logia.assistant.gateway.web.rest.vm.KeyAndPasswordVM;
 import logia.assistant.gateway.web.rest.vm.ManagedUserVM;
@@ -100,17 +98,15 @@ public class AccountResourceIntTest {
     /** The rest user mock mvc. */
     private MockMvc                restUserMockMvc;
 
-    /** The credential service. */
-    @Autowired
-    private CredentialServiceImpl  credentialService;
-
     /** The credential repository. */
     @Autowired
     private CredentialRepository   credentialRepository;
 
-    /** The em. */
     @Autowired
-    private EntityManager          em;
+    private AccountBusinessService accountBusinessService;
+    
+    @Mock
+    private AccountBusinessService mockAccountBusinessService;
 
     /**
      * Setup.
@@ -119,10 +115,8 @@ public class AccountResourceIntTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         doNothing().when(mockMailService).sendActivationEmail(anyObject());
-        AccountResource accountResource = new AccountResource(userService, credentialService);
-
-        AccountResource accountUserMockResource = new AccountResource(mockUserService,
-                credentialService);
+        AccountResource accountResource = new AccountResource(accountBusinessService, userService);
+        AccountResource accountUserMockResource = new AccountResource(mockAccountBusinessService, mockUserService);
         this.restMvc = MockMvcBuilders.standaloneSetup(accountResource)
                 .setMessageConverters(httpMessageConverters)
                 .setControllerAdvice(exceptionTranslator).build();

@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import logia.assistant.gateway.repository.search.UserSearchRepository;
+import logia.assistant.gateway.service.AccountBusinessService;
 import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.web.rest.UserResource;
 import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
@@ -53,12 +54,16 @@ public class UserStepDefs extends StepDefs {
     @Autowired
     private ExceptionTranslator                   exceptionTranslator;
 
+    /** The account business service. */
+    @Autowired
+    private AccountBusinessService accountBusinessService;
+
     /**
      * Setup.
      */
     @Before
     public void setup() {
-        userResource = new UserResource(userService, userSearchRepository);
+        userResource = new UserResource(accountBusinessService, userService, userSearchRepository);
         this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setControllerAdvice(exceptionTranslator)

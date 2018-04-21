@@ -20,12 +20,6 @@ public interface UserRepository extends UuidRepository<User, Long> {
 
     /** The users by email cache. */
     String USERS_BY_UUID_CACHE = "usersByUuid";
-    
-    /** The users by first name cache. */
-    String USERS_BY_FIRST_NAME_CACHE = "usersByFirstName";
-    
-    /** The users by last name cache. */
-    String USERS_BY_LAST_NAME_CACHE = "usersByLastName";
 
     /**
      * Find one with authorities by id.

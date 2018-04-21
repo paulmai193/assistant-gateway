@@ -21,9 +21,9 @@ import com.codahale.metrics.annotation.Timed;
 
 import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
+import logia.assistant.gateway.service.AccountBusinessService;
 import logia.assistant.gateway.service.UserService;
 import logia.assistant.gateway.service.dto.UserDTO;
-import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.gateway.web.rest.errors.EmailAlreadyUsedException;
 import logia.assistant.gateway.web.rest.errors.EmailNotFoundException;
 import logia.assistant.gateway.web.rest.errors.InternalServerErrorException;
@@ -43,23 +43,23 @@ public class AccountResource {
 
     /** The log. */
     private final Logger                log = LoggerFactory.getLogger(AccountResource.class);
+    
+    /** The account business service. */
+    private final AccountBusinessService accountBusinessService;
 
     /** The user service. */
     private final UserService           userService;
 
-    /** The credential service. */
-    private final CredentialServiceImpl credentialService;
-
     /**
      * Instantiates a new account resource.
      *
+     * @param accountBusinessService the account business service
      * @param userService the user service
-     * @param credentialService the credential service
      */
-    public AccountResource(UserService userService, CredentialServiceImpl credentialService) {
+    public AccountResource(AccountBusinessService accountBusinessService, UserService userService) {
         super();
+        this.accountBusinessService = accountBusinessService;
         this.userService = userService;
-        this.credentialService = credentialService;
     }
 
     /**
@@ -75,7 +75,7 @@ public class AccountResource {
     @ResponseStatus(HttpStatus.CREATED)
     public void registerAccount(@Valid @RequestBody ManagedUserVM managedUserVM) {
         log.info("REST request to register account {}", managedUserVM);
-        userService.registerUser(managedUserVM, managedUserVM.getPassword());
+        this.accountBusinessService.registerUser(managedUserVM, managedUserVM.getPassword());
     }
 
     /**
@@ -88,7 +88,7 @@ public class AccountResource {
     @Timed
     public void activateAccount(@RequestParam(value = "key") String key) {
         log.info("REST request to activate account by key {}", key);
-        Optional<Credential> credential = this.credentialService.activateRegistration(key);
+        Optional<Credential> credential = this.accountBusinessService.activateRegistration(key);
         if (!credential.isPresent()) {
             throw new InternalServerErrorException("No user was found for this reset key");
         }
@@ -131,7 +131,7 @@ public class AccountResource {
     @Timed
     public void saveAccount(@Valid @RequestBody UserDTO userDTO) {
         log.info("REST request to change information of current authorized account: {}", userDTO);
-        userService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getLangKey(),
+        this.accountBusinessService.updateUser(userDTO.getFirstName(), userDTO.getLastName(), userDTO.getLangKey(),
                 userDTO.getImageUrl());
     }
 
@@ -145,7 +145,7 @@ public class AccountResource {
     @Timed
     public void changePassword(@RequestBody String password) {
         log.info("REST request to change current authorized account password {}", password);
-        this.userService.changePassword(password);
+        this.accountBusinessService.changePassword(password);
     }
 
     /**
@@ -158,7 +158,7 @@ public class AccountResource {
     @Timed
     public void requestPasswordReset(@RequestBody String mail) {
         log.info("REST request to reset password of email {}", mail);
-        this.credentialService.requestPasswordReset(mail).orElseThrow(EmailNotFoundException::new);
+        this.accountBusinessService.requestPasswordReset(mail).orElseThrow(EmailNotFoundException::new);
     }
 
     /**
@@ -172,7 +172,7 @@ public class AccountResource {
     @Timed
     public void finishPasswordReset(@RequestBody KeyAndPasswordVM keyAndPassword) {
         log.info("REST request to finish reset password by key: {}", keyAndPassword.getKey());
-        Optional<User> optUser = this.userService
+        Optional<User> optUser = this.accountBusinessService
                 .completePasswordReset(keyAndPassword.getNewPassword(), keyAndPassword.getKey());
 
         if (!optUser.isPresent()) {

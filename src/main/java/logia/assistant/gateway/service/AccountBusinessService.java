@@ -1,12 +1,10 @@
 package logia.assistant.gateway.service;
 
-import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import logia.assistant.gateway.domain.Credential;
+import logia.assistant.gateway.domain.User;
+import logia.assistant.gateway.service.dto.UserDTO;
 
 /**
  * The Interface AccountBusinessService.
@@ -14,23 +12,6 @@ import logia.assistant.gateway.domain.Credential;
  * @author Dai Mai
  */
 public interface AccountBusinessService {
-    
-    /**
-     * Update by user id.
-     *
-     * @param userId the user id
-     * @param login the login
-     * @return the credential
-     */
-    Credential updateByUserId(Long userId, String login);
-    
-    /**
-     * Delete.
-     *
-     * @param login the login
-     * @return the credential
-     */
-    Credential delete(String login);
     
     /**
      * Activate registration.
@@ -41,48 +22,69 @@ public interface AccountBusinessService {
     Optional<Credential> activateRegistration(String key);
     
     /**
+     * Change password.
+     *
+     * @param password the password
+     */
+    void changePassword(String password);
+    
+    /**
+     * Complete password reset.
+     *
+     * @param newPassword the new password
+     * @param kresetKey the kreset key
+     * @return the optional
+     */
+    Optional<User> completePasswordReset(String newPassword, String kresetKey);
+    
+    /**
+     * Creates the user.
+     *
+     * @param userDTO the user DTO
+     * @return the user
+     */
+    User createUser(UserDTO userDTO);
+
+    /**
+     * Delete user.
+     *
+     * @param uuid the UUID
+     */
+    void deleteUser(String uuid);
+
+    /**
+     * Register user.
+     *
+     * @param userDTO the user DTO
+     * @param password the password
+     * @return the user
+     */
+    User registerUser(UserDTO userDTO, String password);
+
+    /**
      * Request password reset.
      *
      * @param mail the mail
      * @return the optional
      */
     Optional<Credential> requestPasswordReset(String mail);
-    
+
     /**
-     * Find one by reset key.
+     * Update basic information (first name, last name, email, language) for the current user.
      *
-     * @param resetKey the reset key
-     * @return the optional
+     * @param firstName first name of user
+     * @param lastName last name of user
+     * @param langKey language key
+     * @param imageUrl image URL of user
      */
-    Optional<Credential> findOneByResetKey(String resetKey);
-    
+    void updateUser(String firstName, String lastName, String langKey, String imageUrl);
+
     /**
-     * Removes the not activated users.
-     */
-    void removeNotActivatedUsers();
-    
-    /**
-     * Find one with user by login.
+     * Update all information for a specific user, and return the modified user.
      *
-     * @param userLogin the user login
-     * @return the optional
+     * @param userDTO user to update
+     * @return updated user
      */
-    Optional<Credential> findOneWithUserByLogin(String userLogin);
+    Optional<UserDTO> updateUser(UserDTO userDTO);
     
-    /**
-     * Find by user id.
-     *
-     * @param userId the user id
-     * @return the list
-     */
-    List<Credential> findByUserId(Long userId);
-    
-    /**
-     * Find all by login not.
-     *
-     * @param pageable the pageable
-     * @param login the login
-     * @return the page
-     */
-    Page<Credential> findAllByLoginNot(Pageable pageable, String login);
 }

@@ -3,7 +3,6 @@ package logia.assistant.gateway.service;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 import java.text.MessageFormat;
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,13 +16,11 @@ import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import logia.assistant.gateway.config.Constants;
 import logia.assistant.gateway.domain.Authority;
-import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.AuthorityRepository;
 import logia.assistant.gateway.repository.UserRepository;
@@ -31,13 +28,8 @@ import logia.assistant.gateway.repository.search.UserSearchRepository;
 import logia.assistant.gateway.security.SecurityUtils;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
-import logia.assistant.gateway.service.util.RandomUtil;
-import logia.assistant.gateway.service.validator.ValidatorService;
-import logia.assistant.gateway.web.rest.errors.BadRequestAlertException;
 import logia.assistant.gateway.web.rest.errors.InternalServerErrorException;
-import logia.assistant.gateway.web.rest.errors.LoginAlreadyUsedException;
 import logia.assistant.share.common.service.UuidService;
-import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
  * Service class for managing users.
@@ -54,9 +46,6 @@ public class UserService implements UuidService<User> {
     /** The user repository. */
     private final UserRepository        userRepository;
 
-    /** The password encoder. */
-    private final PasswordEncoder       passwordEncoder;
-
     /** The user search repository. */
     private final UserSearchRepository  userSearchRepository;
 
@@ -69,37 +58,24 @@ public class UserService implements UuidService<User> {
     /** The cache manager. */
     private final CacheManager          cacheManager;
 
-    /** The validator service. */
-    private final ValidatorService      validatorService;
-
-    /** The mail service. */
-    private final MailService           mailService;
-
     /**
      * Instantiates a new user service.
      *
      * @param userRepository the user repository
-     * @param passwordEncoder the password encoder
      * @param userSearchRepository the user search repository
      * @param credentialService the credential service
      * @param authorityRepository the authority repository
      * @param cacheManager the cache manager
-     * @param validatorService the validator service
-     * @param mailService the mail service
      */
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-            UserSearchRepository userSearchRepository, CredentialServiceImpl credentialService,
-            AuthorityRepository authorityRepository, CacheManager cacheManager,
-            ValidatorService validatorService, MailService mailService) {
+    public UserService(UserRepository userRepository, UserSearchRepository userSearchRepository,
+            CredentialServiceImpl credentialService, AuthorityRepository authorityRepository,
+            CacheManager cacheManager) {
         super();
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.userSearchRepository = userSearchRepository;
         this.credentialService = credentialService;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
-        this.validatorService = validatorService;
-        this.mailService = mailService;
     }
 
     /*
@@ -130,144 +106,14 @@ public class UserService implements UuidService<User> {
     }
 
     /**
-     * Register user.
-     *
-     * @param userDTO the user DTO
-     * @param password the password
-     * @return the user
-     */
-    public User registerUser(UserDTO userDTO, String password) {
-        // Low case login if is email
-        if (this.validatorService.isEmail(userDTO.getLogin())) {
-            userDTO.setLogin(userDTO.getLogin().toLowerCase());
-        }
-
-        log.debug("User create new account: {}", userDTO);
-        // Validate register information
-        this.validatorService.validateNewCredential(userDTO.getLogin(), password);
-
-        // new user gets initially a generated password
-        userDTO.authority(AuthoritiesConstants.USER);
-        String encryptedPassword = passwordEncoder.encode(password);
-        User newUser = new User().password(encryptedPassword);
-        newUser = this.updateOrCreateUser(newUser, userDTO, true);
-
-        // Create new credential, new user is not active, new user gets registration key
-        Credential credential = new Credential().user(newUser).login(userDTO.getLogin())
-                .activated(false).primary(true).activationKey(RandomUtil.generateActivationKey());
-        credential = this.credentialService.saveEntity(credential);
-
-        // Send activation email
-        try {
-            String email = userDTO.getLogin();
-            this.validatorService.validateEmail(email);
-            mailService.sendActivationEmail(credential);
-        }
-        catch (Exception e) {
-            log.debug(MessageFormat.format("Cannot send activation email to user {0}", userDTO), e);
-        }
-
-        return newUser;
-    }
-
-    /**
-     * Creates the user.
-     *
-     * @param userDTO the user DTO
-     * @return the user
-     */
-    public User createUser(UserDTO userDTO) {
-        log.debug("Admin created Information for User: {}", userDTO);
-        // Low case login if is email
-        if (this.validatorService.isEmail(userDTO.getLogin())) {
-            userDTO.setLogin(userDTO.getLogin());
-        }
-
-        if (userDTO.getId() != null) {
-            throw new BadRequestAlertException("A new user cannot already have an UUID",
-                    "userManagement", "idexists");
-        }
-        else if (this.credentialService.findOneWithUserByLogin(userDTO.getLogin()).isPresent()) {
-            throw new LoginAlreadyUsedException();
-        }
-        if (userDTO.getLangKey() == null) {
-            userDTO.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
-        }
-        String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
-        User user = new User().password(encryptedPassword);
-        user = this.updateOrCreateUser(user, userDTO, true);
-        userDTO.setId(user.getUuid());
-
-        // Create new credential
-        Credential credential = new Credential().user(user).login(userDTO.getLogin())
-                .activated(true).primary(true).resetKey(RandomUtil.generateResetKey())
-                .resetDate(Instant.now());
-        credential = this.credentialService.saveEntity(credential);
-
-        // Send creation email
-        try {
-            String email = userDTO.getLogin();
-            this.validatorService.validateEmail(email);
-            mailService.sendCreationEmail(credential);
-        }
-        catch (Exception e) {
-            log.debug(MessageFormat.format("Cannot send creation email to user {0}", userDTO), e);
-        }
-
-        return user;
-    }
-
-    /**
-     * Update basic information (first name, last name, email, language) for the current user.
-     *
-     * @param firstName first name of user
-     * @param lastName last name of user
-     * @param langKey language key
-     * @param imageUrl image URL of user
-     */
-    public void updateUser(String firstName, String lastName, String langKey, String imageUrl) {
-        final String userLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(
-                () -> new InternalServerErrorException("Current user login not found"));
-        Optional<Credential> credential = this.credentialService.findOneWithUserByLogin(userLogin);
-        if (!credential.isPresent()) {
-            throw new InternalServerErrorException(
-                    MessageFormat.format("User {0} could not be found", userLogin));
-        }
-        User user = credential.get().getUser();
-        UserDTO userDTO = new UserDTO().firstName(firstName).lastName(lastName).langKey(langKey)
-                .imageUrl(imageUrl);
-        log.debug("User {} change information to {}", user.getId(), userDTO);
-        this.updateOrCreateUser(user, userDTO, false);
-    }
-
-    /**
-     * Update all information for a specific user, and return the modified user.
-     *
-     * @param userDTO user to update
-     * @return updated user
-     */
-    public Optional<UserDTO> updateUser(UserDTO userDTO) {
-        log.debug("Admin change information of user {}", userDTO);
-        Optional<User> optUser = this.userRepository.findOneByUuid(userDTO.getId());
-        if (optUser.isPresent()) {
-            this.credentialService.updateByUserId(optUser.get().getId(), userDTO.getLogin());
-            return Optional.of(this.userRepository.findOneByUuid(userDTO.getId())).map(user -> {
-                return this.updateOrCreateUser(user.get(), userDTO, false);
-            }).map(UserDTO::new);
-        }
-        else {
-            return Optional.empty();
-        }
-    }
-
-    /**
      * Update or create user.
      *
      * @param user the user.
      * @param updateInformation the update information
+     * @param persistent the persistent
      * @return the user
      */
-    private User updateOrCreateUser(User user, UserDTO updateInformation, boolean persistent) {
+    public User updateOrCreateUser(User user, UserDTO updateInformation, boolean persistent) {
         if (Objects.nonNull(updateInformation.getFirstName())) {
             user.setFirstName(updateInformation.getFirstName());
         }
@@ -287,7 +133,18 @@ public class UserService implements UuidService<User> {
             updateInformation.getAuthorities().stream().map(authorityRepository::findOne)
                     .forEach(managedAuthorities::add);
         }
-        if (persistent) {
+        return this.saveOrUpdate(user, persistent);
+    }
+
+    /**
+     * Save or update.
+     *
+     * @param user the user
+     * @param force the force
+     * @return the user
+     */
+    public User saveOrUpdate(User user, boolean force) {
+        if (force) {
             user = this.userRepository.saveAndFlush(user);
         }
         else {
@@ -295,26 +152,8 @@ public class UserService implements UuidService<User> {
         }
         userSearchRepository.save(user);
         this.cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).evict(user.getUuid());
-        this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE)
-                .evict(user.getFirstName());
-        this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE)
-                .evict(user.getLastName());
         log.debug("Create user or change information for User: {}", user);
         return user;
-    }
-
-    /**
-     * Delete user.
-     *
-     * @param uuid the id
-     */
-    public void deleteUser(String uuid) {
-        log.debug("Request to delete User UUID : {}", uuid);
-        this.findByUuid(uuid).ifPresent(deleteUser -> {
-            List<Credential> credentials = this.credentialService.findByUserId(deleteUser.getId());
-            credentials.forEach(credential -> this.credentialService.delete(credential.getId()));
-            this.delete(deleteUser);
-        });
     }
 
     /**
@@ -394,56 +233,11 @@ public class UserService implements UuidService<User> {
      *
      * @param user the user
      */
-    private void delete(User user) {
+    public void delete(User user) {
         userRepository.delete(user.getId());
         userSearchRepository.delete(user.getId());
         this.cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).evict(user.getUuid());
-        this.cacheManager.getCache(UserRepository.USERS_BY_FIRST_NAME_CACHE)
-                .evict(user.getFirstName());
-        this.cacheManager.getCache(UserRepository.USERS_BY_LAST_NAME_CACHE)
-                .evict(user.getLastName());
         log.debug("Deleted User: {}", user);
-    }
-
-    /**
-     * Complete password reset.
-     *
-     * @param newPassword the new password
-     * @param key the key
-     * @return the optional
-     */
-    public Optional<User> completePasswordReset(String newPassword, String key) {
-        log.debug("Reset user password for reset key {}", key);
-        this.validatorService.validatePassword(newPassword);
-        return this.credentialService.findOneByResetKey(key).filter(
-                credential -> credential.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
-                .map(credential -> {
-                    credential.resetKey(null).resetDate(null).activated(true);
-                    this.credentialService.saveEntity(credential);
-                    User user = credential.getUser();
-                    user.setPassword(passwordEncoder.encode(newPassword));
-                    user = this.userSearchRepository.save(user);
-                    log.debug("Complete reset password for User: {}", credential);
-                    return user;
-                });
-    }
-
-    /**
-     * Change password.
-     *
-     * @param password the password
-     */
-    public void changePassword(String password) {
-        this.validatorService.validatePassword(password);
-        SecurityUtils.getCurrentUserLogin().flatMap(this.credentialService::findOneWithUserByLogin)
-                .ifPresent(credential -> {
-                    credential.resetKey(null).resetDate(null);
-                    this.credentialService.saveEntity(credential);
-                    User user = credential.getUser();
-                    user.setPassword(passwordEncoder.encode(password));
-                    user = this.userSearchRepository.save(user);
-                    log.debug("Changed password for User: {}", credential);
-                });
     }
 
 }
