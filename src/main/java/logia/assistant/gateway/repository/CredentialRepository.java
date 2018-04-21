@@ -64,7 +64,7 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
      * @return the optional
      */
     @Cacheable(cacheNames = CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
-    @EntityGraph(attributePaths = "user")
+    @EntityGraph(attributePaths = {"user", "user.authorities"})
     Optional<Credential> findOneWithUserByLogin(String login);
     
     /**

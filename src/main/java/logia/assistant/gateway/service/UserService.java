@@ -338,8 +338,7 @@ public class UserService implements UuidService<User> {
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
         return this.credentialService.findOneWithUserByLogin(login).flatMap(credential -> {
-            User user = credential.getUser(); // This will fetch authorities inside user entity
-            return Optional.ofNullable(user);
+            return Optional.ofNullable(credential.getUser());
         });
     }
 
