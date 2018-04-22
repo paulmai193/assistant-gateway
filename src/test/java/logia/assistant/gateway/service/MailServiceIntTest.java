@@ -13,7 +13,6 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +36,7 @@ import logia.assistant.gateway.config.Constants;
 import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.service.util.RandomUtil;
+import logia.assistant.gateway.service.validator.ValidatorService;
 
 /**
  * The Class MailServiceIntTest.
@@ -69,6 +69,9 @@ public class MailServiceIntTest {
 
     /** The mail service. */
     private MailService          mailService;
+    
+    @Autowired
+    private ValidatorService validatorService;
 
     /**
      * Setup.
@@ -258,6 +261,22 @@ public class MailServiceIntTest {
     public void testSendEmailWithException() throws Exception {
         doThrow(MailSendException.class).when(javaMailSender).send(any(MimeMessage.class));
         mailService.sendEmail("john.doe@example.com", "testSubject", "testContent", false, false);
+    }
+    
+    /**
+     * Test validate email.
+     *
+     * @throws Exception the exception
+     */
+    @Test
+    public void testValidateEmail() throws Exception {
+        assertThat(this.validatorService.isEmail("john.doe@example.com")).isTrue();
+        assertThat(this.validatorService.isEmail("john.doe@localhost")).isTrue();
+        assertThat(this.validatorService.isEmail("john.doe@127.0.0.1")).isTrue();
+        assertThat(this.validatorService.isEmail("john.doe@")).isFalse();
+        assertThat(this.validatorService.isEmail("@example.com")).isFalse();
+        assertThat(this.validatorService.isEmail("john.doe")).isFalse();
+        assertThat(this.validatorService.isEmail("john.doe@127.1.0.1.1")).isFalse();
     }
 
 }

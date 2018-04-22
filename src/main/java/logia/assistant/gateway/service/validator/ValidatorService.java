@@ -34,8 +34,8 @@ public final class ValidatorService {
      *
      * @param email the email
      */
-    public void validateEmail(String email) {
-        this.validator.validate(new EmailValidatorWrapper(email));
+    public void validateEmail(@Email String email) {
+        this.validator.validate(email);
     }
     
     /**
@@ -99,44 +99,4 @@ public final class ValidatorService {
                 && password.length() <= ManagedUserVM.PASSWORD_MAX_LENGTH;
     }
 
-    /**
-     * The Class EmailValidatorWrapper.
-     *
-     * @author Dai Mai
-     */
-    public static class EmailValidatorWrapper {
-
-        /** The email. */
-        @Email
-        private String email;
-
-        /**
-         * Instantiates a new email validator wrapper.
-         *
-         * @param email the email
-         */
-        public EmailValidatorWrapper(String email) {
-            super();
-            this.email = email;
-        }
-
-        /**
-         * Gets the email.
-         *
-         * @return the email
-         */
-        public String getEmail() {
-            return email;
-        }
-
-        /**
-         * Sets the email.
-         *
-         * @param email the email to set
-         */
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-    }
 }
