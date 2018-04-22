@@ -1,14 +1,10 @@
 package logia.assistant.gateway.service;
 
-import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
-
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +24,6 @@ import logia.assistant.gateway.repository.search.UserSearchRepository;
 import logia.assistant.gateway.security.SecurityUtils;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
-import logia.assistant.gateway.web.rest.errors.InternalServerErrorException;
 import logia.assistant.share.common.service.UuidService;
 
 /**
@@ -85,19 +80,13 @@ public class UserService implements UuidService<User> {
      */
     @Override
     public Optional<User> findByUuid(String uuid) {
-        List<User> results = StreamSupport.stream(
-                this.userSearchRepository.search(queryStringQuery("uuid=" + uuid)).spliterator(),
-                false).collect(Collectors.toList());
-        if (results.size() > 1) {
-            throw new InternalServerErrorException(
-                    MessageFormat.format("UUID {0} not unique", uuid));
-        }
-        if (results.size() == 1) {
-            return Optional.of(results.get(0));
+        Optional<User> optUser = this.userSearchRepository.findOneByUuid(uuid);
+        if (optUser.isPresent()) {
+            return optUser;
         }
         else {
             // Maybe elastic search not persistent, try finding in DB
-            Optional<User> optUser = this.userRepository.findOneByUuid(uuid);
+            optUser = this.userRepository.findOneWithAuthoritiesByUuid(uuid);
             if (optUser.isPresent()) {
                 this.userSearchRepository.save(optUser.get());
             }

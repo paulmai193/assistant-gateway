@@ -3,6 +3,7 @@ package logia.assistant.gateway.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -37,5 +38,18 @@ public interface UserRepository extends UuidRepository<User, Long> {
      */
     @Query(value = "select u from User u where u.id not in (select c.user.id from Credential c)")
     List<User> findAllNotHaveCredential();
+    
+    /**
+     * Find one with authorities by uuid.
+     *
+     * @param uuid the uuid
+     * @return the optional
+     */
+    @Cacheable(cacheNames = UserRepository.USERS_BY_UUID_CACHE)
+    default Optional<User> findOneWithAuthoritiesByUuid(String uuid) {
+        Optional<User> optUser = this.findOneByUuid(uuid);
+        optUser.ifPresent(user -> user.getAuthorities().size()); // Dummy code to fetch authorities
+        return optUser;
+    }
 
 }
