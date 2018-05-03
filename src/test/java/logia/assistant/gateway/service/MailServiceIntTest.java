@@ -273,10 +273,11 @@ public class MailServiceIntTest {
         assertThat(this.validatorService.isEmail("john.doe@example.com")).isTrue();
         assertThat(this.validatorService.isEmail("john.doe@localhost")).isTrue();
         assertThat(this.validatorService.isEmail("john.doe@127.0.0.1")).isTrue();
+        
         assertThat(this.validatorService.isEmail("john.doe@")).isFalse();
         assertThat(this.validatorService.isEmail("@example.com")).isFalse();
         assertThat(this.validatorService.isEmail("john.doe")).isFalse();
-        assertThat(this.validatorService.isEmail("john.doe@127.1.0.1.1")).isFalse();
+        assertThat(this.validatorService.isEmail("john.doe@127.1.0.1.1.1.1.1.1.1")).isFalse(); // must fail
     }
 
 }

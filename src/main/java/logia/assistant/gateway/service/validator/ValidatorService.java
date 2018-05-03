@@ -1,6 +1,9 @@
 package logia.assistant.gateway.service.validator;
 
+import java.util.Set;
+
 import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
 import javax.validation.Validator;
 
@@ -34,8 +37,11 @@ public final class ValidatorService {
      *
      * @param email the email
      */
-    public void validateEmail(@Email String email) {
-        this.validator.validate(email);
+    public void validateEmail(String email) throws IllegalArgumentException, ValidationException {
+        Set<ConstraintViolation<EmailWrapper>> violations = this.validator.validate(new EmailWrapper(email));
+        for (ConstraintViolation<EmailWrapper> violation : violations) {
+            throw new ValidationException(violation.getMessage());
+        }
     }
     
     /**
@@ -97,6 +103,34 @@ public final class ValidatorService {
         return !StringUtils.isEmpty(password)
                 && password.length() >= ManagedUserVM.PASSWORD_MIN_LENGTH
                 && password.length() <= ManagedUserVM.PASSWORD_MAX_LENGTH;
+    }
+    
+    public static class EmailWrapper {
+        
+        @Email
+        private String email;
+
+        public EmailWrapper(String email) {
+            super();
+            this.email = email;
+        }
+
+        
+        /**
+         * @return the email
+         */
+        public String getEmail() {
+            return email;
+        }
+
+        
+        /**
+         * @param email the email to set
+         */
+        public void setEmail(String email) {
+            this.email = email;
+        }
+        
     }
 
 }
