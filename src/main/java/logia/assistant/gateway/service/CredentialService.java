@@ -43,14 +43,6 @@ public interface CredentialService extends EntityService<CredentialDTO, Credenti
     List<Credential> findByUserId(Long userId);
 
     /**
-     * Find credential by activation key.
-     *
-     * @param activationKey the activation key
-     * @return the optional
-     */
-    Optional<Credential> findOneByActivationKey(String activationKey);
-
-    /**
      * Find one by email.
      *
      * @param mail the email
@@ -73,11 +65,6 @@ public interface CredentialService extends EntityService<CredentialDTO, Credenti
      * @return the optional
      */
     Optional<Credential> findOneWithUserByLogin(String login);
-
-    /**
-     * Removes the not activated users.
-     */
-    void removeNotActivatedUsers();
 
     /**
      * Update by user id.

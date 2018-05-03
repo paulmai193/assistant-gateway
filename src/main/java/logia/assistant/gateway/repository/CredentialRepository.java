@@ -1,6 +1,5 @@
 package logia.assistant.gateway.repository;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,14 +33,6 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
     List<Credential> findByUserIsCurrentUser();
     
     /**
-     * Find one by activation key.
-     *
-     * @param activationKey the activation key
-     * @return the optional
-     */
-    Optional<Credential> findOneByActivationKey(String activationKey);
-    
-    /**
      * Find one by reset key.
      *
      * @param resetKey the reset key
@@ -66,14 +57,6 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
     @Cacheable(cacheNames = CredentialRepository.CREDENTIALS_BY_LOGIN_CACHE)
     @EntityGraph(attributePaths = {"user", "user.authorities"})
     Optional<Credential> findOneWithUserByLogin(String login);
-    
-    /**
-     * Find all by activated is false and created date before.
-     *
-     * @param dateTime the date time
-     * @return the list
-     */
-    List<Credential> findAllByActivatedIsFalseAndCreatedDateBefore(Instant dateTime);
     
     /**
      * Find one with user by user id.

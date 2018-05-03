@@ -81,18 +81,20 @@ public class AccountBusinessServiceImpl implements AccountBusinessService {
      * logia.assistant.gateway.service.AccountBusinessService#activateRegistration(java.lang.String)
      */
     @Override
-    public Optional<Credential> activateRegistration(String key) {
+    public Optional<User> activateRegistration(String key) {
         log.debug("Activating user for activation key {}", key);
-        return this.credentialService.findOneByActivationKey(key).map(credential -> {
+        return this.userService.findOneByActivationKey(key).map(user -> {
             // activate given credential for the registration key.
-            credential.activated(true).activationKey(null);
-            this.credentialService.saveEntity(credential, false);
-            log.debug("Activated user: {}", credential);
-            return credential;
+            user.activated(true).activationKey(null);
+            this.userService.saveOrUpdate(user, false);
+            log.debug("Activated user: {}", user);
+            return user;
         });
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see logia.assistant.gateway.service.AccountBusinessService#changePassword(java.lang.String)
      */
     @Override
@@ -109,8 +111,11 @@ public class AccountBusinessServiceImpl implements AccountBusinessService {
                 });
     }
 
-    /* (non-Javadoc)
-     * @see logia.assistant.gateway.service.AccountBusinessService#completePasswordReset(java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see logia.assistant.gateway.service.AccountBusinessService#completePasswordReset(java.lang.
+     * String, java.lang.String)
      */
     @Override
     public Optional<User> completePasswordReset(String newPassword, String key) {
@@ -119,18 +124,22 @@ public class AccountBusinessServiceImpl implements AccountBusinessService {
         return this.credentialService.findOneByResetKey(key).filter(
                 credential -> credential.getResetDate().isAfter(Instant.now().minusSeconds(86400)))
                 .map(credential -> {
-                    credential.resetKey(null).resetDate(null).activated(true);
+                    credential.resetKey(null).resetDate(null);
                     this.credentialService.saveEntity(credential, false);
                     User user = credential.getUser();
-                    user.setPassword(passwordEncoder.encode(newPassword));
+                    user.password(passwordEncoder.encode(newPassword)).activated(true);
                     user = this.userService.saveOrUpdate(user, false);
                     log.debug("Complete reset password for User: {}", credential);
                     return user;
                 });
     }
 
-    /* (non-Javadoc)
-     * @see logia.assistant.gateway.service.AccountBusinessService#createUser(logia.assistant.gateway.service.dto.UserDTO)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * logia.assistant.gateway.service.AccountBusinessService#createUser(logia.assistant.gateway.
+     * service.dto.UserDTO)
      */
     @Override
     public User createUser(UserDTO userDTO) {
@@ -151,14 +160,13 @@ public class AccountBusinessServiceImpl implements AccountBusinessService {
             userDTO.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
         }
         String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
-        User user = new User().password(encryptedPassword);
+        User user = new User().password(encryptedPassword).activated(false);
         user = this.userService.updateOrCreateUser(user, userDTO, true);
         userDTO.setId(user.getUuid());
 
         // Create new credential
-        Credential credential = new Credential().user(user).login(userDTO.getLogin())
-                .activated(true).primary(true).resetKey(RandomUtil.generateResetKey())
-                .resetDate(Instant.now());
+        Credential credential = new Credential().user(user).login(userDTO.getLogin()).primary(true)
+                .resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now());
         credential = this.credentialService.saveEntity(credential, false);
 
         // Send creation email
@@ -173,7 +181,7 @@ public class AccountBusinessServiceImpl implements AccountBusinessService {
 
         return user;
     }
-    
+
     @Override
     public Optional<UserDTO> updateUser(UserDTO userDTO) {
         log.debug("Admin change information of user {}", userDTO);
@@ -189,7 +197,9 @@ public class AccountBusinessServiceImpl implements AccountBusinessService {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see logia.assistant.gateway.service.AccountBusinessService#deleteUser(java.lang.String)
      */
     @Override
@@ -202,8 +212,12 @@ public class AccountBusinessServiceImpl implements AccountBusinessService {
         });
     }
 
-    /* (non-Javadoc)
-     * @see logia.assistant.gateway.service.AccountBusinessService#registerUser(logia.assistant.gateway.service.dto.UserDTO, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * logia.assistant.gateway.service.AccountBusinessService#registerUser(logia.assistant.gateway.
+     * service.dto.UserDTO, java.lang.String)
      */
     @Override
     public User registerUser(UserDTO userDTO, String password) {
@@ -219,12 +233,13 @@ public class AccountBusinessServiceImpl implements AccountBusinessService {
         // new user gets initially a generated password
         userDTO.authority(AuthoritiesConstants.USER);
         String encryptedPassword = passwordEncoder.encode(password);
-        User newUser = new User().password(encryptedPassword);
+        User newUser = new User().password(encryptedPassword).activated(false)
+                .activationKey(RandomUtil.generateActivationKey());
         newUser = this.userService.updateOrCreateUser(newUser, userDTO, true);
 
         // Create new credential, new user is not active, new user gets registration key
         Credential credential = new Credential().user(newUser).login(userDTO.getLogin())
-                .activated(false).primary(true).activationKey(RandomUtil.generateActivationKey());
+                .primary(true);
         credential = this.credentialService.saveEntity(credential, false);
 
         // Send activation email
@@ -248,19 +263,21 @@ public class AccountBusinessServiceImpl implements AccountBusinessService {
      */
     @Override
     public Optional<Credential> requestPasswordReset(String mail) {
-        return this.credentialService.findOneByEmail(mail).filter(Credential::isActivated)
-                .map(credential -> {
-                    credential.resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now());
-                    this.credentialService.saveEntity(credential, true);
+        return this.credentialService.findOneByEmail(mail).map(credential -> {
+            credential.resetKey(RandomUtil.generateResetKey()).resetDate(Instant.now());
+            this.credentialService.saveEntity(credential, true);
 
-                    // Send reset password email
-                    mailService.sendPasswordResetMail(credential);
-                    return credential;
-                });
-    }    
+            // Send reset password email
+            mailService.sendPasswordResetMail(credential);
+            return credential;
+        });
+    }
 
-    /* (non-Javadoc)
-     * @see logia.assistant.gateway.service.AccountBusinessService#updateUser(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see logia.assistant.gateway.service.AccountBusinessService#updateUser(java.lang.String,
+     * java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
     public void updateUser(String firstName, String lastName, String langKey, String imageUrl) {

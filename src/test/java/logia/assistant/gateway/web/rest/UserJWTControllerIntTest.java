@@ -84,11 +84,10 @@ public class UserJWTControllerIntTest {
     @Test
     @Transactional
     public void testAuthorize() throws Exception {
-        User user = new User();
-        user.setPassword(passwordEncoder.encode("test"));
+        User user = new User().password(passwordEncoder.encode("test")).activated(true);
         user = userRepository.saveAndFlush(user);
-        Credential credential = new Credential().login("user-jwt-controller").activated(true)
-                .primary(true).user(user);
+        Credential credential = new Credential().login("user-jwt-controller").primary(true)
+                .user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
         LoginVM login = new LoginVM();
@@ -110,12 +109,11 @@ public class UserJWTControllerIntTest {
     @Test
     @Transactional
     public void testAuthorizeWithRememberMe() throws Exception {
-        User user = new User();
-        user.setPassword(passwordEncoder.encode("test"));
+        User user = new User().password(passwordEncoder.encode("test")).activated(true);
         user = userRepository.saveAndFlush(user);
 
         Credential credential = new Credential().login("user-jwt-controller-remember-me")
-                .activated(true).primary(true).user(user);
+                .primary(true).user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
         LoginVM login = new LoginVM();

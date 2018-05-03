@@ -2,8 +2,6 @@ package logia.assistant.gateway.service.impl;
 
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -16,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -154,17 +151,6 @@ public class CredentialServiceImpl implements CredentialService {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * logia.assistant.gateway.service.CredentialService#findOneByActivationKey(java.lang.String)
-     */
-    @Override
-    public Optional<Credential> findOneByActivationKey(String key) {
-        return this.credentialRepository.findOneByActivationKey(key);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see logia.assistant.gateway.service.CredentialService#findOneByEmail(java.lang.String)
      */
     @Override
@@ -260,21 +246,6 @@ public class CredentialServiceImpl implements CredentialService {
     @Override
     public Credential mapToEntity(CredentialDTO dto) {
         return this.credentialMapper.toEntity(dto);
-    }
-
-    /**
-     * Not activated credential should be automatically deleted after 3 days.
-     * <p>
-     * This is scheduled to get fired everyday, at 01:00 (am).
-     */
-    @Override
-    @Scheduled(cron = "0 0 1 * * ?")
-    public void removeNotActivatedUsers() {
-        this.credentialRepository.findAllByActivatedIsFalseAndCreatedDateBefore(
-                Instant.now().minus(3, ChronoUnit.DAYS)).forEach(credential -> {
-                    log.debug("Deleting not activated user {}", credential.getLogin());
-                    this.delete(credential.getId(), credential.getLogin());
-                });
     }
 
     /*

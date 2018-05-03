@@ -38,6 +38,12 @@
             </column>
             <column name="last_modified_by" type="varchar(50)"/>
             <column name="last_modified_date" type="timestamp"/>
+            <column name="activation_key" type="varchar(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="activated" type="boolean">
+                <constraints nullable="false" />
+            </column>
         </createTable>
         <createIndex indexName="ux_user_uuid"
             tableName="jhi_user"
@@ -75,6 +81,7 @@
                   file="config/liquibase/users.csv"
                   separator=";"
                   tableName="jhi_user">
+            <column name="activated" type="boolean"/>
         </loadData>
         <loadData encoding="UTF-8"
                   file="config/liquibase/authorities.csv"

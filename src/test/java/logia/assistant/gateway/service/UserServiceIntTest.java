@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
@@ -22,7 +21,6 @@ import logia.assistant.gateway.config.Constants;
 import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.service.dto.UserDTO;
-import logia.assistant.gateway.service.util.RandomUtil;
 
 /**
  * Test class for the UserResource REST controller.
@@ -43,13 +41,9 @@ public class UserServiceIntTest extends AbstractUserServiceInitTest {
      */
     @Before
     public void init() {
-        user = new User();
-        user.setPassword(RandomStringUtils.random(60));
-        user.setFirstName("john");
-        user.setLastName("doe");
-        user.setImageUrl("http://placehold.it/50x50");
-        user.setLangKey("en");
-        credential = new Credential().login("johndoe@localhost").activated(true).user(user);
+        user = new User().password(RandomStringUtils.random(60)).firstName("john").lastName("doe")
+                .imageUrl("http://placehold.it/50x50").langKey("en").activated(true);
+        credential = new Credential().login("johndoe@localhost").user(user);
     }
 
     /**
@@ -65,8 +59,7 @@ public class UserServiceIntTest extends AbstractUserServiceInitTest {
         final PageRequest pageable = new PageRequest(0, (int) userRepository.count());
         final Page<UserDTO> allManagedUsers = userService.getAllManagedUsers(pageable);
         assertThat(allManagedUsers.getContent().stream()
-            .noneMatch(user -> Constants.ANONYMOUS_USER.equals(user.getLogin())))
-            .isTrue();
+                .noneMatch(user -> Constants.ANONYMOUS_USER.equals(user.getLogin()))).isTrue();
     }
 
     /**
@@ -79,7 +72,7 @@ public class UserServiceIntTest extends AbstractUserServiceInitTest {
         // Let the audit first set the creation date but then update it
         user.setCreatedDate(Instant.now().minus(30, ChronoUnit.DAYS));
         userRepository.saveAndFlush(user);
-        
+
         long currentTotalUsers = userRepository.count();
         userService.removeNonCredentialUsers();
         assertThat(userRepository.count()).isEqualByComparingTo(currentTotalUsers - 1);

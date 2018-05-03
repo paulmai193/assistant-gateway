@@ -104,7 +104,7 @@ public class AccountResourceIntTest {
 
     @Autowired
     private AccountBusinessService accountBusinessService;
-    
+
     @Mock
     private AccountBusinessService mockAccountBusinessService;
 
@@ -116,7 +116,8 @@ public class AccountResourceIntTest {
         MockitoAnnotations.initMocks(this);
         doNothing().when(mockMailService).sendActivationEmail(anyObject());
         AccountResource accountResource = new AccountResource(accountBusinessService, userService);
-        AccountResource accountUserMockResource = new AccountResource(mockAccountBusinessService, mockUserService);
+        AccountResource accountUserMockResource = new AccountResource(mockAccountBusinessService,
+                mockUserService);
         this.restMvc = MockMvcBuilders.standaloneSetup(accountResource)
                 .setMessageConverters(httpMessageConverters)
                 .setControllerAdvice(exceptionTranslator).build();
@@ -172,7 +173,7 @@ public class AccountResourceIntTest {
         restUserMockMvc.perform(get("/api/account").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-//                .andExpect(jsonPath("$.login").value("test"))
+                // .andExpect(jsonPath("$.login").value("test"))
                 .andExpect(jsonPath("$.firstName").value("john"))
                 .andExpect(jsonPath("$.lastName").value("doe"))
                 .andExpect(jsonPath("$.imageUrl").value("http://placehold.it/50x50"))
@@ -216,7 +217,8 @@ public class AccountResourceIntTest {
                 .content(TestUtil.convertObjectToJsonBytes(validUser)))
                 .andExpect(status().isCreated());
 
-        Credential testCredential = credentialRepository.findOneWithUserByLogin("joe@localhost").orElse(null);
+        Credential testCredential = credentialRepository.findOneWithUserByLogin("joe@localhost")
+                .orElse(null);
         assertThat(testCredential).isNotNull();
         assertThat(testCredential.getUser().getUuid()).isNotBlank();
     }
@@ -385,12 +387,11 @@ public class AccountResourceIntTest {
     @Transactional
     public void testActivateAccount() throws Exception {
         final String activationKey = "some activation key";
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(false)
+                .activationKey(activationKey);
         user = userRepository.saveAndFlush(user);
 
-        Credential credential = new Credential().activated(false).activationKey(activationKey).primary(true)
-                .login("activate-account").user(user);
+        Credential credential = new Credential().primary(true).login("activate-account").user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
         restMvc.perform(get("/api/activate?key={activationKey}", activationKey))
@@ -398,7 +399,7 @@ public class AccountResourceIntTest {
 
         credential = credentialRepository.findOneWithUserByLogin(credential.getLogin())
                 .orElse(null);
-        assertThat(credential.isActivated()).isTrue();
+        assertThat(credential.getUser().isActivated()).isTrue();
     }
 
     /**
@@ -422,13 +423,12 @@ public class AccountResourceIntTest {
     @Transactional
     @WithMockUser("save-account")
     public void testSaveAccount() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
-        user = userRepository.saveAndFlush(user);
+        User user = new User().password(RandomStringUtils.random(60)).activated(true);
+        user = userRepository.save(user);
         user = UserResourceIntTest.setUuidForUser(user);
         user = userRepository.saveAndFlush(user);
 
-        Credential credential = new Credential().activated(true).login("save-account").primary(true).user(user);
+        Credential credential = new Credential().login("save-account").primary(true).user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
         UserDTO userDTO = new UserDTO();
@@ -462,11 +462,10 @@ public class AccountResourceIntTest {
     @Transactional
     @WithMockUser("change-password")
     public void testChangePassword() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(true);
         user = userRepository.saveAndFlush(user);
 
-        Credential credential = new Credential().login("change-password").activated(true).primary(true).user(user);
+        Credential credential = new Credential().login("change-password").primary(true).user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
         restMvc.perform(post("/api/account/change-password").content("new password"))
@@ -486,11 +485,11 @@ public class AccountResourceIntTest {
     @Transactional
     @WithMockUser("change-password-too-small")
     public void testChangePasswordTooSmall() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(true);
         user = userRepository.saveAndFlush(user);
 
-        Credential credential = new Credential().login("change-password-too-small").activated(true).primary(true).user(user);
+        Credential credential = new Credential().login("change-password-too-small").primary(true)
+                .user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
         restMvc.perform(post("/api/account/change-password").content("new"))
@@ -509,11 +508,11 @@ public class AccountResourceIntTest {
     @Transactional
     @WithMockUser("change-password-too-long")
     public void testChangePasswordTooLong() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(true);
         user = userRepository.saveAndFlush(user);
 
-        Credential credential = new Credential().login("change-password-too-long").activated(true).primary(true).user(user);
+        Credential credential = new Credential().login("change-password-too-long").primary(true)
+                .user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
         restMvc.perform(post("/api/account/change-password").content(RandomStringUtils.random(101)))
@@ -532,11 +531,11 @@ public class AccountResourceIntTest {
     @Transactional
     @WithMockUser("change-password-empty")
     public void testChangePasswordEmpty() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(true);
         user = userRepository.saveAndFlush(user);
 
-        Credential credential = new Credential().login("change-password-empty").activated(true).primary(true).user(user);
+        Credential credential = new Credential().login("change-password-empty").primary(true)
+                .user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
         restMvc.perform(post("/api/account/change-password").content(RandomStringUtils.random(0)))
@@ -554,11 +553,10 @@ public class AccountResourceIntTest {
     @Test
     @Transactional
     public void testRequestPasswordReset() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(true);
         user = userRepository.saveAndFlush(user);
 
-        Credential credential = new Credential().login("password-reset@example.com").activated(true).primary(true)
+        Credential credential = new Credential().login("password-reset@example.com").primary(true)
                 .user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
@@ -575,11 +573,10 @@ public class AccountResourceIntTest {
     @Test
     @Transactional
     public void testRequestPasswordResetUpperCaseEmail() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(true);
         user = userRepository.saveAndFlush(user);
 
-        Credential credential = new Credential().login("password-reset@example.com").activated(true).primary(true)
+        Credential credential = new Credential().login("password-reset@example.com").primary(true)
                 .user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
@@ -608,12 +605,12 @@ public class AccountResourceIntTest {
     @Test
     @Transactional
     public void testFinishPasswordReset() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(true);
         user = userRepository.saveAndFlush(user);
 
         Credential credential = new Credential().login("finish-password-reset@example.com")
-                .resetDate(Instant.now().plusSeconds(60)).resetKey("reset key").activated(true).primary(false).user(user);
+                .resetDate(Instant.now().plusSeconds(60)).resetKey("reset key").primary(false)
+                .user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
         KeyAndPasswordVM keyAndPassword = new KeyAndPasswordVM();
@@ -639,12 +636,11 @@ public class AccountResourceIntTest {
     @Test
     @Transactional
     public void testFinishPasswordResetAndActivatedAutomatically() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(false);
         user = userRepository.saveAndFlush(user);
 
         Credential credential = new Credential().login("finish-password-reset@example.com")
-                .resetDate(Instant.now().plusSeconds(60)).resetKey("reset key").activated(false).primary(true)
+                .resetDate(Instant.now().plusSeconds(60)).resetKey("reset key").primary(true)
                 .user(user);
         credential = credentialRepository.saveAndFlush(credential);
 
@@ -662,7 +658,7 @@ public class AccountResourceIntTest {
                 passwordEncoder.matches(keyAndPassword.getNewPassword(), updatedUser.getPassword()))
                         .isTrue();
         Credential updateCredential = credentialRepository.findOne(credential.getId());
-        assertThat(updateCredential.isActivated()).isTrue();
+        assertThat(updateCredential.getUser().isActivated()).isTrue();
     }
 
     /**
@@ -673,13 +669,11 @@ public class AccountResourceIntTest {
     @Test
     @Transactional
     public void testFinishPasswordResetTooBig() throws Exception {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
+        User user = new User().password(RandomStringUtils.random(60)).activated(true);
         user = userRepository.saveAndFlush(user);
 
         Credential credential = new Credential().login("finish-password-reset-too-big@example.com")
-                .resetDate(Instant.now().plusSeconds(60)).resetKey("reset key")
-                .activated(true).primary(true)
+                .resetDate(Instant.now().plusSeconds(60)).resetKey("reset key").primary(true)
                 .user(user);
         credential = credentialRepository.saveAndFlush(credential);
 

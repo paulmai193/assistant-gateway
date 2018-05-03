@@ -19,7 +19,7 @@ public interface AccountBusinessService {
      * @param key the key
      * @return the optional
      */
-    Optional<Credential> activateRegistration(String key);
+    Optional<User> activateRegistration(String key);
     
     /**
      * Change password.

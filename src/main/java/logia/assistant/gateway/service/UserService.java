@@ -94,6 +94,16 @@ public class UserService implements UuidService<User> {
             return optUser;
         }
     }
+    
+    /**
+     * Find one by activation key.
+     *
+     * @param key the key
+     * @return the optional
+     */
+    public Optional<User> findOneByActivationKey(String key) {
+        return this.userRepository.findOneByActivationKey(key);
+    }
 
     /**
      * Update or create user.

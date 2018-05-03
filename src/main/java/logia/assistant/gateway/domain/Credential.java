@@ -45,11 +45,6 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
     @Column(name = "last_login_date")
     private ZonedDateTime lastLoginDate;
 
-    /** The activation key. */
-    @Size(max = 20)
-    @Column(name = "activation_key", length = 20)
-    private String activationKey;
-
     /** The reset key. */
     @Size(max = 20)
     @Column(name = "reset_key", length = 20)
@@ -58,11 +53,6 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
     /** The reset date. */
     @Column(name = "reset_date")
     private Instant resetDate;
-
-    /** The activated. */
-    @NotNull
-    @Column(name = "activated", nullable = false)
-    private Boolean activated;
 
     /** The primary. */
     @NotNull
@@ -152,35 +142,6 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
     }
 
     /**
-     * Gets the activation key.
-     *
-     * @return the activation key
-     */
-    public String getActivationKey() {
-        return activationKey;
-    }
-
-    /**
-     * Activation key.
-     *
-     * @param activationKey the activation key
-     * @return the credential
-     */
-    public Credential activationKey(String activationKey) {
-        this.activationKey = activationKey;
-        return this;
-    }
-
-    /**
-     * Sets the activation key.
-     *
-     * @param activationKey the new activation key
-     */
-    public void setActivationKey(String activationKey) {
-        this.activationKey = activationKey;
-    }
-
-    /**
      * Gets the reset key.
      *
      * @return the reset key
@@ -236,35 +197,6 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
      */
     public void setResetDate(Instant resetDate) {
         this.resetDate = resetDate;
-    }
-
-    /**
-     * Checks if is activated.
-     *
-     * @return the boolean
-     */
-    public Boolean isActivated() {
-        return activated;
-    }
-
-    /**
-     * Activated.
-     *
-     * @param activated the activated
-     * @return the credential
-     */
-    public Credential activated(Boolean activated) {
-        this.activated = activated;
-        return this;
-    }
-
-    /**
-     * Sets the activated.
-     *
-     * @param activated the new activated
-     */
-    public void setActivated(Boolean activated) {
-        this.activated = activated;
     }
 
     /**
@@ -361,10 +293,8 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
             "id=" + getId() +
             ", login='" + getLogin() + "'" +
             ", lastLoginDate='" + getLastLoginDate() + "'" +
-            ", activationKey='" + getActivationKey() + "'" +
             ", resetKey='" + getResetKey() + "'" +
             ", resetDate='" + getResetDate() + "'" +
-            ", activated='" + isActivated() + "'" +
             ", primary='" + isPrimary() + "'" +
             ", user='" + getUser() + "'" +
             "}";
@@ -377,6 +307,6 @@ public class Credential extends AbstractAuditingEntity implements Serializable {
      * @return the credential
      */
     public static Credential clone(Credential credential) {
-        return new Credential().activated(credential.isActivated()).user(credential.getUser());
+        return new Credential().user(credential.getUser());
     }
 }

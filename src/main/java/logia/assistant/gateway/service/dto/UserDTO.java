@@ -86,6 +86,7 @@ public class UserDTO {
         this.createdDate = user.getCreatedDate();
         this.lastModifiedBy = user.getLastModifiedBy();
         this.lastModifiedDate = user.getLastModifiedDate();
+        this.activated = user.isActivated();
         this.authorities = user.getAuthorities().stream()
             .map(Authority::getName)
             .collect(Collectors.toSet());
@@ -102,7 +103,7 @@ public class UserDTO {
         this.login = credential.getLogin();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
-        this.activated = credential.isActivated();
+        this.activated = user.isActivated();
         this.imageUrl = user.getImageUrl();
         this.langKey = user.getLangKey();
         this.createdBy = user.getCreatedBy();

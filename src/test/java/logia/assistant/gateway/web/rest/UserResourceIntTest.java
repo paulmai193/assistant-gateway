@@ -62,46 +62,58 @@ import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 public class UserResourceIntTest {
 
     /** The Constant DEFAULT_LOGIN. */
-    public static final String                    DEFAULT_LOGIN     = "johndoe";
+    public static final String                    DEFAULT_LOGIN          = "johndoe";
 
     /** The Constant UPDATED_LOGIN. */
-    public static final String                    UPDATED_LOGIN     = "jhipster";
+    public static final String                    UPDATED_LOGIN          = "jhipster";
 
     /** The Constant DEFAULT_ID. */
-    public static final Long                      DEFAULT_ID        = 1L;
+    public static final Long                      DEFAULT_ID             = 1L;
 
     /** The Constant DEFAULT_UUID. */
-    public static final String                    DEFAULT_UUID      = "1";
+    public static final String                    DEFAULT_UUID           = "1";
 
     /** The Constant DEFAULT_PASSWORD. */
-    public static final String                    DEFAULT_PASSWORD  = "passjohndoe";
+    public static final String                    DEFAULT_PASSWORD       = "passjohndoe";
 
     /** The Constant UPDATED_PASSWORD. */
-    public static final String                    UPDATED_PASSWORD  = "passjhipster";
+    public static final String                    UPDATED_PASSWORD       = "passjhipster";
 
     /** The Constant DEFAULT_FIRSTNAME. */
-    public static final String                    DEFAULT_FIRSTNAME = "john";
+    public static final String                    DEFAULT_FIRSTNAME      = "john";
 
     /** The Constant UPDATED_FIRSTNAME. */
-    public static final String                    UPDATED_FIRSTNAME = "jhipsterFirstName";
+    public static final String                    UPDATED_FIRSTNAME      = "jhipsterFirstName";
 
     /** The Constant DEFAULT_LASTNAME. */
-    public static final String                    DEFAULT_LASTNAME  = "doe";
+    public static final String                    DEFAULT_LASTNAME       = "doe";
 
     /** The Constant UPDATED_LASTNAME. */
-    public static final String                    UPDATED_LASTNAME  = "jhipsterLastName";
+    public static final String                    UPDATED_LASTNAME       = "jhipsterLastName";
 
     /** The Constant DEFAULT_IMAGEURL. */
-    public static final String                    DEFAULT_IMAGEURL  = "http://placehold.it/50x50";
+    public static final String                    DEFAULT_IMAGEURL       = "http://placehold.it/50x50";
 
     /** The Constant UPDATED_IMAGEURL. */
-    public static final String                    UPDATED_IMAGEURL  = "http://placehold.it/40x40";
+    public static final String                    UPDATED_IMAGEURL       = "http://placehold.it/40x40";
 
     /** The Constant DEFAULT_LANGKEY. */
-    public static final String                    DEFAULT_LANGKEY   = "en";
+    public static final String                    DEFAULT_LANGKEY        = "en";
 
     /** The Constant UPDATED_LANGKEY. */
-    public static final String                    UPDATED_LANGKEY   = "fr";
+    public static final String                    UPDATED_LANGKEY        = "fr";
+
+    /** The Constant DEFAULT_ACTIVATION_KEY. */
+    public static final String                    DEFAULT_ACTIVATION_KEY = "AAAAAAAAAA";
+
+    /** The Constant UPDATED_ACTIVATION_KEY. */
+    public static final String                    UPDATED_ACTIVATION_KEY = "BBBBBBBBBB";
+
+    /** The Constant DEFAULT_ACTIVATED. */
+    public static final Boolean                   DEFAULT_ACTIVATED      = false;
+
+    /** The Constant UPDATED_ACTIVATED. */
+    public static final Boolean                   UPDATED_ACTIVATED      = true;
 
     /** The user repository. */
     @Autowired
@@ -150,7 +162,7 @@ public class UserResourceIntTest {
     private User                                  user;
 
     @Autowired
-    private AccountBusinessService accountBusinessService;
+    private AccountBusinessService                accountBusinessService;
 
     /**
      * Setup.
@@ -159,7 +171,8 @@ public class UserResourceIntTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).clear();
-        UserResource userResource = new UserResource(accountBusinessService, userService, userSearchRepository);
+        UserResource userResource = new UserResource(accountBusinessService, userService,
+                userSearchRepository);
         this.restUserMockMvc = MockMvcBuilders.standaloneSetup(userResource)
                 .setCustomArgumentResolvers(pageableArgumentResolver)
                 .setControllerAdvice(exceptionTranslator)
@@ -176,12 +189,9 @@ public class UserResourceIntTest {
      * @return the user
      */
     public static User createEntity(EntityManager em) {
-        User user = new User();
-        user.setPassword(RandomStringUtils.random(60));
-        user.setFirstName(DEFAULT_FIRSTNAME);
-        user.setLastName(DEFAULT_LASTNAME);
-        user.setImageUrl(DEFAULT_IMAGEURL);
-        user.setLangKey(DEFAULT_LANGKEY);
+        User user = new User().password(RandomStringUtils.random(60)).firstName(DEFAULT_FIRSTNAME)
+                .lastName(DEFAULT_LASTNAME).imageUrl(DEFAULT_IMAGEURL).langKey(DEFAULT_LANGKEY)
+                .activated(DEFAULT_ACTIVATED);
         return user;
     }
 
@@ -236,7 +246,8 @@ public class UserResourceIntTest {
         assertThat(testUser.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
         assertThat(testUser.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
         assertThat(testUser.getUuid()).isNotBlank();
-        Optional<Credential> maybeCredential = credentialRepostitory.findOneWithUserByLogin(DEFAULT_LOGIN);
+        Optional<Credential> maybeCredential = credentialRepostitory
+                .findOneWithUserByLogin(DEFAULT_LOGIN);
         assertThat(maybeCredential).isNotEmpty();
     }
 
@@ -477,7 +488,7 @@ public class UserResourceIntTest {
         assertThat(testCredential).isNotEmpty();
         Optional<Credential> emtpyCredential = credentialRepostitory
                 .findOneWithUserByLogin(DEFAULT_LOGIN);
-        assertThat(emtpyCredential).isNotEmpty(); // This test add more credential, so old one still 
+        assertThat(emtpyCredential).isNotEmpty(); // This test add more credential, so old one still
 
         clearTest();
     }
@@ -494,17 +505,13 @@ public class UserResourceIntTest {
         CredentialResourceIntTest.createEntity(em, user);
         userSearchRepository.save(user);
 
-        User anotherUser = new User();
-        anotherUser.setPassword(RandomStringUtils.random(60));
-        anotherUser.setFirstName("java");
-        anotherUser.setLastName("hipster");
-        anotherUser.setImageUrl("");
-        anotherUser.setLangKey("en");
+        User anotherUser = new User().password(RandomStringUtils.random(60)).firstName("java")
+                .lastName("hipster").imageUrl("").langKey("en").activated(true);
         anotherUser = userRepository.saveAndFlush(anotherUser);
         userSearchRepository.save(anotherUser);
 
-        Credential anotherCredential = new Credential().login("jhipster").activated(true)
-                .primary(true).user(anotherUser);
+        Credential anotherCredential = new Credential().login("jhipster").primary(true)
+                .user(anotherUser);
         credentialRepostitory.saveAndFlush(anotherCredential);
 
         // Update the user
@@ -651,6 +658,7 @@ public class UserResourceIntTest {
         user.setCreatedDate(Instant.now());
         user.setLastModifiedBy(DEFAULT_LOGIN);
         user.setLastModifiedDate(Instant.now());
+        user.setActivated(DEFAULT_ACTIVATED);
         Set<Authority> authorities = new HashSet<>();
         Authority authority = new Authority();
         authority.setName(AuthoritiesConstants.USER);
@@ -662,7 +670,7 @@ public class UserResourceIntTest {
         assertThat(userDTO.getId()).isEqualTo(DEFAULT_UUID);
         assertThat(userDTO.getFirstName()).isEqualTo(DEFAULT_FIRSTNAME);
         assertThat(userDTO.getLastName()).isEqualTo(DEFAULT_LASTNAME);
-        assertThat(userDTO.isActivated()).isEqualTo(true);
+        assertThat(userDTO.isActivated()).isEqualTo(DEFAULT_ACTIVATED);
         assertThat(userDTO.getImageUrl()).isEqualTo(DEFAULT_IMAGEURL);
         assertThat(userDTO.getLangKey()).isEqualTo(DEFAULT_LANGKEY);
         assertThat(userDTO.getCreatedBy()).isEqualTo(DEFAULT_LOGIN);
@@ -700,7 +708,7 @@ public class UserResourceIntTest {
         assertThat(authorityA).isEqualTo(authorityB);
         assertThat(authorityA.hashCode()).isEqualTo(authorityB.hashCode());
     }
-    
+
     public static User setUuidForUser(User user) {
         String uuid = new UuidBuilder().appendMaterial(User.class.getSimpleName())
                 .appendMaterial(user.getId()).build();

@@ -63,12 +63,6 @@ public class CredentialResourceIntTest {
     public static final ZonedDateTime             UPDATED_LAST_LOGIN_DATE = ZonedDateTime
             .now(ZoneId.systemDefault()).withNano(0);
 
-    /** The Constant DEFAULT_ACTIVATION_KEY. */
-    public static final String                    DEFAULT_ACTIVATION_KEY  = "AAAAAAAAAA";
-
-    /** The Constant UPDATED_ACTIVATION_KEY. */
-    public static final String                    UPDATED_ACTIVATION_KEY  = "BBBBBBBBBB";
-
     /** The Constant DEFAULT_RESET_KEY. */
     public static final String                    DEFAULT_RESET_KEY       = "AAAAAAAAAA";
 
@@ -82,12 +76,6 @@ public class CredentialResourceIntTest {
     /** The Constant UPDATED_RESET_DATE. */
     public static final Instant                   UPDATED_RESET_DATE      = Instant.now()
             .truncatedTo(ChronoUnit.MILLIS);
-
-    /** The Constant DEFAULT_ACTIVATED. */
-    public static final Boolean                   DEFAULT_ACTIVATED       = false;
-
-    /** The Constant UPDATED_ACTIVATED. */
-    public static final Boolean                   UPDATED_ACTIVATED       = true;
 
     /** The Constant DEFAULT_PRIMARY. */
     public static final Boolean                   DEFAULT_PRIMARY         = false;
@@ -158,9 +146,8 @@ public class CredentialResourceIntTest {
      */
     public static Credential createEntity(EntityManager em) {
         Credential credential = new Credential().login(DEFAULT_LOGIN)
-                .lastLoginDate(DEFAULT_LAST_LOGIN_DATE).activationKey(DEFAULT_ACTIVATION_KEY)
-                .resetKey(DEFAULT_RESET_KEY).resetDate(DEFAULT_RESET_DATE)
-                .activated(DEFAULT_ACTIVATED).primary(DEFAULT_PRIMARY);
+                .lastLoginDate(DEFAULT_LAST_LOGIN_DATE).resetKey(DEFAULT_RESET_KEY)
+                .resetDate(DEFAULT_RESET_DATE).primary(DEFAULT_PRIMARY);
         // Add required entity
         User user = UserResourceIntTest.createEntity(em);
         em.persist(user);
@@ -178,12 +165,11 @@ public class CredentialResourceIntTest {
      */
     public static Credential createEntity(EntityManager em, User user) {
         Credential credential = new Credential().login(DEFAULT_LOGIN)
-                .lastLoginDate(DEFAULT_LAST_LOGIN_DATE).activationKey(DEFAULT_ACTIVATION_KEY)
-                .resetKey(DEFAULT_RESET_KEY).resetDate(DEFAULT_RESET_DATE)
-                .activated(DEFAULT_ACTIVATED).primary(DEFAULT_PRIMARY);
+                .lastLoginDate(DEFAULT_LAST_LOGIN_DATE).resetKey(DEFAULT_RESET_KEY)
+                .resetDate(DEFAULT_RESET_DATE).primary(DEFAULT_PRIMARY);
         // Add required entity
         em.persist(user);
-        user = UserResourceIntTest.setUuidForUser(user);        
+        user = UserResourceIntTest.setUuidForUser(user);
         credential.setUser(user);
         em.persist(credential);
         em.flush();
@@ -222,10 +208,8 @@ public class CredentialResourceIntTest {
         Credential testCredential = credentialList.get(credentialList.size() - 1);
         assertThat(testCredential.getLogin()).isEqualTo(DEFAULT_LOGIN);
         assertThat(testCredential.getLastLoginDate()).isEqualTo(DEFAULT_LAST_LOGIN_DATE);
-        assertThat(testCredential.getActivationKey()).isEqualTo(DEFAULT_ACTIVATION_KEY);
         assertThat(testCredential.getResetKey()).isEqualTo(DEFAULT_RESET_KEY);
         assertThat(testCredential.getResetDate()).isEqualTo(DEFAULT_RESET_DATE);
-        assertThat(testCredential.isActivated()).isEqualTo(DEFAULT_ACTIVATED);
         assertThat(testCredential.isPrimary()).isEqualTo(DEFAULT_PRIMARY);
 
         // Validate the Credential in Elasticsearch
@@ -285,30 +269,6 @@ public class CredentialResourceIntTest {
     }
 
     /**
-     * Check activated is required.
-     *
-     * @throws Exception the exception
-     */
-    @Test
-    @Transactional
-    public void checkActivatedIsRequired() throws Exception {
-        int databaseSizeBeforeTest = credentialRepository.findAll().size();
-        // set the field null
-        credential.setActivated(null);
-
-        // Create the Credential, which fails.
-        CredentialDTO credentialDTO = credentialMapper.toDto(credential);
-
-        restCredentialMockMvc
-                .perform(post("/api/credentials").contentType(TestUtil.APPLICATION_JSON_UTF8)
-                        .content(TestUtil.convertObjectToJsonBytes(credentialDTO)))
-                .andExpect(status().isBadRequest());
-
-        List<Credential> credentialList = credentialRepository.findAll();
-        assertThat(credentialList).hasSize(databaseSizeBeforeTest);
-    }
-
-    /**
      * Check primary is required.
      *
      * @throws Exception the exception
@@ -352,13 +312,9 @@ public class CredentialResourceIntTest {
                 .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN.toString())))
                 .andExpect(jsonPath("$.[*].lastLoginDate")
                         .value(hasItem(sameInstant(DEFAULT_LAST_LOGIN_DATE))))
-                .andExpect(jsonPath("$.[*].activationKey")
-                        .value(hasItem(DEFAULT_ACTIVATION_KEY.toString())))
                 .andExpect(jsonPath("$.[*].resetKey").value(hasItem(DEFAULT_RESET_KEY.toString())))
                 .andExpect(
                         jsonPath("$.[*].resetDate").value(hasItem(DEFAULT_RESET_DATE.toString())))
-                .andExpect(jsonPath("$.[*].activated")
-                        .value(hasItem(DEFAULT_ACTIVATED.booleanValue())))
                 .andExpect(
                         jsonPath("$.[*].primary").value(hasItem(DEFAULT_PRIMARY.booleanValue())));
     }
@@ -382,10 +338,8 @@ public class CredentialResourceIntTest {
                 .andExpect(jsonPath("$.id").value(credential.getId().intValue()))
                 .andExpect(jsonPath("$.login").value(DEFAULT_LOGIN.toString()))
                 .andExpect(jsonPath("$.lastLoginDate").value(sameInstant(DEFAULT_LAST_LOGIN_DATE)))
-                .andExpect(jsonPath("$.activationKey").value(DEFAULT_ACTIVATION_KEY.toString()))
                 .andExpect(jsonPath("$.resetKey").value(DEFAULT_RESET_KEY.toString()))
                 .andExpect(jsonPath("$.resetDate").value(DEFAULT_RESET_DATE.toString()))
-                .andExpect(jsonPath("$.activated").value(DEFAULT_ACTIVATED.booleanValue()))
                 .andExpect(jsonPath("$.primary").value(DEFAULT_PRIMARY.booleanValue()));
     }
 
@@ -422,9 +376,7 @@ public class CredentialResourceIntTest {
         // in db
         em.detach(updatedCredential);
         updatedCredential.login(UPDATED_LOGIN).lastLoginDate(UPDATED_LAST_LOGIN_DATE)
-                .activationKey(UPDATED_ACTIVATION_KEY).resetKey(UPDATED_RESET_KEY)
-                .resetDate(UPDATED_RESET_DATE).activated(UPDATED_ACTIVATED)
-                .primary(UPDATED_PRIMARY);
+                .resetKey(UPDATED_RESET_KEY).resetDate(UPDATED_RESET_DATE).primary(UPDATED_PRIMARY);
         CredentialDTO credentialDTO = credentialMapper.toDto(updatedCredential);
 
         restCredentialMockMvc
@@ -438,10 +390,8 @@ public class CredentialResourceIntTest {
         Credential testCredential = this.credentialRepository.findOne(credential.getId());
         assertThat(testCredential.getLogin()).isEqualTo(UPDATED_LOGIN);
         assertThat(testCredential.getLastLoginDate()).isEqualTo(UPDATED_LAST_LOGIN_DATE);
-        assertThat(testCredential.getActivationKey()).isEqualTo(UPDATED_ACTIVATION_KEY);
         assertThat(testCredential.getResetKey()).isEqualTo(UPDATED_RESET_KEY);
         assertThat(testCredential.getResetDate()).isEqualTo(UPDATED_RESET_DATE);
-        assertThat(testCredential.isActivated()).isEqualTo(UPDATED_ACTIVATED);
         assertThat(testCredential.isPrimary()).isEqualTo(UPDATED_PRIMARY);
 
         // Validate the Credential in Elasticsearch
@@ -522,13 +472,9 @@ public class CredentialResourceIntTest {
                 .andExpect(jsonPath("$.[*].login").value(hasItem(DEFAULT_LOGIN.toString())))
                 .andExpect(jsonPath("$.[*].lastLoginDate")
                         .value(hasItem(sameInstant(DEFAULT_LAST_LOGIN_DATE))))
-                .andExpect(jsonPath("$.[*].activationKey")
-                        .value(hasItem(DEFAULT_ACTIVATION_KEY.toString())))
                 .andExpect(jsonPath("$.[*].resetKey").value(hasItem(DEFAULT_RESET_KEY.toString())))
                 .andExpect(
                         jsonPath("$.[*].resetDate").value(hasItem(DEFAULT_RESET_DATE.toString())))
-                .andExpect(jsonPath("$.[*].activated")
-                        .value(hasItem(DEFAULT_ACTIVATED.booleanValue())))
                 .andExpect(
                         jsonPath("$.[*].primary").value(hasItem(DEFAULT_PRIMARY.booleanValue())));
     }

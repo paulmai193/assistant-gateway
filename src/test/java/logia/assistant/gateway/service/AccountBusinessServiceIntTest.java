@@ -20,7 +20,6 @@ import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.service.util.RandomUtil;
 import logia.assistant.gateway.web.rest.UserResourceIntTest;
-import logia.assistant.share.common.utils.UuidBuilder;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = AssistantGatewayApp.class)
@@ -32,14 +31,9 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
 
     @Before
     public void setUp() throws Exception {
-        user = new User();
-        user.setPassword(RandomStringUtils.random(60));
-        user.setFirstName("john");
-        user.setLastName("doe");
-        user.setImageUrl("http://placehold.it/50x50");
-        user.setLangKey("en");
-        credential = new Credential().login("johndoe@localhost").activated(true).primary(true)
-                .user(user);
+        user = new User().password(RandomStringUtils.random(60)).firstName("john").lastName("doe")
+                .imageUrl("http://placehold.it/50x50").langKey("en").activated(true);
+        credential = new Credential().login("johndoe@localhost").primary(true).user(user);
     }
 
     /**
@@ -63,18 +57,22 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
     }
 
     /**
-     * Assert that only activated user can request password reset.
+     * Assert that not activated user can request password reset.
      */
     @Test
     @Transactional
-    public void assertThatOnlyActivatedUserCanRequestPasswordReset() {
+    public void assertThatNotActivatedUserCanRequestPasswordReset() {
+        user.setActivated(false);
         user = userRepository.saveAndFlush(user);
-        credential.setActivated(false);
         credentialRepository.saveAndFlush(credential);
 
         Optional<Credential> maybeCredential = accountBusinessService
                 .requestPasswordReset(credential.getLogin());
-        assertThat(maybeCredential).isNotPresent();
+        assertThat(maybeCredential).isPresent();
+        assertThat(maybeCredential.orElse(null).getLogin()).isEqualTo(credential.getLogin());
+        assertThat(maybeCredential.orElse(null).getResetDate()).isNotNull();
+        assertThat(maybeCredential.orElse(null).getResetKey()).isNotNull();
+        
         credentialRepository.delete(credential);
     }
 
@@ -84,11 +82,11 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void assertThatResetKeyMustNotBeOlderThan24Hours() {
-        userRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(user.activated(true));
 
         Instant daysAgo = Instant.now().minus(25, ChronoUnit.HOURS);
         String resetKey = RandomUtil.generateResetKey();
-        credential.activated(true).resetDate(daysAgo).resetKey(resetKey).primary(true).user(user);
+        credential.resetDate(daysAgo).resetKey(resetKey).primary(true).user(user);
         credentialRepository.saveAndFlush(credential);
 
         Optional<User> maybeUser = accountBusinessService.completePasswordReset("johndoe2",
@@ -104,10 +102,10 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void assertThatResetKeyMustBeValid() {
-        userRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(user.activated(true));
 
         Instant daysAgo = Instant.now().minus(25, ChronoUnit.HOURS);
-        credential.activated(true).resetDate(daysAgo).resetKey("1234").primary(true).user(user);
+        credential.resetDate(daysAgo).resetKey("1234").primary(true).user(user);
         credentialRepository.saveAndFlush(credential);
 
         Optional<User> maybeUser = accountBusinessService.completePasswordReset("johndoe2",
@@ -123,14 +121,14 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void assertThatUserCanResetPassword() {
-        user = userRepository.saveAndFlush(user);
+        user = userRepository.saveAndFlush(user.activated(true));
         user = UserResourceIntTest.setUuidForUser(user);
-        userRepository.saveAndFlush(user);
+        userRepository.saveAndFlush(user);  
 
         String oldPassword = user.getPassword();
         Instant daysAgo = Instant.now().minus(2, ChronoUnit.HOURS);
         String resetKey = RandomUtil.generateResetKey();
-        credential.activated(true).resetDate(daysAgo).resetKey(resetKey).primary(true).user(user);
+        credential.resetDate(daysAgo).resetKey(resetKey).primary(true).user(user);
         credentialRepository.saveAndFlush(credential);
 
         Optional<User> maybeUser = accountBusinessService.completePasswordReset("johndoe2",

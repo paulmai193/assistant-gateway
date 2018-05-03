@@ -21,6 +21,14 @@ public interface UserRepository extends UuidRepository<User, Long> {
 
     /** The users by email cache. */
     String USERS_BY_UUID_CACHE = "usersByUuid";
+    
+    /**
+     * Find one by activation key.
+     *
+     * @param activationKey the activation key
+     * @return the optional
+     */
+    Optional<User> findOneByActivationKey(String activationKey);
 
     /**
      * Find one with authorities by id.

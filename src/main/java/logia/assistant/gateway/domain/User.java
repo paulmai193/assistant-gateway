@@ -72,6 +72,16 @@ public class User extends AbstractUuidEntity implements Serializable {
     @Column(name = "image_url", length = 256)
     private String imageUrl;
 
+    /** The activation key. */
+    @Size(max = 20)
+    @Column(name = "activation_key", length = 20)
+    private String activationKey;
+
+    /** The activated. */
+    @NotNull
+    @Column(name = "activated", nullable = false)
+    private Boolean activated;
+
     /** The authorities. */
     @JsonIgnore
     @ManyToMany
@@ -154,6 +164,17 @@ public class User extends AbstractUuidEntity implements Serializable {
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
+    
+    /**
+     * First name.
+     *
+     * @param firstName the first name
+     * @return the user
+     */
+    public User firstName(String firstName) {
+        this.setFirstName(firstName);
+        return this;
+    }
 
     /**
      * Gets the last name.
@@ -174,6 +195,17 @@ public class User extends AbstractUuidEntity implements Serializable {
     }
 
     /**
+     * Last name.
+     *
+     * @param lastName the last name
+     * @return the user
+     */
+    public User lastName(String lastName) {
+        this.setLastName(lastName);
+        return this;
+    }
+    
+    /**
      * Gets the image url.
      *
      * @return the image url
@@ -189,6 +221,17 @@ public class User extends AbstractUuidEntity implements Serializable {
      */
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+    
+    /**
+     * Image url.
+     *
+     * @param imageUrl the image url
+     * @return the user
+     */
+    public User imageUrl(String imageUrl) {
+        this.setImageUrl(imageUrl);
+        return this;
     }
 
     /**
@@ -207,6 +250,75 @@ public class User extends AbstractUuidEntity implements Serializable {
      */
     public void setLangKey(String langKey) {
         this.langKey = langKey;
+    }
+    
+    /**
+     * Lang key.
+     *
+     * @param langKey the lang key
+     * @return the user
+     */
+    public User langKey(String langKey) {
+        this.setLangKey(langKey);
+        return this;
+    }
+
+    /**
+     * Gets the activation key.
+     *
+     * @return the activation key
+     */
+    public String getActivationKey() {
+        return activationKey;
+    }
+
+    /**
+     * Activation key.
+     *
+     * @param activationKey the activation key
+     * @return the credential
+     */
+    public User activationKey(String activationKey) {
+        this.setActivationKey(activationKey);
+        return this;
+    }
+
+    /**
+     * Sets the activation key.
+     *
+     * @param activationKey the new activation key
+     */
+    public void setActivationKey(String activationKey) {
+        this.activationKey = activationKey;
+    }
+
+    /**
+     * Checks if is activated.
+     *
+     * @return the boolean
+     */
+    public Boolean isActivated() {
+        return activated;
+    }
+
+    /**
+     * Activated.
+     *
+     * @param activated the activated
+     * @return the credential
+     */
+    public User activated(Boolean activated) {
+        this.setActivated(activated);
+        return this;
+    }
+
+    /**
+     * Sets the activated.
+     *
+     * @param activated the new activated
+     */
+    public void setActivated(Boolean activated) {
+        this.activated = activated;
     }
 
     /**
@@ -257,12 +369,14 @@ public class User extends AbstractUuidEntity implements Serializable {
     @Override
     public String toString() {
         return "User{" +
-            "firstName='" + firstName + '\'' +
+            "uuid='" + getUuid() + '\'' +
+            ", id='" + id + '\'' +
+            ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
             ", imageUrl='" + imageUrl + '\'' +
             ", langKey='" + langKey + '\'' +
-            ", uuid='" + getUuid() + '\'' +
-            ", id='" + id + '\'' +
+            ", activationKey='" + getActivationKey() + "'" +
+            ", activated='" + isActivated() + "'" +
             "}";
     }
 }

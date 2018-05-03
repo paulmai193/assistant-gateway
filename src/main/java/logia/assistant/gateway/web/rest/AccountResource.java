@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
 
-import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.service.AccountBusinessService;
 import logia.assistant.gateway.service.UserService;
@@ -88,8 +87,8 @@ public class AccountResource {
     @Timed
     public void activateAccount(@RequestParam(value = "key") String key) {
         log.info("REST request to activate account by key {}", key);
-        Optional<Credential> credential = this.accountBusinessService.activateRegistration(key);
-        if (!credential.isPresent()) {
+        Optional<User> user = this.accountBusinessService.activateRegistration(key);
+        if (!user.isPresent()) {
             throw new InternalServerErrorException("No user was found for this reset key");
         }
     }

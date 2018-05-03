@@ -1,16 +1,15 @@
 package logia.assistant.gateway.service.mapper;
 
-import logia.assistant.gateway.domain.Authority;
-import logia.assistant.gateway.domain.User;
-import logia.assistant.gateway.repository.CredentialRepository;
-import logia.assistant.gateway.service.dto.UserDTO;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
+import logia.assistant.gateway.domain.Authority;
+import logia.assistant.gateway.domain.User;
+import logia.assistant.gateway.service.dto.UserDTO;
 
 /**
  * Mapper for the entity User and its DTO called UserDTO.
@@ -23,9 +22,6 @@ import javax.inject.Inject;
 @Service
 public class UserMapper {
 
-    @Inject
-    private CredentialRepository credentialRepository;
-
     /**
      * User to user DTO.
      *
@@ -33,15 +29,7 @@ public class UserMapper {
      * @return the user DTO
      */
     public UserDTO userToUserDTO(User user) {
-        UserDTO userDTO = new UserDTO(user);
-        if (this.credentialRepository.findWithUserByUserId(user.getId()).stream()
-                .anyMatch(credential -> credential.isActivated())) {
-            userDTO.setActivated(true);
-        }
-        else {
-            userDTO.setActivated(false);
-        }
-        return userDTO;
+        return new UserDTO(user);
     }
 
     /**
