@@ -183,6 +183,7 @@ public class CredentialResourceIntTest {
                 .activated(DEFAULT_ACTIVATED).primary(DEFAULT_PRIMARY);
         // Add required entity
         em.persist(user);
+        user = UserResourceIntTest.setUuidForUser(user);        
         credential.setUser(user);
         em.persist(credential);
         em.flush();

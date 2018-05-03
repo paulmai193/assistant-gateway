@@ -1,7 +1,6 @@
 package logia.assistant.gateway.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -20,7 +19,8 @@ import logia.assistant.gateway.AssistantGatewayApp;
 import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.service.util.RandomUtil;
-
+import logia.assistant.gateway.web.rest.UserResourceIntTest;
+import logia.assistant.share.common.utils.UuidBuilder;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = AssistantGatewayApp.class)
@@ -29,7 +29,7 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
 
     @Autowired
     private AccountBusinessService accountBusinessService;
-    
+
     @Before
     public void setUp() throws Exception {
         user = new User();
@@ -38,9 +38,10 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
         user.setLastName("doe");
         user.setImageUrl("http://placehold.it/50x50");
         user.setLangKey("en");
-        credential = new Credential().login("johndoe@localhost").activated(true).primary(true).user(user);
+        credential = new Credential().login("johndoe@localhost").activated(true).primary(true)
+                .user(user);
     }
-    
+
     /**
      * Assert that user must exist to reset password.
      */
@@ -49,8 +50,9 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
     public void assertThatUserMustExistToResetPassword() {
         user = userRepository.saveAndFlush(user);
         credentialRepository.saveAndFlush(credential);
-        
-        Optional<Credential> maybeCredential = accountBusinessService.requestPasswordReset("invalid.login@localhost");
+
+        Optional<Credential> maybeCredential = accountBusinessService
+                .requestPasswordReset("invalid.login@localhost");
         assertThat(maybeCredential).isNotPresent();
 
         maybeCredential = accountBusinessService.requestPasswordReset(credential.getLogin());
@@ -59,7 +61,7 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
         assertThat(maybeCredential.orElse(null).getResetDate()).isNotNull();
         assertThat(maybeCredential.orElse(null).getResetKey()).isNotNull();
     }
-    
+
     /**
      * Assert that only activated user can request password reset.
      */
@@ -70,7 +72,8 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
         credential.setActivated(false);
         credentialRepository.saveAndFlush(credential);
 
-        Optional<Credential> maybeCredential = accountBusinessService.requestPasswordReset(credential.getLogin());
+        Optional<Credential> maybeCredential = accountBusinessService
+                .requestPasswordReset(credential.getLogin());
         assertThat(maybeCredential).isNotPresent();
         credentialRepository.delete(credential);
     }
@@ -82,15 +85,16 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
     @Transactional
     public void assertThatResetKeyMustNotBeOlderThan24Hours() {
         userRepository.saveAndFlush(user);
-        
+
         Instant daysAgo = Instant.now().minus(25, ChronoUnit.HOURS);
         String resetKey = RandomUtil.generateResetKey();
         credential.activated(true).resetDate(daysAgo).resetKey(resetKey).primary(true).user(user);
         credentialRepository.saveAndFlush(credential);
 
-        Optional<User> maybeUser = accountBusinessService.completePasswordReset("johndoe2", credential.getResetKey());
+        Optional<User> maybeUser = accountBusinessService.completePasswordReset("johndoe2",
+                credential.getResetKey());
         assertThat(maybeUser).isNotPresent();
-        
+
         credentialRepository.delete(credential);
     }
 
@@ -101,14 +105,15 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
     @Transactional
     public void assertThatResetKeyMustBeValid() {
         userRepository.saveAndFlush(user);
-        
+
         Instant daysAgo = Instant.now().minus(25, ChronoUnit.HOURS);
         credential.activated(true).resetDate(daysAgo).resetKey("1234").primary(true).user(user);
         credentialRepository.saveAndFlush(credential);
 
-        Optional<User> maybeUser = accountBusinessService.completePasswordReset("johndoe2", credential.getResetKey());
+        Optional<User> maybeUser = accountBusinessService.completePasswordReset("johndoe2",
+                credential.getResetKey());
         assertThat(maybeUser).isNotPresent();
-        
+
         credentialRepository.delete(credential);
     }
 
@@ -118,19 +123,23 @@ public class AccountBusinessServiceIntTest extends AbstractUserServiceInitTest {
     @Test
     @Transactional
     public void assertThatUserCanResetPassword() {
+        user = userRepository.saveAndFlush(user);
+        user = UserResourceIntTest.setUuidForUser(user);
         userRepository.saveAndFlush(user);
-        
+
         String oldPassword = user.getPassword();
         Instant daysAgo = Instant.now().minus(2, ChronoUnit.HOURS);
         String resetKey = RandomUtil.generateResetKey();
         credential.activated(true).resetDate(daysAgo).resetKey(resetKey).primary(true).user(user);
         credentialRepository.saveAndFlush(credential);
 
-        Optional<User> maybeUser = accountBusinessService.completePasswordReset("johndoe2", credential.getResetKey());
+        Optional<User> maybeUser = accountBusinessService.completePasswordReset("johndoe2",
+                credential.getResetKey());
         assertThat(maybeUser).isPresent();
         assertThat(maybeUser.orElse(null).getPassword()).isNotEqualTo(oldPassword);
-        
-        Optional<Credential> maybeCredential = credentialRepository.findOneWithUserByLogin(credential.getLogin());
+
+        Optional<Credential> maybeCredential = credentialRepository
+                .findOneWithUserByLogin(credential.getLogin());
         assertThat(maybeCredential.orElse(null).getResetDate()).isNull();
         assertThat(maybeCredential.orElse(null).getResetKey()).isNull();
 

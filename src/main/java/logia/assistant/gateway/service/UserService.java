@@ -25,6 +25,7 @@ import logia.assistant.gateway.security.SecurityUtils;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.share.common.service.UuidService;
+import logia.assistant.share.common.utils.UuidBuilder;
 
 /**
  * Service class for managing users.
@@ -137,6 +138,12 @@ public class UserService implements UuidService<User> {
             user = this.userRepository.saveAndFlush(user);
         }
         else {
+            user = this.userRepository.save(user);
+        }
+        if (Objects.isNull(user.getUuid())) {
+            String uuid = new UuidBuilder().appendMaterial(User.class.getSimpleName())
+                    .appendMaterial(user.getId()).build();
+            user.setUuid(uuid);
             user = this.userRepository.save(user);
         }
         userSearchRepository.save(user);

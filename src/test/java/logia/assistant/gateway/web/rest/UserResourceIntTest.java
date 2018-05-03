@@ -49,6 +49,7 @@ import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.mapper.UserMapper;
 import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
 import logia.assistant.gateway.web.rest.vm.ManagedUserVM;
+import logia.assistant.share.common.utils.UuidBuilder;
 import logia.assistant.share.gateway.securiry.jwt.AuthoritiesConstants;
 
 /**
@@ -698,5 +699,12 @@ public class UserResourceIntTest {
         authorityB.setName(AuthoritiesConstants.USER);
         assertThat(authorityA).isEqualTo(authorityB);
         assertThat(authorityA.hashCode()).isEqualTo(authorityB.hashCode());
+    }
+    
+    public static User setUuidForUser(User user) {
+        String uuid = new UuidBuilder().appendMaterial(User.class.getSimpleName())
+                .appendMaterial(user.getId()).build();
+        user.setUuid(uuid);
+        return user;
     }
 }

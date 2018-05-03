@@ -12,5 +12,12 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
  * @author Dai Mai
  */
 public interface UserSearchRepository extends ElasticsearchRepository<User, Long> {
+    
+    /**
+     * Find user by uuid.
+     *
+     * @param uuid the uuid
+     * @return the optional
+     */
     Optional<User> findOneByUuid(String uuid);
 }

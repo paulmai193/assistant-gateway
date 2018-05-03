@@ -425,6 +425,8 @@ public class AccountResourceIntTest {
         User user = new User();
         user.setPassword(RandomStringUtils.random(60));
         user = userRepository.saveAndFlush(user);
+        user = UserResourceIntTest.setUuidForUser(user);
+        user = userRepository.saveAndFlush(user);
 
         Credential credential = new Credential().activated(true).login("save-account").primary(true).user(user);
         credential = credentialRepository.saveAndFlush(credential);
