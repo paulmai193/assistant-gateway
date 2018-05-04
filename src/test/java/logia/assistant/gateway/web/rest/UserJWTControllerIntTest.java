@@ -25,6 +25,7 @@ import logia.assistant.gateway.domain.Credential;
 import logia.assistant.gateway.domain.User;
 import logia.assistant.gateway.repository.CredentialRepository;
 import logia.assistant.gateway.repository.UserRepository;
+import logia.assistant.gateway.service.CredentialService;
 import logia.assistant.gateway.web.rest.errors.ExceptionTranslator;
 import logia.assistant.gateway.web.rest.vm.LoginVM;
 import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
@@ -45,6 +46,9 @@ public class UserJWTControllerIntTest {
     /** The authentication manager. */
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private CredentialService     credentialService;
 
     /** The user repository. */
     @Autowired
@@ -71,7 +75,7 @@ public class UserJWTControllerIntTest {
     @Before
     public void setup() {
         UserJWTController userJWTController = new UserJWTController(tokenProvider,
-                authenticationManager);
+                authenticationManager, this.credentialService);
         this.mockMvc = MockMvcBuilders.standaloneSetup(userJWTController)
                 .setControllerAdvice(exceptionTranslator).build();
     }

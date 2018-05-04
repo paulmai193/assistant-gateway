@@ -1,5 +1,7 @@
 package logia.assistant.gateway.web.rest;
 
+import java.time.ZonedDateTime;
+
 import javax.validation.Valid;
 
 import org.springframework.http.HttpHeaders;
@@ -17,7 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import logia.assistant.gateway.domain.Credential;
+import logia.assistant.gateway.domain.User;
+import logia.assistant.gateway.security.DomainUserDetail;
 import logia.assistant.gateway.security.jwt.JWTConfigurer;
+import logia.assistant.gateway.service.CredentialService;
 import logia.assistant.gateway.web.rest.vm.LoginVM;
 import logia.assistant.share.gateway.securiry.jwt.TokenProvider;
 
@@ -35,6 +41,8 @@ public class UserJWTController {
 
     /** The authentication manager. */
     private final AuthenticationManager authenticationManager;
+    
+    private final CredentialService credentialService;
 
     /**
      * Instantiates a new user JWT controller.
@@ -42,9 +50,12 @@ public class UserJWTController {
      * @param tokenProvider the token provider
      * @param authenticationManager the authentication manager
      */
-    public UserJWTController(TokenProvider tokenProvider, AuthenticationManager authenticationManager) {
+    public UserJWTController(TokenProvider tokenProvider,
+            AuthenticationManager authenticationManager, CredentialService credentialService) {
+        super();
         this.tokenProvider = tokenProvider;
         this.authenticationManager = authenticationManager;
+        this.credentialService = credentialService;
     }
 
     /**
@@ -61,6 +72,12 @@ public class UserJWTController {
             new UsernamePasswordAuthenticationToken(loginVM.getUsername(), loginVM.getPassword());
 
         Authentication authentication = this.authenticationManager.authenticate(authenticationToken);
+        
+        // Update last login time
+        Credential credential = ((DomainUserDetail)authentication.getPrincipal()).getCredential();
+        credential.setLastLoginDate(ZonedDateTime.now());
+        this.credentialService.saveEntity(credential, false);
+        
         SecurityContextHolder.getContext().setAuthentication(authentication);
         boolean rememberMe = (loginVM.isRememberMe() == null) ? false : loginVM.isRememberMe();
         String jwt = tokenProvider.createToken(authentication, rememberMe);
@@ -107,4 +124,5 @@ public class UserJWTController {
             this.idToken = idToken;
         }
     }
+    
 }
