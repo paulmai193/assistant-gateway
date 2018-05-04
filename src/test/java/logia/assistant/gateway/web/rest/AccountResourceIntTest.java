@@ -167,6 +167,7 @@ public class AccountResourceIntTest {
         user.setLastName("doe");
         user.setImageUrl("http://placehold.it/50x50");
         user.setLangKey("en");
+        user.setActivated(true);
         user.setAuthorities(authorities);
         when(mockUserService.getUserWithAuthorities()).thenReturn(Optional.of(user));
 

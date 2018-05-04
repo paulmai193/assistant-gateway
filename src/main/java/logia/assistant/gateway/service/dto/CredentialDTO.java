@@ -30,20 +30,12 @@ public class CredentialDTO implements Serializable {
     /** The last login date. */
     private ZonedDateTime lastLoginDate;
 
-    /** The activation key. */
-    @Size(max = 20)
-    private String activationKey;
-
     /** The reset key. */
     @Size(max = 20)
     private String resetKey;
 
     /** The reset date. */
     private Instant resetDate;
-
-    /** The activated. */
-    @NotNull
-    private Boolean activated;
     
     /** The primary. */
     @NotNull
@@ -132,35 +124,6 @@ public class CredentialDTO implements Serializable {
     }
 
     /**
-     * Gets the activation key.
-     *
-     * @return the activation key
-     */
-    public String getActivationKey() {
-        return activationKey;
-    }
-
-    /**
-     * Sets the activation key.
-     *
-     * @param activationKey the new activation key
-     */
-    public void setActivationKey(String activationKey) {
-        this.activationKey = activationKey;
-    }
-    
-    /**
-     * Activation key.
-     *
-     * @param activationKey the activation key
-     * @return the credential DTO
-     */
-    public CredentialDTO activationKey(String activationKey) {
-        this.setActivated(activated);
-        return this;
-    }
-
-    /**
      * Gets the reset key.
      *
      * @return the reset key
@@ -215,35 +178,6 @@ public class CredentialDTO implements Serializable {
      */
     public CredentialDTO resetDate(Instant resetDate) {
         this.setResetDate(resetDate);
-        return this;
-    }
-
-    /**
-     * Checks if is activated.
-     *
-     * @return the boolean
-     */
-    public Boolean isActivated() {
-        return activated;
-    }
-
-    /**
-     * Sets the activated.
-     *
-     * @param activated the new activated
-     */
-    public void setActivated(Boolean activated) {
-        this.activated = activated;
-    }
-    
-    /**
-     * Activated.
-     *
-     * @param activated the activated
-     * @return the credential DTO
-     */
-    public CredentialDTO activated(Boolean activated) {
-        this.setActivated(activated);
         return this;
     }
     
@@ -370,10 +304,8 @@ public class CredentialDTO implements Serializable {
             "id=" + getId() +
             ", login='" + getLogin() + "'" +
             ", lastLoginDate='" + getLastLoginDate() + "'" +
-            ", activationKey='" + getActivationKey() + "'" +
             ", resetKey='" + getResetKey() + "'" +
             ", resetDate='" + getResetDate() + "'" +
-            ", activated='" + isActivated() + "'" +
             "}";
     }
 }
