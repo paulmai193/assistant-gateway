@@ -16,8 +16,6 @@ import {
     PasswordResetInitComponent,
     PasswordResetFinishComponent,
     SettingsComponent,
-    SocialRegisterComponent,
-    SocialAuthComponent,
     accountState
 } from './';
 
@@ -27,8 +25,6 @@ import {
         RouterModule.forChild(accountState)
     ],
     declarations: [
-    	SocialRegisterComponent,
-        SocialAuthComponent,
         ActivateComponent,
         RegisterComponent,
         PasswordComponent,

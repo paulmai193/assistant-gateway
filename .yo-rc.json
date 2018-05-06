@@ -47,10 +47,6 @@
         "version": "1.0.0"
       },
       {
-        "name": "generator-jhipster-spring-social-connectors",
-        "version": "0.0.1"
-      },
-      {
         "name": "generator-jhipster-entity-audit-and-delete",
         "version": "2.2.2"
       },

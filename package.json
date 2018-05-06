@@ -81,7 +81,6 @@
     "generator-jhipster-elasticsearch-reindexer": "1.2.0",
     "generator-jhipster-swagger2markup": "1.2.0",
     "generator-jhipster-elasticsearch-rest-client": "1.0.0",
-    "generator-jhipster-spring-social-connectors": "0.0.1",
     "generator-jhipster-entity-audit-and-delete": "2.2.2",
     "generator-jhipster-material": "0.0.0",
     "uglifyjs-webpack-plugin": "1.1.5",
