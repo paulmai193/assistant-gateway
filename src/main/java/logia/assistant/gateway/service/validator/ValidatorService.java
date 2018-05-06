@@ -2,7 +2,6 @@ package logia.assistant.gateway.service.validator;
 
 import java.util.Set;
 
-import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;
 import javax.validation.Validator;
@@ -22,15 +21,25 @@ import logia.assistant.gateway.web.rest.vm.ManagedUserVM;
  * @author Dai Mai
  */
 @Component
-public final class ValidatorService {
+public class ValidatorService {
 
     /** The validator. */
-    @Inject
-    private Validator            validator;
+    private final Validator            validator;
 
     /** The credential repository. */
-    @Inject
-    private CredentialRepository credentialRepository;
+    private final CredentialRepository credentialRepository;
+
+    /**
+     * Instantiates a new validator service.
+     *
+     * @param validator the validator
+     * @param credentialRepository the credential repository
+     */
+    public ValidatorService(Validator validator, CredentialRepository credentialRepository) {
+        super();
+        this.validator = validator;
+        this.credentialRepository = credentialRepository;
+    }
 
     /**
      * Validate email.

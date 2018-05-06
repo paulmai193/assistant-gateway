@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,8 +29,17 @@ public class DomainUserDetailsService implements UserDetailsService {
     private final Logger log = LoggerFactory.getLogger(DomainUserDetailsService.class);
 
     /** The credential repository. */
-    @Inject
-    private CredentialRepository credentialRepository;
+    private final CredentialRepository credentialRepository;
+
+    /**
+     * Instantiates a new domain user details service.
+     *
+     * @param credentialRepository the credential repository
+     */
+    public DomainUserDetailsService(CredentialRepository credentialRepository) {
+        super();
+        this.credentialRepository = credentialRepository;
+    }
 
     /* (non-Javadoc)
      * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
