@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Principal, AccountService, JhiLanguageHelper } from '../../shared';
+import {JhiLanguageService} from 'ng-jhipster';
 
 @Component({
     selector: 'jhi-settings',
