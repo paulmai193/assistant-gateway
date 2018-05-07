@@ -43,7 +43,7 @@ public class CredentialMapperProcessor {
         if (Objects.isNull(source) || Objects.isNull(target)) {
             return;
         }
-        User user = this.userRepository.getOne(source.getUserId());
+        User user = this.userRepository.getOneByUuid(source.getUserId());
         target.setUser(user);
     }
     

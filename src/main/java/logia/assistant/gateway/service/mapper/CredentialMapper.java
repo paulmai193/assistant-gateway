@@ -17,7 +17,7 @@ public interface CredentialMapper extends EntityMapper<CredentialDTO, Credential
     /* (non-Javadoc)
      * @see logia.assistant.gateway.service.mapper.EntityMapper#toDto(java.lang.Object)
      */
-    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.uuid", target = "userId")
     CredentialDTO toDto(Credential credential);
 
     /* (non-Javadoc)

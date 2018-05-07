@@ -42,7 +42,7 @@ public class CredentialDTO implements Serializable {
     private Boolean primary;
 
     /** The user id. */
-    private Long userId;
+    private String userId;
 
     /** The user login. */
     private String userLogin;
@@ -215,7 +215,7 @@ public class CredentialDTO implements Serializable {
      *
      * @return the user id
      */
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
@@ -224,7 +224,7 @@ public class CredentialDTO implements Serializable {
      *
      * @param userId the new user id
      */
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
     
@@ -234,7 +234,7 @@ public class CredentialDTO implements Serializable {
      * @param userId the user id
      * @return the credential DTO
      */
-    public CredentialDTO userId(Long userId) {
+    public CredentialDTO userId(String userId) {
         this.setUserId(userId);
         return this;
     }
@@ -306,6 +306,7 @@ public class CredentialDTO implements Serializable {
             ", lastLoginDate='" + getLastLoginDate() + "'" +
             ", resetKey='" + getResetKey() + "'" +
             ", resetDate='" + getResetDate() + "'" +
+            ", userId='" + getUserId() + "'" +
             "}";
     }
 }

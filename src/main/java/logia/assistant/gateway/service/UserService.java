@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
@@ -25,7 +27,6 @@ import logia.assistant.gateway.security.SecurityUtils;
 import logia.assistant.gateway.service.dto.UserDTO;
 import logia.assistant.gateway.service.impl.CredentialServiceImpl;
 import logia.assistant.share.common.service.UuidService;
-import logia.assistant.share.common.utils.UuidBuilder;
 
 /**
  * Service class for managing users.
@@ -94,7 +95,24 @@ public class UserService implements UuidService<User> {
             return optUser;
         }
     }
-    
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see logia.assistant.share.common.service.UuidService#createUuid(java.lang.Object)
+     */
+    @Override
+    public User createUuid(User entity) {
+        Long lastId = 0L;
+        List<User> tmpList = this.userRepository.findAllByOrderByIdDesc();
+        if (tmpList.size() > 0) {
+            lastId = tmpList.get(0).getId();
+        }
+        String uuid = this.createUuid(this.getClass().getSimpleName(), lastId + 1);
+        entity.setUuid(uuid);
+        return entity;
+    }
+
     /**
      * Find one by activation key.
      *
@@ -144,16 +162,13 @@ public class UserService implements UuidService<User> {
      * @return the user
      */
     public User saveOrUpdate(User user, boolean force) {
+        if (Objects.isNull(user.getUuid())) {
+            user = this.createUuid(user);
+        }
         if (force) {
             user = this.userRepository.saveAndFlush(user);
         }
         else {
-            user = this.userRepository.save(user);
-        }
-        if (Objects.isNull(user.getUuid())) {
-            String uuid = new UuidBuilder().appendMaterial(User.class.getSimpleName())
-                    .appendMaterial(user.getId()).build();
-            user.setUuid(uuid);
             user = this.userRepository.save(user);
         }
         userSearchRepository.save(user);
@@ -244,6 +259,18 @@ public class UserService implements UuidService<User> {
         userSearchRepository.delete(user.getId());
         this.cacheManager.getCache(UserRepository.USERS_BY_UUID_CACHE).evict(user.getUuid());
         log.debug("Deleted User: {}", user);
+    }
+
+    /**
+     * Fix non uuid.
+     */
+    @PostConstruct
+    public void fixNonUuid() {
+        List<User> nonUuidUsers = this.userRepository.findByUuidIsNull();
+        for (User user : nonUuidUsers) {
+            user.setUuid(this.createUuid(this.getClass().getSimpleName(), user.getId()));
+            this.saveOrUpdate(user, false);
+        }
     }
 
 }
