@@ -59,12 +59,5 @@ public interface UserRepository extends UuidRepository<User, Long> {
         optUser.ifPresent(user -> user.getAuthorities().size()); // Dummy code to fetch authorities
         return optUser;
     }
-    
-    /**
-     * Find first order by id desc.
-     *
-     * @return the t
-     */
-    List<User> findAllByOrderByIdDesc();
 
 }
